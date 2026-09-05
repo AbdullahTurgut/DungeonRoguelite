@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 1.2 completed and verified in Unity Play Mode.
+- Milestone 1.3 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,19 +11,18 @@ Last update:
 
 ## Status
 
-**IN PROGRESS — Phase 1: Player Foundation**
+**COMPLETED — Phase 1: Player Foundation**
+**NEXT UP — Phase 2: Core Combat (Milestone 2.1: Damage Architecture)**
 
-Milestones 1.1 (Player Movement) and 1.2 (Camera and Aim) are completed and verified.
+Milestones 1.1 (Player Movement), 1.2 (Camera and Aim), and 1.3 (Player Health) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 1 — Player Foundation
+## PHASE 1 — Player Foundation (Completed)
 
-Current milestone:
-
-**Milestone 1.3 — Player Health**
+All milestones in Phase 1 are complete.
 
 ---
 
@@ -57,22 +56,33 @@ Current milestone:
   - Added visual non-colliding `FacingIndicator` child on `Player.prefab` to clearly display facing direction.
   - Configured `Main Camera` in `Dungeon_Prototype.unity` with `CameraFollow` targeting the player.
   - Automated Play Mode verification suite ran and passed all 7 test cases with 0 errors.
+- **Milestone 1.3 — Player Health**:
+  - Implemented `PlayerHealth.cs` component managing current/max health and death state.
+  - Clamped health strictly between 0 and `maxHealth`, with `maxHealth >= 1`.
+  - Damage reception via public `TakeDamage(float amount)` ignoring zero or negative values.
+  - Event-based notification via `OnHealthChanged(float current, float max)` and `OnDied()`.
+  - Guaranteed single-execution death logic; damage after death does not re-trigger death.
+  - Read-only properties `MaxHealth`, `CurrentHealth`, `IsDead`, `HealthNormalized`.
+  - Decoupled from movement, aiming, and combat abstractions.
+  - Attached to `Player.prefab` with default `maxHealth = 100`.
+  - Configured prototype scene with automated verification suite under `Assets/Tests/Verification/Milestone1_3_Verifier.cs`.
+  - All 16 verification checks passed in Play Mode with 0 errors and 0 exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 1.3 — Player Health**
+**Milestone 2.1 — Damage Architecture**
 
-Tasks for Milestone 1.3:
-1. Create `PlayerHealth.cs` component in `Assets/Scripts/Player/`.
-2. Implement current/max health storage and damage reception logic (`TakeDamage`).
-3. Implement death event/action when health drops to zero.
-4. Keep health logic decoupled from movement and aiming.
+Tasks for Milestone 2.1:
+1. Define common `IDamageable` interface in `Assets/Scripts/Combat/`.
+2. Update `PlayerHealth` to implement `IDamageable` (preserving existing `TakeDamage(float amount)` signature).
+3. Create `EnemyHealth.cs` implementing `IDamageable`.
+4. Create test harness verifying shared damage reception across player and enemy entities.
 
 Do NOT start:
-- Combat / Weapons / Sword attack (Milestone 2.1 / 2.2)
-- Enemies / Zombie (Milestone 3.1)
+- Weapons / Sword attack (Milestone 2.2)
+- Enemy AI / Zombie (Milestone 3.1)
 - Waves, XP, UI (Milestones 4-7)
 
 ---
@@ -86,8 +96,9 @@ Do NOT start:
 - Movement: `CharacterController` driven on X/Z plane with grounded vertical velocity (`PlayerMovement.cs`)
 - Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
 - Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
+- Health: `PlayerHealth.cs` managing clamped current/max health and single-fire death event; signature prepared for future `IDamageable`
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `CameraFollow`
+- Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `PlayerHealth`, `CameraFollow`
 - Visuals: Primitives/placeholders (Capsule with FacingIndicator cube for Player)
 - Git used as checkpoint and handoff system
 
@@ -101,17 +112,24 @@ None.
 
 # Testing Status
 
-## Milestone 1.2 Verification
+## Milestone 1.3 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_2.log`):
-- **Test 1 - 360° Aim Tracking**: Player forward accurately aligns with target coordinates across all 4 quadrants (North, East, South, West, North-East, North-West) within $1.5^\circ$ tolerance (PASSED).
-- **Test 2 - Y-Axis Rotation Lock**: Measured pitch ($X$) = $0.0000^\circ$, roll ($Z$) = $0.0000^\circ$. Rotation strictly constrained to Y (PASSED).
-- **Test 3 - Movement Independence**: Held South ($-Z$) movement while sweeping aim $360^\circ$. Traveled $\Delta Z = -3.00\text{ m}$ with $\Delta X = 0.0000\text{ m}$ drift (PASSED).
-- **Test 4 - Opposing Simultaneous Operation**: Moving East ($+X$ velocity $= 6.00\text{ m/s}$) while aiming West (Facing $X = -1.00$) operates seamlessly without interference (PASSED).
-- **Test 5 - Smooth Camera Follow**: Camera tracked player motion to the configured offset with a settle distance of $0.016\text{ m}$ ($< 0.2\text{ m}$ tolerance) (PASSED).
-- **Test 6 - Camera Orientation Lock**: Camera rotation delta from $(55^\circ, 0^\circ, 0^\circ)$ was $(0.00^\circ, 0.00^\circ, 0.00^\circ)$ without roll or yaw drift (PASSED).
-- **Test 7 - Grounding & Collision**: `IsGrounded = True` maintained throughout movement and obstacle boundaries preserved (PASSED).
-- **Compilation**: Clean compile with 0 errors and 0 warnings.
+Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_3.log`):
+- **Test 1 - Initial Health**: `CurrentHealth == 100`, `MaxHealth == 100` (PASSED)
+- **Test 2 - Initial IsDead**: `IsDead == false` (PASSED)
+- **Test 3 - TakeDamage(25)**: `CurrentHealth == 75`, `OnHealthChanged` fired with (75, 100) (PASSED)
+- **Test 4 - TakeDamage(0)**: Ignored, health remains 75, no event (PASSED)
+- **Test 5 - TakeDamage(-10)**: Ignored, health remains 75, no event (PASSED)
+- **Test 6 & 7 - Overkill & Clamping**: `TakeDamage(200)` clamped to 0, health never negative (PASSED)
+- **Test 8 - Death State**: `IsDead == true` at 0 health (PASSED)
+- **Test 9 - Single Death Trigger**: `OnDied` invoked exactly once (count = 1) (PASSED)
+- **Test 10 - Post-Death Damage Guard**: `TakeDamage(50)` does not fire `OnDied` again, health stays 0 (PASSED)
+- **Test 11 - HealthNormalized**: Accurately bounds between 0.0 and 1.0 (dead = 0.0, full = 1.0, half = 0.5) (PASSED)
+- **Test 12 - PlayerMovement Integrity**: `MoveSpeed == 6`, input stepping operational (PASSED)
+- **Test 13 - PlayerAim Integrity**: Pointer angle diff $0.00^\circ$ to target (PASSED)
+- **Test 14 - Grounding & Collisions**: `IsGrounded == true`, `CharacterController.enabled == true` (PASSED)
+- **Test 15 - Compilation**: 0 compiler errors or warnings (PASSED)
+- **Test 16 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
 
 ---
 
@@ -119,7 +137,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_2.l
  
 ```text
 Latest verified commit:
-4e89f75 feat: add camera follow and mouse aiming
+<pending commit for Milestone 1.3>
 ```
 
 ---
@@ -138,27 +156,25 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 1.2 Camera Follow and Mouse Aiming implementation and verification.
-- Assets/Scripts/Camera/CameraFollow.cs
-- Assets/Scripts/Player/PlayerAim.cs
-- Assets/Scripts/Player/Milestone1_2_Verifier.cs
-- Assets/Editor/Milestone1_2_Setup.cs
-- Assets/Prefabs/Characters/Player.prefab (added PlayerAim and FacingIndicator)
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (added CameraFollow to Main Camera and Milestone1_2_Verifier)
+- Milestone 1.3 Player Health implementation and verification.
+- Assets/Scripts/Player/PlayerHealth.cs
+- Assets/Tests/Verification/Milestone1_3_Verifier.cs
+- Assets/Editor/Milestone1_3_Setup.cs
+- Assets/Prefabs/Characters/Player.prefab (added PlayerHealth)
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured PlayerHealth and Milestone1_3_Verifier)
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Camera/CameraFollow.cs
-- Assets/Scripts/Camera/CameraFollow.cs.meta
-- Assets/Scripts/Camera.meta
-- Assets/Scripts/Player/PlayerAim.cs
-- Assets/Scripts/Player/PlayerAim.cs.meta
-- Assets/Scripts/Player/Milestone1_2_Verifier.cs
-- Assets/Scripts/Player/Milestone1_2_Verifier.cs.meta
-- Assets/Editor/Milestone1_2_Setup.cs
-- Assets/Editor/Milestone1_2_Setup.cs.meta
+- Assets/Scripts/Player/PlayerHealth.cs
+- Assets/Scripts/Player/PlayerHealth.cs.meta
+- Assets/Tests/Verification/Milestone1_3_Verifier.cs
+- Assets/Tests/Verification/Milestone1_3_Verifier.cs.meta
+- Assets/Tests/Verification.meta
+- Assets/Tests.meta
+- Assets/Editor/Milestone1_3_Setup.cs
+- Assets/Editor/Milestone1_3_Setup.cs.meta
 - Assets/Prefabs/Characters/Player.prefab
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
 - PROJECT_STATUS.md
@@ -167,13 +183,13 @@ When switching between agents:
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 7 test cases passed)
-- Full 360-degree aiming rotation accuracy
-- Pitch and roll locked to zero (Y-axis only)
-- Independent simultaneous movement and aiming (strafing)
-- Smooth camera follow via SmoothDamp in LateUpdate
-- Grounding and collision stability
-- Unity compilation with 0 errors
+- In-engine Play Mode automated verification suite (all 16 checks passed)
+- Initial health state and clamp verification
+- Damage reception, non-negative clamping, zero/negative damage rejection
+- Death event single-execution and post-death damage immunity
+- HealthNormalized range bounds (0..1)
+- Non-interference with PlayerMovement, PlayerAim, and CharacterController grounding
+- Unity compilation with 0 errors and 0 runtime exceptions
 ```
 
 ## Known Issues
@@ -185,11 +201,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 1.3 — Player Health
+Milestone 2.1 — Damage Architecture
 ```
 
 ## Latest Verified Commit
 
 ```text
-4e89f75 feat: add camera follow and mouse aiming
+<pending commit for Milestone 1.3>
 ```
