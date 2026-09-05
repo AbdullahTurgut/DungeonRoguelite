@@ -1054,7 +1054,7 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1568305754}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &1927018222
+--- !u!1 &1611619800
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1062,35 +1062,35 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1927018224}
-  - component: {fileID: 1927018223}
+  - component: {fileID: 1611619802}
+  - component: {fileID: 1611619801}
   m_Layer: 0
-  m_Name: Milestone2_2_RuntimeVerifier
+  m_Name: Milestone3_1_RuntimeVerifier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1927018223
+--- !u!114 &1611619801
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1927018222}
+  m_GameObject: {fileID: 1611619800}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ac6556b59cd767f40bf00d78205d7e55, type: 3}
+  m_Script: {fileID: 11500000, guid: 114a648bdbedd7147a856c94baf78153, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Tests.Milestone2_2_Verifier
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Tests.Milestone3_1_Verifier
   runAutomatedTestOnStart: 0
---- !u!4 &1927018224
+--- !u!4 &1611619802
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1927018222}
+  m_GameObject: {fileID: 1611619800}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -1257,4 +1257,4 @@ SceneRoots:
   - {fileID: 1523646730}
   - {fileID: 2057259467}
   - {fileID: 1510061525}
-  - {fileID: 1927018224}
+  - {fileID: 1611619802}
