@@ -107,7 +107,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_verifi
  
 ```text
 Latest verified commit:
-675f57c docs: record Milestone 0.1 completion and git remote
+3d3472f feat: implement top-down player movement
 ```
 
 ---
@@ -175,5 +175,5 @@ Milestone 1.2 — Top-down camera follow and mouse world aiming.
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 1.1>
+3d3472f feat: implement top-down player movement
 ```
