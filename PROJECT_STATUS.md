@@ -119,7 +119,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_2.l
  
 ```text
 Latest verified commit:
-<pending commit for Milestone 1.2>
+4e89f75 feat: add camera follow and mouse aiming
 ```
 
 ---
@@ -191,5 +191,5 @@ Milestone 1.3 — Player Health
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 1.2>
+4e89f75 feat: add camera follow and mouse aiming
 ```
