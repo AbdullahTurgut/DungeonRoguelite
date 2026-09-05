@@ -161,7 +161,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_2.l
  
 ```text
 Latest verified commit:
-<pending commit for Milestone 2.2>
+462ba41 feat: implement basic sword combat
 ```
 
 ---
@@ -237,5 +237,5 @@ Milestone 3.1 — Zombie Enemy
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 2.2>
+462ba41 feat: implement basic sword combat
 ```
