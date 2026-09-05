@@ -1,13 +1,15 @@
 using System;
 using UnityEngine;
+using DungeonRoguelite.Combat;
 
 namespace DungeonRoguelite.Player
 {
     /// <summary>
     /// Manages player health state, damage reception, and death notification.
     /// Strictly decoupled from movement, aiming, and combat resolution abstractions.
+    /// Implements IDamageable for polymorphic combat interaction.
     /// </summary>
-    public class PlayerHealth : MonoBehaviour
+    public class PlayerHealth : MonoBehaviour, IDamageable
     {
         [Header("Health Configuration")]
         [Tooltip("Maximum health capacity. Must be at least 1.")]

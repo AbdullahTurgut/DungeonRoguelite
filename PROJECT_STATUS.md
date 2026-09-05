@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 1.3 completed and verified in Unity Play Mode.
+- Milestone 2.1 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,18 +11,19 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 1: Player Foundation**
-**NEXT UP — Phase 2: Core Combat (Milestone 2.1: Damage Architecture)**
+**IN PROGRESS — Phase 2: Core Combat**
 
-Milestones 1.1 (Player Movement), 1.2 (Camera and Aim), and 1.3 (Player Health) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), and 2.1 (Damage Architecture) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 1 — Player Foundation (Completed)
+## PHASE 2 — Core Combat
 
-All milestones in Phase 1 are complete.
+Current milestone:
+
+**Milestone 2.2 — Sword**
 
 ---
 
@@ -63,26 +64,34 @@ All milestones in Phase 1 are complete.
   - Event-based notification via `OnHealthChanged(float current, float max)` and `OnDied()`.
   - Guaranteed single-execution death logic; damage after death does not re-trigger death.
   - Read-only properties `MaxHealth`, `CurrentHealth`, `IsDead`, `HealthNormalized`.
-  - Decoupled from movement, aiming, and combat abstractions.
   - Attached to `Player.prefab` with default `maxHealth = 100`.
   - Configured prototype scene with automated verification suite under `Assets/Tests/Verification/Milestone1_3_Verifier.cs`.
   - All 16 verification checks passed in Play Mode with 0 errors and 0 exceptions.
+- **Milestone 2.1 — Damage Architecture**:
+  - Defined minimal `IDamageable` interface in `Assets/Scripts/Combat/IDamageable.cs` with `void TakeDamage(float amount);`.
+  - Updated `PlayerHealth.cs` to implement `IDamageable` natively with zero modifications to clamping, death guards, or event logic.
+  - Evaluated and deferred `DamageInfo` struct, avoiding premature combat complexity and unused struct allocations.
+  - Preserved polymorphic decoupling allowing future weapons (e.g. Sword) to apply damage without needing to know concrete entity types.
+  - Created automated Play Mode verification suite at `Assets/Tests/Verification/Milestone2_1_Verifier.cs`.
+  - All 13 verification checks passed in Play Mode with 0 errors and 0 exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 2.1 — Damage Architecture**
+**Milestone 2.2 — Sword**
 
-Tasks for Milestone 2.1:
-1. Define common `IDamageable` interface in `Assets/Scripts/Combat/`.
-2. Update `PlayerHealth` to implement `IDamageable` (preserving existing `TakeDamage(float amount)` signature).
-3. Create `EnemyHealth.cs` implementing `IDamageable`.
-4. Create test harness verifying shared damage reception across player and enemy entities.
+Tasks for Milestone 2.2:
+1. Implement weapon base structure or focused melee weapon component.
+2. Implement melee sword attack triggered by player input (e.g. Attack action).
+3. Implement sword hit detection via collider / overlap sphere query.
+4. Resolve hit targets via `TryGetComponent<IDamageable>` and apply damage.
+5. Implement attack cooldown / swing timing.
+6. Retain decoupling from specific enemy types.
 
 Do NOT start:
-- Weapons / Sword attack (Milestone 2.2)
-- Enemy AI / Zombie (Milestone 3.1)
+- EnemyHealth / Zombie (Milestone 3.1)
+- Projectiles / ranged weapons (later)
 - Waves, XP, UI (Milestones 4-7)
 
 ---
@@ -96,7 +105,8 @@ Do NOT start:
 - Movement: `CharacterController` driven on X/Z plane with grounded vertical velocity (`PlayerMovement.cs`)
 - Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
 - Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
-- Health: `PlayerHealth.cs` managing clamped current/max health and single-fire death event; signature prepared for future `IDamageable`
+- Combat Abstraction: Minimal `IDamageable` interface (`TakeDamage(float amount)`) in `Assets/Scripts/Combat/` for polymorphic damage flow
+- Health: `PlayerHealth.cs` implements `IDamageable` with clamped health, single-fire death event, and decoupled notifications
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
 - Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `PlayerHealth`, `CameraFollow`
 - Visuals: Primitives/placeholders (Capsule with FacingIndicator cube for Player)
@@ -110,26 +120,30 @@ None.
 
 ---
 
+# Future Maintenance & Technical Debt
+
+- **Verifier Script Reorganization**: Legacy verifier scripts currently located under production script folders (`Assets/Scripts/Player/Milestone1_1_Verifier.cs` and `Assets/Scripts/Player/Milestone1_2_Verifier.cs`) should later be moved into the dedicated test/verification structure (`Assets/Tests/Verification/`).
+
+---
+
 # Testing Status
 
-## Milestone 1.3 Verification
+## Milestone 2.1 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_3.log`):
-- **Test 1 - Initial Health**: `CurrentHealth == 100`, `MaxHealth == 100` (PASSED)
-- **Test 2 - Initial IsDead**: `IsDead == false` (PASSED)
-- **Test 3 - TakeDamage(25)**: `CurrentHealth == 75`, `OnHealthChanged` fired with (75, 100) (PASSED)
-- **Test 4 - TakeDamage(0)**: Ignored, health remains 75, no event (PASSED)
-- **Test 5 - TakeDamage(-10)**: Ignored, health remains 75, no event (PASSED)
-- **Test 6 & 7 - Overkill & Clamping**: `TakeDamage(200)` clamped to 0, health never negative (PASSED)
-- **Test 8 - Death State**: `IsDead == true` at 0 health (PASSED)
-- **Test 9 - Single Death Trigger**: `OnDied` invoked exactly once (count = 1) (PASSED)
-- **Test 10 - Post-Death Damage Guard**: `TakeDamage(50)` does not fire `OnDied` again, health stays 0 (PASSED)
-- **Test 11 - HealthNormalized**: Accurately bounds between 0.0 and 1.0 (dead = 0.0, full = 1.0, half = 0.5) (PASSED)
-- **Test 12 - PlayerMovement Integrity**: `MoveSpeed == 6`, input stepping operational (PASSED)
-- **Test 13 - PlayerAim Integrity**: Pointer angle diff $0.00^\circ$ to target (PASSED)
-- **Test 14 - Grounding & Collisions**: `IsGrounded == true`, `CharacterController.enabled == true` (PASSED)
-- **Test 15 - Compilation**: 0 compiler errors or warnings (PASSED)
-- **Test 16 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
+Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_1.log`):
+- **Test 1 - Interface Implementation**: `PlayerHealth is IDamageable == true` (PASSED)
+- **Test 2 - Interface Resolution**: `playerGo.GetComponent<IDamageable>()` resolves `PlayerHealth` (PASSED)
+- **Test 3 - Polymorphic Damage**: `IDamageable.TakeDamage(25)` reduces health to 75 and fires `OnHealthChanged(75, 100)` (PASSED)
+- **Test 4 - Zero-Damage Guard**: `IDamageable.TakeDamage(0)` ignored, health remains 75 (PASSED)
+- **Test 5 - Negative-Damage Guard**: `IDamageable.TakeDamage(-10)` ignored, health remains 75 (PASSED)
+- **Test 6 - Overkill Clamping**: `IDamageable.TakeDamage(200)` clamps health to 0 (PASSED)
+- **Test 7 - Single Death Event**: `OnDied` fires exactly once via interface damage (PASSED)
+- **Test 8 - Post-Death Damage Guard**: `TakeDamage(50)` after death ignored, health remains 0, death not re-fired (PASSED)
+- **Test 9 - PlayerMovement Integrity**: `MoveSpeed == 6`, movement stepping functional (PASSED)
+- **Test 10 - PlayerAim Integrity**: Pointer angle diff $0.00^\circ$ to target (PASSED)
+- **Test 11 - Grounding & Collisions**: `IsGrounded == true`, `CharacterController.enabled == true` (PASSED)
+- **Test 12 - Compilation**: 0 compiler errors or warnings (PASSED)
+- **Test 13 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
 
 ---
 
@@ -137,7 +151,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_3.l
  
 ```text
 Latest verified commit:
-86174df feat: add player health system
+<pending commit for Milestone 2.1>
 ```
 
 ---
@@ -156,26 +170,25 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 1.3 Player Health implementation and verification.
-- Assets/Scripts/Player/PlayerHealth.cs
-- Assets/Tests/Verification/Milestone1_3_Verifier.cs
-- Assets/Editor/Milestone1_3_Setup.cs
-- Assets/Prefabs/Characters/Player.prefab (added PlayerHealth)
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured PlayerHealth and Milestone1_3_Verifier)
+- Milestone 2.1 Damage Architecture implementation and verification.
+- Assets/Scripts/Combat/IDamageable.cs
+- Assets/Scripts/Player/PlayerHealth.cs (implemented IDamageable)
+- Assets/Tests/Verification/Milestone2_1_Verifier.cs
+- Assets/Editor/Milestone2_1_Setup.cs
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Milestone2_1_Verifier)
 ```
 
 ## Changed Files
 
 ```text
+- Assets/Scripts/Combat/IDamageable.cs
+- Assets/Scripts/Combat/IDamageable.cs.meta
+- Assets/Scripts/Combat.meta
 - Assets/Scripts/Player/PlayerHealth.cs
-- Assets/Scripts/Player/PlayerHealth.cs.meta
-- Assets/Tests/Verification/Milestone1_3_Verifier.cs
-- Assets/Tests/Verification/Milestone1_3_Verifier.cs.meta
-- Assets/Tests/Verification.meta
-- Assets/Tests.meta
-- Assets/Editor/Milestone1_3_Setup.cs
-- Assets/Editor/Milestone1_3_Setup.cs.meta
-- Assets/Prefabs/Characters/Player.prefab
+- Assets/Tests/Verification/Milestone2_1_Verifier.cs
+- Assets/Tests/Verification/Milestone2_1_Verifier.cs.meta
+- Assets/Editor/Milestone2_1_Setup.cs
+- Assets/Editor/Milestone2_1_Setup.cs.meta
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
 - PROJECT_STATUS.md
 ```
@@ -183,11 +196,12 @@ When switching between agents:
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 16 checks passed)
-- Initial health state and clamp verification
-- Damage reception, non-negative clamping, zero/negative damage rejection
-- Death event single-execution and post-death damage immunity
-- HealthNormalized range bounds (0..1)
+- In-engine Play Mode automated verification suite (all 13 checks passed)
+- IDamageable interface contract verification on PlayerHealth
+- Polymorphic damage invocation through IDamageable reference
+- Zero and negative damage guards through interface
+- Overkill clamping to zero through interface
+- Death event single-execution and post-death immunity
 - Non-interference with PlayerMovement, PlayerAim, and CharacterController grounding
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
@@ -201,11 +215,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 2.1 — Damage Architecture
+Milestone 2.2 — Sword
 ```
 
 ## Latest Verified Commit
 
 ```text
-86174df feat: add player health system
+<pending commit for Milestone 2.1>
 ```
