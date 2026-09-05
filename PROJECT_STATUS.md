@@ -19,11 +19,11 @@ No gameplay implementation should be assumed complete until confirmed in the rep
 
 # Current Phase
 
-## PHASE 0 — Project Foundation
+## PHASE 1 — Player Foundation
 
 Current milestone:
 
-**Milestone 0.1 — Initialize the Unity project and development workflow**
+**Milestone 1.1 — Player Movement**
 
 ---
 
@@ -43,6 +43,10 @@ Current milestone:
 - ARCHITECTURE.md created.
 - ROADMAP.md created.
 - PROJECT_STATUS.md created.
+- Git repository initialized on branch `main`.
+- Standard Unity `.gitignore` created and verified.
+- Initial project files committed.
+- Remote repository created and pushed: `https://github.com/AbdullahTurgut/DungeonRoguelite`.
 
 ---
 
@@ -130,14 +134,10 @@ No gameplay code has been created.
 ---
 
 # Recent Git Checkpoint
-
-No game-development commit has been recorded in this document yet.
-
-Once Git is initialized, record the latest relevant commit here:
-
+ 
 ```text
 Latest verified commit:
-<commit hash> <commit message>
+fba4ed7 chore: initialize Unity dungeon roguelite project
 ```
 
 ---
