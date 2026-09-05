@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 2.1 completed and verified in Unity Play Mode.
+- Milestone 2.2 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,19 +11,18 @@ Last update:
 
 ## Status
 
-**IN PROGRESS — Phase 2: Core Combat**
+**COMPLETED — Phase 2: Core Combat**
+**NEXT UP — Phase 3: Enemy Foundation (Milestone 3.1: Zombie Enemy)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), and 2.1 (Damage Architecture) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), and 2.2 (Basic Sword Combat) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 2 — Core Combat
+## PHASE 2 — Core Combat (Completed)
 
-Current milestone:
-
-**Milestone 2.2 — Sword**
+All milestones in Phase 2 are complete.
 
 ---
 
@@ -71,28 +70,36 @@ Current milestone:
   - Defined minimal `IDamageable` interface in `Assets/Scripts/Combat/IDamageable.cs` with `void TakeDamage(float amount);`.
   - Updated `PlayerHealth.cs` to implement `IDamageable` natively with zero modifications to clamping, death guards, or event logic.
   - Evaluated and deferred `DamageInfo` struct, avoiding premature combat complexity and unused struct allocations.
-  - Preserved polymorphic decoupling allowing future weapons (e.g. Sword) to apply damage without needing to know concrete entity types.
+  - Preserved polymorphic decoupling allowing future weapons to apply damage without needing to know concrete entity types.
   - Created automated Play Mode verification suite at `Assets/Tests/Verification/Milestone2_1_Verifier.cs`.
   - All 13 verification checks passed in Play Mode with 0 errors and 0 exceptions.
+- **Milestone 2.2 — Basic Sword Combat**:
+  - Implemented `PlayerAttack.cs` component binding to `Player/Attack` input (`<Mouse>/leftButton`, Gamepad Attack).
+  - Implemented `MeleeWeapon.cs` component in `Assets/Scripts/Weapons/` with configurable `damage` (25), `attackCooldown` (0.5s), `range` (2.0m), and `arcAngle` (120°).
+  - Instantaneous `Physics.OverlapSphere` query filtered by owner forward arc cone, strictly protecting against hits from behind or outside the arc.
+  - Multi-collider de-duplication per swing via `HashSet<IDamageable>`.
+  - Self-damage immunity preventing weapon owner from damaging itself.
+  - Added non-colliding `WeaponAnchor` and placeholder `SwordVisual` cube to `Player.prefab`.
+  - Created test dummy `TestDamageableTarget.cs` in `Assets/Tests/Verification/`.
+  - Automated Play Mode verification suite (`Milestone2_2_Verifier.cs`) passed all 17 checks with 0 errors.
 
 ---
 
 # Next Task
 
-**Milestone 2.2 — Sword**
+**Milestone 3.1 — Zombie Enemy**
 
-Tasks for Milestone 2.2:
-1. Implement weapon base structure or focused melee weapon component.
-2. Implement melee sword attack triggered by player input (e.g. Attack action).
-3. Implement sword hit detection via collider / overlap sphere query.
-4. Resolve hit targets via `TryGetComponent<IDamageable>` and apply damage.
-5. Implement attack cooldown / swing timing.
-6. Retain decoupling from specific enemy types.
+Tasks for Milestone 3.1:
+1. Create `EnemyHealth.cs` in `Assets/Scripts/Enemies/` implementing `IDamageable`.
+2. Create basic Zombie enemy prefab with collider and visual placeholder.
+3. Implement `EnemyMovement.cs` for tracking the player.
+4. Implement `EnemyAttack.cs` for melee attack against player.
+5. Create automated test suite validating enemy damage reception, death, and attack behavior.
 
 Do NOT start:
-- EnemyHealth / Zombie (Milestone 3.1)
-- Projectiles / ranged weapons (later)
-- Waves, XP, UI (Milestones 4-7)
+- Enemy variants / ranged enemies (later milestones)
+- Waves / spawning systems (Milestone 4.1)
+- XP drops / leveling (Milestones 5.1 / 5.2)
 
 ---
 
@@ -105,11 +112,12 @@ Do NOT start:
 - Movement: `CharacterController` driven on X/Z plane with grounded vertical velocity (`PlayerMovement.cs`)
 - Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
 - Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
-- Combat Abstraction: Minimal `IDamageable` interface (`TakeDamage(float amount)`) in `Assets/Scripts/Combat/` for polymorphic damage flow
+- Combat Abstraction: Minimal `IDamageable` interface (`TakeDamage(float amount)`) in `Assets/Scripts/Combat/`
+- Weapon Architecture: Decoupled `PlayerAttack.cs` (input coordination) and `MeleeWeapon.cs` (hit detection & cooldown tracking)
 - Health: `PlayerHealth.cs` implements `IDamageable` with clamped health, single-fire death event, and decoupled notifications
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `PlayerHealth`, `CameraFollow`
-- Visuals: Primitives/placeholders (Capsule with FacingIndicator cube for Player)
+- Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `PlayerHealth`, `PlayerAttack`, `MeleeWeapon`, `CameraFollow`
+- Visuals: Primitives/placeholders (Capsule with FacingIndicator cube and SwordVisual for Player)
 - Git used as checkpoint and handoff system
 
 ---
@@ -128,22 +136,24 @@ None.
 
 # Testing Status
 
-## Milestone 2.1 Verification
+## Milestone 2.2 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_1.log`):
-- **Test 1 - Interface Implementation**: `PlayerHealth is IDamageable == true` (PASSED)
-- **Test 2 - Interface Resolution**: `playerGo.GetComponent<IDamageable>()` resolves `PlayerHealth` (PASSED)
-- **Test 3 - Polymorphic Damage**: `IDamageable.TakeDamage(25)` reduces health to 75 and fires `OnHealthChanged(75, 100)` (PASSED)
-- **Test 4 - Zero-Damage Guard**: `IDamageable.TakeDamage(0)` ignored, health remains 75 (PASSED)
-- **Test 5 - Negative-Damage Guard**: `IDamageable.TakeDamage(-10)` ignored, health remains 75 (PASSED)
-- **Test 6 - Overkill Clamping**: `IDamageable.TakeDamage(200)` clamps health to 0 (PASSED)
-- **Test 7 - Single Death Event**: `OnDied` fires exactly once via interface damage (PASSED)
-- **Test 8 - Post-Death Damage Guard**: `TakeDamage(50)` after death ignored, health remains 0, death not re-fired (PASSED)
-- **Test 9 - PlayerMovement Integrity**: `MoveSpeed == 6`, movement stepping functional (PASSED)
-- **Test 10 - PlayerAim Integrity**: Pointer angle diff $0.00^\circ$ to target (PASSED)
-- **Test 11 - Grounding & Collisions**: `IsGrounded == true`, `CharacterController.enabled == true` (PASSED)
-- **Test 12 - Compilation**: 0 compiler errors or warnings (PASSED)
-- **Test 13 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
+Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_2.log`):
+- **Test 1 & 2 - Attack Input & TryAttack**: `TryAttack()` succeeded and `OnAttack` event fired (PASSED)
+- **Test 3 & 4 - Direct Front Hit**: Target in front received 25 damage, health reduced to 75 (PASSED)
+- **Test 5 - Range Filtering**: Target at 4m received 0 damage (PASSED)
+- **Test 6 - Behind Player Protection**: Target behind player received 0 damage (PASSED)
+- **Test 7 - Arc Angle Filtering**: Target at 90° outside 120° arc received 0 damage (PASSED)
+- **Test 8 - Multi-Collider De-duplication**: Target with 2 colliders registered exactly 1 hit and 25 total damage (PASSED)
+- **Test 9 - Self-Damage Immunity**: Player health untouched by own melee swing (PASSED)
+- **Test 10 - Cooldown Blocking**: Immediate second attack within 0.5s cooldown returned false (PASSED)
+- **Test 11 - Cooldown Recovery**: Attack succeeded after 0.5s cooldown elapsed (PASSED)
+- **Test 12 - Movement Independence**: Player moved with WASD input while attacking without interruption (PASSED)
+- **Test 13 - Aim Independence**: Player aimed toward cursor while attacking without interruption (PASSED)
+- **Test 14 - Health Integrity**: PlayerHealth damage reception and clamp logic intact (PASSED)
+- **Test 15 - Grounding & Collision**: Grounded state and CharacterController intact (PASSED)
+- **Test 16 - Compilation**: 0 compiler errors or warnings (PASSED)
+- **Test 17 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
 
 ---
 
@@ -151,7 +161,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_1.l
  
 ```text
 Latest verified commit:
-1c00bca feat: add reusable damage interface
+<pending commit for Milestone 2.2>
 ```
 
 ---
@@ -170,25 +180,31 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 2.1 Damage Architecture implementation and verification.
-- Assets/Scripts/Combat/IDamageable.cs
-- Assets/Scripts/Player/PlayerHealth.cs (implemented IDamageable)
-- Assets/Tests/Verification/Milestone2_1_Verifier.cs
-- Assets/Editor/Milestone2_1_Setup.cs
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Milestone2_1_Verifier)
+- Milestone 2.2 Basic Sword Combat implementation and verification.
+- Assets/Scripts/Player/PlayerAttack.cs
+- Assets/Scripts/Weapons/MeleeWeapon.cs
+- Assets/Tests/Verification/TestDamageableTarget.cs
+- Assets/Tests/Verification/Milestone2_2_Verifier.cs
+- Assets/Editor/Milestone2_2_Setup.cs
+- Assets/Prefabs/Characters/Player.prefab (added PlayerAttack, MeleeWeapon, WeaponAnchor, SwordVisual)
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Milestone2_2_Verifier)
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Combat/IDamageable.cs
-- Assets/Scripts/Combat/IDamageable.cs.meta
-- Assets/Scripts/Combat.meta
-- Assets/Scripts/Player/PlayerHealth.cs
-- Assets/Tests/Verification/Milestone2_1_Verifier.cs
-- Assets/Tests/Verification/Milestone2_1_Verifier.cs.meta
-- Assets/Editor/Milestone2_1_Setup.cs
-- Assets/Editor/Milestone2_1_Setup.cs.meta
+- Assets/Scripts/Player/PlayerAttack.cs
+- Assets/Scripts/Player/PlayerAttack.cs.meta
+- Assets/Scripts/Weapons/MeleeWeapon.cs
+- Assets/Scripts/Weapons/MeleeWeapon.cs.meta
+- Assets/Scripts/Weapons.meta
+- Assets/Tests/Verification/TestDamageableTarget.cs
+- Assets/Tests/Verification/TestDamageableTarget.cs.meta
+- Assets/Tests/Verification/Milestone2_2_Verifier.cs
+- Assets/Tests/Verification/Milestone2_2_Verifier.cs.meta
+- Assets/Editor/Milestone2_2_Setup.cs
+- Assets/Editor/Milestone2_2_Setup.cs.meta
+- Assets/Prefabs/Characters/Player.prefab
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
 - PROJECT_STATUS.md
 ```
@@ -196,12 +212,12 @@ When switching between agents:
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 13 checks passed)
-- IDamageable interface contract verification on PlayerHealth
-- Polymorphic damage invocation through IDamageable reference
-- Zero and negative damage guards through interface
-- Overkill clamping to zero through interface
-- Death event single-execution and post-death immunity
+- In-engine Play Mode automated verification suite (all 17 checks passed)
+- Attack triggering via TryAttack and Player/Attack input
+- Forward arc cone and distance filtering (Physics.OverlapSphere)
+- Target de-duplication across multiple colliders
+- Self-damage protection for weapon owner
+- Attack cooldown blocking and recovery timing
 - Non-interference with PlayerMovement, PlayerAim, and CharacterController grounding
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
@@ -215,11 +231,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 2.2 — Sword
+Milestone 3.1 — Zombie Enemy
 ```
 
 ## Latest Verified Commit
 
 ```text
-1c00bca feat: add reusable damage interface
+<pending commit for Milestone 2.2>
 ```
