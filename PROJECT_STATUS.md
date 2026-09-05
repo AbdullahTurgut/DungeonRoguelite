@@ -174,7 +174,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m3_1.l
  
 ```text
 Latest verified commit:
-<pending commit for Milestone 3.1>
+f5c294f feat: add basic zombie enemy
 ```
 
 ---
@@ -254,5 +254,5 @@ Milestone 4.1 — Spawner / Wave Manager
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 3.1>
+f5c294f feat: add basic zombie enemy
 ```
