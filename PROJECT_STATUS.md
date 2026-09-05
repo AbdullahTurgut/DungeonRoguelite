@@ -151,7 +151,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m2_1.l
  
 ```text
 Latest verified commit:
-<pending commit for Milestone 2.1>
+1c00bca feat: add reusable damage interface
 ```
 
 ---
@@ -221,5 +221,5 @@ Milestone 2.2 — Sword
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 2.1>
+1c00bca feat: add reusable damage interface
 ```
