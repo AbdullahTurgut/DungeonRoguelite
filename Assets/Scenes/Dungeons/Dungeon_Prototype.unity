@@ -563,6 +563,7 @@ GameObject:
   - component: {fileID: 412503089}
   - component: {fileID: 412503088}
   - component: {fileID: 412503087}
+  - component: {fileID: 412503090}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -570,6 +571,22 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &412503090
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 412503086}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 434f37ee4cd6f514bb259bab5beacc3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.CameraControl.CameraFollow
+  target: {fileID: 0}
+  offset: {x: 0, y: 16, z: -11}
+  fixedRotationEuler: {x: 55, y: 0, z: 0}
+  smoothTime: 0.15
 --- !u!81 &412503087
 AudioListener:
   m_ObjectHideFlags: 0
@@ -1197,7 +1214,7 @@ GameObject:
   - component: {fileID: 2066803326}
   - component: {fileID: 2066803325}
   m_Layer: 0
-  m_Name: Milestone1_1_RuntimeVerifier
+  m_Name: Milestone1_2_RuntimeVerifier
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1212,10 +1229,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2066803324}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e535d4c33eacc6348b937e73a2d694e3, type: 3}
+  m_Script: {fileID: 11500000, guid: db998d0c8fe8c3b45afc7ea57ea38436, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Player.Milestone1_1_Verifier
-  runAutomatedTestOnStart: 1
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Player.Milestone1_2_Verifier
+  runAutomatedTestOnStart: 0
 --- !u!4 &2066803326
 Transform:
   m_ObjectHideFlags: 0

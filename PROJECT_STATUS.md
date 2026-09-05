@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 1.1 completed and verified in Unity Play Mode.
+- Milestone 1.2 completed and verified in Unity Play Mode.
 
 ---
 
@@ -13,7 +13,7 @@ Last update:
 
 **IN PROGRESS — Phase 1: Player Foundation**
 
-Milestone 1.1 (Player Movement) is completed and verified.
+Milestones 1.1 (Player Movement) and 1.2 (Camera and Aim) are completed and verified.
 
 ---
 
@@ -23,7 +23,7 @@ Milestone 1.1 (Player Movement) is completed and verified.
 
 Current milestone:
 
-**Milestone 1.2 — Camera and Aim**
+**Milestone 1.3 — Player Health**
 
 ---
 
@@ -48,24 +48,32 @@ Current milestone:
   - Created placeholder Capsule player prefab at `Assets/Prefabs/Characters/Player.prefab`.
   - Created prototype scene at `Assets/Scenes/Dungeons/Dungeon_Prototype.unity` with floor, walls, obstacles, and static top-down camera.
   - Automated in-engine verification completed with 0 errors in Play Mode.
+- **Milestone 1.2 — Camera and Aim**:
+  - Implemented `CameraFollow.cs` component using `Vector3.SmoothDamp` in `LateUpdate()`.
+  - Maintained fixed angled top-down camera orientation (`55°` pitch, `0°` yaw/roll) without jitter.
+  - Implemented `PlayerAim.cs` component converting pointer screen coordinates to world positions via horizontal mathematical `Plane` intersection at player height.
+  - Player rotation strictly constrained to the Y-axis (`Euler(0, yaw, 0)`).
+  - Movement and aiming operate completely independently and simultaneously (e.g. strafing and kiting).
+  - Added visual non-colliding `FacingIndicator` child on `Player.prefab` to clearly display facing direction.
+  - Configured `Main Camera` in `Dungeon_Prototype.unity` with `CameraFollow` targeting the player.
+  - Automated Play Mode verification suite ran and passed all 7 test cases with 0 errors.
 
 ---
 
 # Next Task
 
-**Milestone 1.2 — Camera and Aim**
+**Milestone 1.3 — Player Health**
 
-Tasks for Milestone 1.2:
-1. Implement smooth top-down camera follow for the player.
-2. Implement mouse cursor world aiming via raycasting against the ground plane.
-3. Rotate player toward mouse aim direction without interfering with X/Z WASD movement.
-4. Keep aiming logic separate in `PlayerAim.cs`.
+Tasks for Milestone 1.3:
+1. Create `PlayerHealth.cs` component in `Assets/Scripts/Player/`.
+2. Implement current/max health storage and damage reception logic (`TakeDamage`).
+3. Implement death event/action when health drops to zero.
+4. Keep health logic decoupled from movement and aiming.
 
 Do NOT start:
-- Weapons, sword attack, combat (Milestone 2.1 / 2.2)
+- Combat / Weapons / Sword attack (Milestone 2.1 / 2.2)
 - Enemies / Zombie (Milestone 3.1)
-- Health systems (Milestone 1.3)
-- XP, waves, UI (Milestones 4-7)
+- Waves, XP, UI (Milestones 4-7)
 
 ---
 
@@ -75,10 +83,12 @@ Do NOT start:
 - Language: C#
 - Game type: Top-down 3D action roguelite / dungeon crawler
 - Render Pipeline: URP (17.3.0)
-- Movement: `CharacterController` driven on X/Z plane with grounded vertical velocity
+- Movement: `CharacterController` driven on X/Z plane with grounded vertical velocity (`PlayerMovement.cs`)
+- Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
+- Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Movement handled strictly in `PlayerMovement.cs`
-- Visuals: Primitives/placeholders (Capsule for Player)
+- Single Responsibility: Separate components for `PlayerMovement`, `PlayerAim`, `CameraFollow`
+- Visuals: Primitives/placeholders (Capsule with FacingIndicator cube for Player)
 - Git used as checkpoint and handoff system
 
 ---
@@ -91,14 +101,16 @@ None.
 
 # Testing Status
 
-## Milestone 1.1 Verification
+## Milestone 1.2 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_verification.log`):
-- **Test 1 - Grounding at rest**: `IsGrounded = True` (PASSED).
-- **Test 2 - Cardinal Movement (+Z)**: Traveled 2.89m forward over 0.5s with 0.0000m X drift at 6 m/s (PASSED).
-- **Test 3 - Diagonal Normalization**: Measured horizontal speed 6.00 m/s for (1, 1) diagonal, exactly matching configured cardinal speed of 6.00 m/s (PASSED).
-- **Test 4 - Obstacle Collision**: Player stopped cleanly at X = 3.42 against Pillar_NE (collider surface at X = 4.0, player radius = 0.5) without penetrating (PASSED).
-- **Test 5 - Grounding Stability**: `IsGrounded = True` maintained throughout movement (PASSED).
+Automated Play Mode verification suite ran and passed in Unity (`playmode_m1_2.log`):
+- **Test 1 - 360° Aim Tracking**: Player forward accurately aligns with target coordinates across all 4 quadrants (North, East, South, West, North-East, North-West) within $1.5^\circ$ tolerance (PASSED).
+- **Test 2 - Y-Axis Rotation Lock**: Measured pitch ($X$) = $0.0000^\circ$, roll ($Z$) = $0.0000^\circ$. Rotation strictly constrained to Y (PASSED).
+- **Test 3 - Movement Independence**: Held South ($-Z$) movement while sweeping aim $360^\circ$. Traveled $\Delta Z = -3.00\text{ m}$ with $\Delta X = 0.0000\text{ m}$ drift (PASSED).
+- **Test 4 - Opposing Simultaneous Operation**: Moving East ($+X$ velocity $= 6.00\text{ m/s}$) while aiming West (Facing $X = -1.00$) operates seamlessly without interference (PASSED).
+- **Test 5 - Smooth Camera Follow**: Camera tracked player motion to the configured offset with a settle distance of $0.016\text{ m}$ ($< 0.2\text{ m}$ tolerance) (PASSED).
+- **Test 6 - Camera Orientation Lock**: Camera rotation delta from $(55^\circ, 0^\circ, 0^\circ)$ was $(0.00^\circ, 0.00^\circ, 0.00^\circ)$ without roll or yaw drift (PASSED).
+- **Test 7 - Grounding & Collision**: `IsGrounded = True` maintained throughout movement and obstacle boundaries preserved (PASSED).
 - **Compilation**: Clean compile with 0 errors and 0 warnings.
 
 ---
@@ -107,7 +119,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_verifi
  
 ```text
 Latest verified commit:
-3d3472f feat: implement top-down player movement
+<pending commit for Milestone 1.2>
 ```
 
 ---
@@ -126,38 +138,42 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 1.1 Player Movement implementation and verification.
-- Assets/Scripts/Player/PlayerMovement.cs
-- Assets/Prefabs/Characters/Player.prefab
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Editor/Milestone1_1_Setup.cs
-- Assets/Scripts/Player/Milestone1_1_Verifier.cs
+- Milestone 1.2 Camera Follow and Mouse Aiming implementation and verification.
+- Assets/Scripts/Camera/CameraFollow.cs
+- Assets/Scripts/Player/PlayerAim.cs
+- Assets/Scripts/Player/Milestone1_2_Verifier.cs
+- Assets/Editor/Milestone1_2_Setup.cs
+- Assets/Prefabs/Characters/Player.prefab (added PlayerAim and FacingIndicator)
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (added CameraFollow to Main Camera and Milestone1_2_Verifier)
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Player/PlayerMovement.cs
-- Assets/Scripts/Player/PlayerMovement.cs.meta
-- Assets/Scripts/Player/Milestone1_1_Verifier.cs
-- Assets/Scripts/Player/Milestone1_1_Verifier.cs.meta
-- Assets/Editor/Milestone1_1_Setup.cs
-- Assets/Editor/Milestone1_1_Setup.cs.meta
+- Assets/Scripts/Camera/CameraFollow.cs
+- Assets/Scripts/Camera/CameraFollow.cs.meta
+- Assets/Scripts/Camera.meta
+- Assets/Scripts/Player/PlayerAim.cs
+- Assets/Scripts/Player/PlayerAim.cs.meta
+- Assets/Scripts/Player/Milestone1_2_Verifier.cs
+- Assets/Scripts/Player/Milestone1_2_Verifier.cs.meta
+- Assets/Editor/Milestone1_2_Setup.cs
+- Assets/Editor/Milestone1_2_Setup.cs.meta
 - Assets/Prefabs/Characters/Player.prefab
-- Assets/Prefabs/Characters/Player.prefab.meta
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity.meta
-- ProjectSettings/EditorBuildSettings.asset
-- ProjectSettings/SceneTemplateSettings.json
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- Batchmode Unity compilation (0 errors)
-- In-engine Play Mode automated suite (all 5 test suites passed)
-- Edit Mode simulation verification (all 5 checks passed)
+- In-engine Play Mode automated verification suite (all 7 test cases passed)
+- Full 360-degree aiming rotation accuracy
+- Pitch and roll locked to zero (Y-axis only)
+- Independent simultaneous movement and aiming (strafing)
+- Smooth camera follow via SmoothDamp in LateUpdate
+- Grounding and collision stability
+- Unity compilation with 0 errors
 ```
 
 ## Known Issues
@@ -169,11 +185,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 1.2 — Top-down camera follow and mouse world aiming.
+Milestone 1.3 — Player Health
 ```
 
 ## Latest Verified Commit
 
 ```text
-3d3472f feat: implement top-down player movement
+<pending commit for Milestone 1.2>
 ```
