@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Upgrades;
 using DungeonRoguelite.Waves;
+using DungeonRoguelite.Characters;
 
 namespace DungeonRoguelite.Dungeons
 {
@@ -11,6 +12,7 @@ namespace DungeonRoguelite.Dungeons
     /// Orchestrates dungeon completion lifecycle, final XP pickup resolution,
     /// upgrade selection sequencing, pause state ownership, and run summary dispatch.
     /// Dedicated strictly to completion orchestration; contains no UI or stat calculations.
+    /// Supports explicit runtime binding via PlayerSpawner.OnPlayerSpawned.
     /// </summary>
     public class DungeonCompletionController : MonoBehaviour
     {
@@ -19,6 +21,9 @@ namespace DungeonRoguelite.Dungeons
         [SerializeField] private UpgradeManager upgradeManager;
         [SerializeField] private DungeonRunStats runStats;
         [SerializeField] private PlayerExperience playerExperience;
+
+        [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
+        [SerializeField] private PlayerSpawner playerSpawner;
 
         private bool hasCompleted = false;
         private bool isWaitingForUpgrades = false;
@@ -29,6 +34,8 @@ namespace DungeonRoguelite.Dungeons
         public bool IsWaitingForUpgrades => isWaitingForUpgrades;
         public bool IsCompletionFinished => isCompletionFinished;
         public DungeonRunSummary FinalSummary => finalSummary;
+        public PlayerSpawner PlayerSpawner => playerSpawner;
+        public PlayerExperience PlayerExperience => playerExperience;
 
         /// <summary>
         /// Fired when all XP pickups and pending upgrades are resolved,
@@ -38,12 +45,29 @@ namespace DungeonRoguelite.Dungeons
 
         private void Awake()
         {
-            ResolveReferences();
+            if (playerSpawner == null)
+            {
+                ResolveReferences();
+            }
         }
 
         private void OnEnable()
         {
-            ResolveReferences();
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+            else
+            {
+                ResolveReferences();
+            }
+
             if (waveManager != null)
             {
                 waveManager.OnDungeonCompleted -= HandleWaveManagerCompletion;
@@ -59,6 +83,11 @@ namespace DungeonRoguelite.Dungeons
 
         private void OnDisable()
         {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
             if (waveManager != null)
             {
                 waveManager.OnDungeonCompleted -= HandleWaveManagerCompletion;
@@ -187,7 +216,7 @@ namespace DungeonRoguelite.Dungeons
 
             if (runStats != null)
             {
-                finalSummary = runStats.BuildSummary();
+                finalSummary = runStats.BuildSummary(playerExperience);
             }
             else
             {
@@ -197,6 +226,47 @@ namespace DungeonRoguelite.Dungeons
             }
 
             OnDungeonCompleted?.Invoke(finalSummary);
+        }
+
+        /// <summary>
+        /// Explicitly binds the runtime PlayerExperience component for completion resolution.
+        /// </summary>
+        public void BindPlayer(PlayerExperience experience)
+        {
+            playerExperience = experience;
+        }
+
+        /// <summary>
+        /// Configures the PlayerSpawner reference for runtime binding.
+        /// </summary>
+        public void SetPlayerSpawner(PlayerSpawner spawner)
+        {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            playerSpawner = spawner;
+
+            if (isActiveAndEnabled && playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+        }
+
+        private void HandlePlayerSpawned(PlayableCharacter character)
+        {
+            if (character != null)
+            {
+                var exp = character.GetComponent<PlayerExperience>();
+                BindPlayer(exp);
+            }
         }
 
         /// <summary>

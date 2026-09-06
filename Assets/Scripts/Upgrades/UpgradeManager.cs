@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Player;
+using DungeonRoguelite.Characters;
 
 namespace DungeonRoguelite.Upgrades
 {
@@ -20,6 +21,9 @@ namespace DungeonRoguelite.Upgrades
         [Tooltip("The PlayerStats component to apply bonuses to. Auto-resolves if unassigned.")]
         [SerializeField] private PlayerStats playerStats;
 
+        [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
+        [SerializeField] private PlayerSpawner playerSpawner;
+
         [Header("Upgrade Pool")]
         [Tooltip("The pool of upgrades available for presentation (3 prototype upgrades).")]
         [SerializeField] private UpgradeDefinition[] availableUpgrades;
@@ -32,6 +36,9 @@ namespace DungeonRoguelite.Upgrades
         public int PendingChoicesCount => pendingChoicesCount;
         public bool IsSelectionActive => isSelectionActive;
         public IReadOnlyList<UpgradeDefinition> AvailableUpgrades => availableUpgrades;
+        public PlayerSpawner PlayerSpawner => playerSpawner;
+        public PlayerExperience PlayerExperience => playerExperience;
+        public PlayerStats PlayerStats => playerStats;
 
         /// <summary>
         /// Fired when an upgrade choice panel must be displayed with available choices.
@@ -45,21 +52,42 @@ namespace DungeonRoguelite.Upgrades
 
         private void Awake()
         {
-            ResolveReferences();
+            if (playerSpawner == null)
+            {
+                ResolveReferences();
+            }
         }
 
         private void OnEnable()
         {
-            ResolveReferences();
-            if (playerExperience != null)
+            if (playerSpawner != null)
             {
-                playerExperience.OnLevelUp -= HandleLevelUp;
-                playerExperience.OnLevelUp += HandleLevelUp;
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+            else
+            {
+                ResolveReferences();
+                if (playerExperience != null)
+                {
+                    playerExperience.OnLevelUp -= HandleLevelUp;
+                    playerExperience.OnLevelUp += HandleLevelUp;
+                }
             }
         }
 
         private void OnDisable()
         {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
             if (playerExperience != null)
             {
                 playerExperience.OnLevelUp -= HandleLevelUp;
@@ -211,12 +239,67 @@ namespace DungeonRoguelite.Upgrades
         }
 
         /// <summary>
+        /// Explicitly binds the runtime PlayerExperience and PlayerStats components.
+        /// Safely unsubscribes from previous player events before binding new ones.
+        /// Does not reset or mutate active upgrade choices or time scale.
+        /// </summary>
+        public void BindPlayer(PlayerExperience experience, PlayerStats stats)
+        {
+            if (playerExperience != null)
+            {
+                playerExperience.OnLevelUp -= HandleLevelUp;
+            }
+
+            playerExperience = experience;
+            playerStats = stats;
+
+            if (isActiveAndEnabled && playerExperience != null)
+            {
+                playerExperience.OnLevelUp -= HandleLevelUp;
+                playerExperience.OnLevelUp += HandleLevelUp;
+            }
+        }
+
+        /// <summary>
         /// Explicitly sets the player component references. Useful for testing or setup scripts.
         /// </summary>
         public void SetPlayerReferences(PlayerExperience exp, PlayerStats stats)
         {
-            playerExperience = exp;
-            playerStats = stats;
+            BindPlayer(exp, stats);
+        }
+
+        /// <summary>
+        /// Configures the PlayerSpawner reference for runtime binding.
+        /// </summary>
+        public void SetPlayerSpawner(PlayerSpawner spawner)
+        {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            playerSpawner = spawner;
+
+            if (isActiveAndEnabled && playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+        }
+
+        private void HandlePlayerSpawned(PlayableCharacter character)
+        {
+            if (character != null)
+            {
+                var exp = character.GetComponent<PlayerExperience>();
+                var stats = character.GetComponent<PlayerStats>();
+                BindPlayer(exp, stats);
+            }
         }
     }
 }

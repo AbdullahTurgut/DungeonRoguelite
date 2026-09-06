@@ -2,18 +2,23 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DungeonRoguelite.Experience;
+using DungeonRoguelite.Characters;
 
 namespace DungeonRoguelite.UI
 {
     /// <summary>
     /// Event-driven UI controller for the player experience bar and level text.
     /// Strictly listens to PlayerExperience events; contains no Update() polling or gameplay logic.
+    /// Supports explicit runtime binding via PlayerSpawner.OnPlayerSpawned.
     /// </summary>
     public class PlayerExperienceUI : MonoBehaviour
     {
         [Header("Target Experience Component")]
         [Tooltip("The PlayerExperience component to listen to. Auto-discovers if unassigned.")]
         [SerializeField] private PlayerExperience playerExperience;
+
+        [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
+        [SerializeField] private PlayerSpawner playerSpawner;
 
         [Header("UI Visual Elements")]
         [Tooltip("Slider displaying the normalized experience progress towards the next level.")]
@@ -23,33 +28,55 @@ namespace DungeonRoguelite.UI
         [SerializeField] private TextMeshProUGUI levelText;
 
         public PlayerExperience PlayerExperience => playerExperience;
+        public PlayerSpawner PlayerSpawner => playerSpawner;
         public Slider XPSlider => xpSlider;
         public TextMeshProUGUI LevelText => levelText;
 
         private void Awake()
         {
-            ResolvePlayerExperience();
+            if (playerSpawner == null)
+            {
+                ResolvePlayerExperience();
+            }
         }
 
         private void OnEnable()
         {
-            ResolvePlayerExperience();
-
-            if (playerExperience != null)
+            if (playerSpawner != null)
             {
-                playerExperience.OnExperienceChanged -= HandleExperienceChanged;
-                playerExperience.OnExperienceChanged += HandleExperienceChanged;
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
 
-                playerExperience.OnLevelUp -= HandleLevelUp;
-                playerExperience.OnLevelUp += HandleLevelUp;
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+            else
+            {
+                ResolvePlayerExperience();
 
-                // Initial refresh on enable
-                RefreshUI(playerExperience.CurrentXP, playerExperience.XPToNextLevel, playerExperience.Level);
+                if (playerExperience != null)
+                {
+                    playerExperience.OnExperienceChanged -= HandleExperienceChanged;
+                    playerExperience.OnExperienceChanged += HandleExperienceChanged;
+
+                    playerExperience.OnLevelUp -= HandleLevelUp;
+                    playerExperience.OnLevelUp += HandleLevelUp;
+
+                    // Initial refresh on enable
+                    RefreshUI(playerExperience.CurrentXP, playerExperience.XPToNextLevel, playerExperience.Level);
+                }
             }
         }
 
         private void OnDisable()
         {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
             if (playerExperience != null)
             {
                 playerExperience.OnExperienceChanged -= HandleExperienceChanged;
@@ -114,6 +141,47 @@ namespace DungeonRoguelite.UI
                 playerExperience.OnExperienceChanged += HandleExperienceChanged;
                 playerExperience.OnLevelUp += HandleLevelUp;
                 RefreshUI(playerExperience.CurrentXP, playerExperience.XPToNextLevel, playerExperience.Level);
+            }
+        }
+
+        /// <summary>
+        /// Explicitly binds a PlayerExperience component to this UI view.
+        /// </summary>
+        public void Bind(PlayerExperience experience)
+        {
+            SetPlayerExperience(experience);
+        }
+
+        /// <summary>
+        /// Configures the PlayerSpawner reference for runtime binding.
+        /// </summary>
+        public void SetPlayerSpawner(PlayerSpawner spawner)
+        {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            playerSpawner = spawner;
+
+            if (isActiveAndEnabled && playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+        }
+
+        private void HandlePlayerSpawned(PlayableCharacter character)
+        {
+            if (character != null)
+            {
+                var exp = character.GetComponent<PlayerExperience>();
+                Bind(exp);
             }
         }
     }

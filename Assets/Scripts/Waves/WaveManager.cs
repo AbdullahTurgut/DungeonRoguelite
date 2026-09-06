@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DungeonRoguelite.Enemies;
+using DungeonRoguelite.Characters;
 
 namespace DungeonRoguelite.Waves
 {
@@ -33,6 +34,9 @@ namespace DungeonRoguelite.Waves
         [Tooltip("Target transform that spawned enemies will pursue and attack (defaults to tag 'Player').")]
         [SerializeField] private Transform playerTarget;
 
+        [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
+        [SerializeField] private PlayerSpawner playerSpawner;
+
         [Tooltip("Spawn point transforms cycled in round-robin order.")]
         [SerializeField] private Transform[] spawnPoints;
 
@@ -54,6 +58,7 @@ namespace DungeonRoguelite.Waves
         private int nextSpawnPointIndex = 0;
         private bool isSpawning = false;
         private bool hasCompletedDungeon = false;
+        private bool hasDungeonStarted = false;
 
         private Coroutine activeWaveCoroutine;
         private Coroutine transitionCoroutine;
@@ -67,12 +72,19 @@ namespace DungeonRoguelite.Waves
         public int LivingEnemyCount => activeEnemies.Count;
         public bool IsSpawning => isSpawning;
         public Transform PlayerTarget => playerTarget;
+        public PlayerSpawner PlayerSpawner => playerSpawner;
+        public bool HasDungeonStarted => hasDungeonStarted;
         public IReadOnlyCollection<EnemyHealth> ActiveEnemies => activeEnemies;
         public IReadOnlyList<EnemyHealth> CurrentWaveSpawned => currentWaveSpawned;
 
         #endregion
 
         #region Public Events
+
+        /// <summary>
+        /// Fired exactly once when the dungeon run officially begins.
+        /// </summary>
+        public event Action OnDungeonStarted;
 
         /// <summary>
         /// Fired when a wave begins spawning. Passes (currentWaveNumber, totalWaves).
@@ -98,19 +110,60 @@ namespace DungeonRoguelite.Waves
 
         private void Awake()
         {
-            ResolvePlayerTarget();
+            if (playerSpawner == null)
+            {
+                ResolvePlayerTarget();
+            }
+        }
+
+        private void OnEnable()
+        {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
         }
 
         private void Start()
         {
-            if (autoStart)
+            if (autoStart && !hasDungeonStarted)
             {
-                StartWaves();
+                if (playerTarget != null)
+                {
+                    BeginDungeon();
+                }
+                else if (playerSpawner == null)
+                {
+                    ResolvePlayerTarget();
+                    if (playerTarget != null)
+                    {
+                        BeginDungeon();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("[WaveManager] AutoStart failed: Player target is not assigned and could not be resolved.");
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("[WaveManager] AutoStart deferred: Player target is not yet bound from PlayerSpawner.");
+                }
             }
         }
 
         private void OnDisable()
         {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
             CleanupSubscriptionsAndRoutines();
         }
 
@@ -157,6 +210,69 @@ namespace DungeonRoguelite.Waves
         }
 
         /// <summary>
+        /// Explicitly binds the player target transform for spawned enemies.
+        /// Strictly updates reference only; does not start waves or initiate gameplay.
+        /// </summary>
+        public void BindPlayer(Transform target)
+        {
+            SetPlayerTarget(target);
+        }
+
+        /// <summary>
+        /// Starts the dungeon run and begins Wave 1.
+        /// Guaranteed single-fire; requires a valid player target.
+        /// </summary>
+        public void BeginDungeon()
+        {
+            if (hasDungeonStarted)
+            {
+                return;
+            }
+
+            if (playerTarget == null)
+            {
+                Debug.LogError("[WaveManager] Cannot begin dungeon: Player target is null.");
+                return;
+            }
+
+            hasDungeonStarted = true;
+            OnDungeonStarted?.Invoke();
+            StartWaves();
+        }
+
+        /// <summary>
+        /// Configures the PlayerSpawner reference for runtime binding.
+        /// </summary>
+        public void SetPlayerSpawner(PlayerSpawner spawner)
+        {
+            if (playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+            }
+
+            playerSpawner = spawner;
+
+            if (isActiveAndEnabled && playerSpawner != null)
+            {
+                playerSpawner.OnPlayerSpawned -= HandlePlayerSpawned;
+                playerSpawner.OnPlayerSpawned += HandlePlayerSpawned;
+
+                if (playerSpawner.ActiveCharacter != null)
+                {
+                    HandlePlayerSpawned(playerSpawner.ActiveCharacter);
+                }
+            }
+        }
+
+        private void HandlePlayerSpawned(PlayableCharacter character)
+        {
+            if (character != null)
+            {
+                BindPlayer(character.transform);
+            }
+        }
+
+        /// <summary>
         /// Starts wave progression from the first configured wave.
         /// </summary>
         public void StartWaves()
@@ -184,6 +300,7 @@ namespace DungeonRoguelite.Waves
         {
             CleanupSubscriptionsAndRoutines();
             currentState = WaveState.NotStarted;
+            hasDungeonStarted = false;
         }
 
         private void StartWave(int waveIndex)

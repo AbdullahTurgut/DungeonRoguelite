@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Waves;
@@ -32,7 +32,11 @@ namespace DungeonRoguelite.Dungeons
 
         private void Start()
         {
-            StartTracking();
+            // Tracking is initiated by waveManager.OnDungeonStarted, not on scene start
+            if (waveManager == null)
+            {
+                ResolveReferences();
+            }
         }
 
         private void OnEnable()
@@ -40,8 +44,16 @@ namespace DungeonRoguelite.Dungeons
             ResolveReferences();
             if (waveManager != null)
             {
+                waveManager.OnDungeonStarted -= HandleDungeonStarted;
+                waveManager.OnDungeonStarted += HandleDungeonStarted;
+
                 waveManager.OnEnemyDefeated -= HandleEnemyDefeated;
                 waveManager.OnEnemyDefeated += HandleEnemyDefeated;
+
+                if (waveManager.HasDungeonStarted && !isTracking && finalCompletionTime < 0f)
+                {
+                    StartTracking();
+                }
             }
         }
 
@@ -49,6 +61,7 @@ namespace DungeonRoguelite.Dungeons
         {
             if (waveManager != null)
             {
+                waveManager.OnDungeonStarted -= HandleDungeonStarted;
                 waveManager.OnEnemyDefeated -= HandleEnemyDefeated;
             }
         }
@@ -89,6 +102,11 @@ namespace DungeonRoguelite.Dungeons
             }
         }
 
+        private void HandleDungeonStarted()
+        {
+            StartTracking();
+        }
+
         private void HandleEnemyDefeated(EnemyHealth enemy)
         {
             if (isTracking)
@@ -99,25 +117,58 @@ namespace DungeonRoguelite.Dungeons
 
         /// <summary>
         /// Builds and returns an immutable summary snapshot of the current run.
+        /// Accepts an optional explicit PlayerExperience instance or falls back to internal reference.
         /// </summary>
-        public DungeonRunSummary BuildSummary()
+        public DungeonRunSummary BuildSummary(PlayerExperience overrideExperience = null)
         {
-            if (playerExperience == null)
+            PlayerExperience sourceExp = overrideExperience != null ? overrideExperience : playerExperience;
+            if (sourceExp == null)
             {
                 ResolveReferences();
+                sourceExp = playerExperience;
             }
 
-            int finalLevel = playerExperience != null ? playerExperience.Level : 1;
-            int totalXP = playerExperience != null ? playerExperience.TotalXPEarned : 0;
+            int finalLevel = sourceExp != null ? sourceExp.Level : 1;
+            int totalXP = sourceExp != null ? sourceExp.TotalXPEarned : 0;
             float runTime = ElapsedTime;
 
             return new DungeonRunSummary(runTime, enemiesDefeated, finalLevel, totalXP);
         }
 
+        public void SetPlayerExperience(PlayerExperience exp)
+        {
+            playerExperience = exp;
+        }
+
+        public void SetWaveManager(WaveManager wave)
+        {
+            if (waveManager != null)
+            {
+                waveManager.OnDungeonStarted -= HandleDungeonStarted;
+                waveManager.OnEnemyDefeated -= HandleEnemyDefeated;
+            }
+
+            waveManager = wave;
+
+            if (isActiveAndEnabled && waveManager != null)
+            {
+                waveManager.OnDungeonStarted -= HandleDungeonStarted;
+                waveManager.OnDungeonStarted += HandleDungeonStarted;
+
+                waveManager.OnEnemyDefeated -= HandleEnemyDefeated;
+                waveManager.OnEnemyDefeated += HandleEnemyDefeated;
+
+                if (waveManager.HasDungeonStarted && !isTracking && finalCompletionTime < 0f)
+                {
+                    StartTracking();
+                }
+            }
+        }
+
         public void SetReferences(WaveManager wave, PlayerExperience exp)
         {
-            waveManager = wave;
-            playerExperience = exp;
+            SetWaveManager(wave);
+            SetPlayerExperience(exp);
         }
     }
 }

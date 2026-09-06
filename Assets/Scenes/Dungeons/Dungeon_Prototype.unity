@@ -755,8 +755,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c01adf5212b837b4c83e8cf4097c7255, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Upgrades.UpgradeManager
-  playerExperience: {fileID: 1510061527}
-  playerStats: {fileID: 1510061528}
+  playerExperience: {fileID: 0}
+  playerStats: {fileID: 0}
+  playerSpawner: {fileID: 1001844441}
   availableUpgrades:
   - {fileID: 11400000, guid: 37530be8b384b8d45946856d0cd52711, type: 2}
   - {fileID: 11400000, guid: dfdf926a75c896444b038a104df44ddb, type: 2}
@@ -1295,6 +1296,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.CameraControl.CameraFollow
   target: {fileID: 0}
+  playerSpawner: {fileID: 1001844441}
   offset: {x: 0, y: 16, z: -11}
   fixedRotationEuler: {x: 55, y: 0, z: 0}
   smoothTime: 0.15
@@ -1468,7 +1470,8 @@ MonoBehaviour:
   waveManager: {fileID: 676448308}
   upgradeManager: {fileID: 273453112}
   runStats: {fileID: 510949730}
-  playerExperience: {fileID: 1510061527}
+  playerExperience: {fileID: 0}
+  playerSpawner: {fileID: 1001844441}
 --- !u!114 &510949730
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1482,7 +1485,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonRunStats
   waveManager: {fileID: 676448308}
-  playerExperience: {fileID: 1510061527}
+  playerExperience: {fileID: 0}
 --- !u!4 &510949731
 Transform:
   m_ObjectHideFlags: 0
@@ -1986,7 +1989,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0b8c402a13594ee419d50ee2db9fff49, type: 2}
   - {fileID: 11400000, guid: 09aab19325398064b98b64cea8237d94, type: 2}
   - {fileID: 11400000, guid: a0e9452d7feba0041a6a4c5af5fc754a, type: 2}
-  playerTarget: {fileID: 1510061526}
+  playerTarget: {fileID: 0}
+  playerSpawner: {fileID: 1001844441}
   spawnPoints:
   - {fileID: 398855791}
   - {fileID: 837830708}
@@ -2196,7 +2200,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 10fc49369efb17948bb55c98f6d435f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.UI.PlayerExperienceUI
-  playerExperience: {fileID: 1510061527}
+  playerExperience: {fileID: 0}
+  playerSpawner: {fileID: 1001844441}
   xpSlider: {fileID: 1612000148}
   levelText: {fileID: 97028667}
 --- !u!1 &795787938
@@ -2615,6 +2620,84 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1741579341}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1001844440
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1001844442}
+  - component: {fileID: 1001844441}
+  m_Layer: 0
+  m_Name: PlayerSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1001844441
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001844440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b3f822185e7120d4d842f8366bd62643, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.PlayerSpawner
+  defaultCharacter: {fileID: 11400000, guid: 8cb84c2076ee41f8896574292030b7a1, type: 2}
+  spawnPoint: {fileID: 1154401855}
+  autoSpawn: 1
+--- !u!4 &1001844442
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1001844440}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1154401854
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1154401855}
+  m_Layer: 0
+  m_Name: PlayerSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1154401855
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154401854}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1419420279
 GameObject:
@@ -3202,90 +3285,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 960, y: 320}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &1510061525
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3441253740286043302, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-      propertyPath: m_Name
-      value: Warrior
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
---- !u!4 &1510061526 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 1153264174571782154, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-  m_PrefabInstance: {fileID: 1510061525}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1510061527 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1690830145018986285, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-  m_PrefabInstance: {fileID: 1510061525}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15b5cbf34ddfb694288d09c7540ec011, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Experience.PlayerExperience
---- !u!114 &1510061528 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5191688275893372911, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
-  m_PrefabInstance: {fileID: 1510061525}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e259c7362c8d6c346b121d570d87a9cc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Player.PlayerStats
 --- !u!1 &1523646726
 GameObject:
   m_ObjectHideFlags: 0
@@ -4937,10 +4936,11 @@ SceneRoots:
   - {fileID: 412503089}
   - {fileID: 1523646730}
   - {fileID: 2057259467}
-  - {fileID: 1510061525}
   - {fileID: 1741579341}
   - {fileID: 676448309}
   - {fileID: 1843637779}
   - {fileID: 1554905393}
   - {fileID: 273453113}
   - {fileID: 510949731}
+  - {fileID: 1154401855}
+  - {fileID: 1001844442}
