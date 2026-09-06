@@ -11,7 +11,7 @@ namespace DungeonRoguelite.Weapons
     /// Performs an instantaneous Physics.OverlapSphere query filtered by a forward arc cone.
     /// Decoupled from input handling and specific character implementations.
     /// </summary>
-    public class MeleeWeapon : MonoBehaviour
+    public class MeleeWeapon : MonoBehaviour, IPrimaryAttack
     {
         [Header("Weapon Configuration")]
         [Tooltip("Damage dealt per successful melee hit.")]
@@ -35,6 +35,7 @@ namespace DungeonRoguelite.Weapons
         private PlayerStats playerStats;
 
         public float Damage => damage;
+        public float BaseDamage => damage;
         public float EffectiveDamage => damage * (playerStats != null ? playerStats.DamageMultiplier : 1f);
         public float AttackCooldown => attackCooldown;
         public float EffectiveAttackCooldown => (playerStats != null && playerStats.AttackSpeedMultiplier > 0f)

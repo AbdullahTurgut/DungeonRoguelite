@@ -1,18 +1,20 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Serialization;
 using DungeonRoguelite.Weapons;
 
 namespace DungeonRoguelite.Player
 {
     /// <summary>
-    /// Reads player attack input and coordinates attack execution through the equipped weapon.
+    /// Reads player attack input and coordinates attack execution through the configured primary attack.
     /// Dedicated strictly to attack coordination (no physics queries, movement, aim, or damage math).
     /// </summary>
     public class PlayerAttack : MonoBehaviour
     {
         [Header("Equipped Weapon")]
-        [Tooltip("The melee weapon currently equipped.")]
-        [SerializeField] private MeleeWeapon equippedWeapon;
+        [Tooltip("The primary attack component (must implement IPrimaryAttack).")]
+        [FormerlySerializedAs("equippedWeapon")]
+        [SerializeField] private MonoBehaviour primaryWeapon;
 
         [Header("Input Configuration")]
         [Tooltip("Reference to the project InputActionAsset (InputSystem_Actions).")]
@@ -21,10 +23,12 @@ namespace DungeonRoguelite.Player
         [Tooltip("Optional direct action reference for Player/Attack.")]
         [SerializeField] private InputActionReference attackActionReference;
 
+        private IPrimaryAttack primaryAttack;
         private InputAction attackAction;
         private InputActionMap playerActionMap;
 
-        public MeleeWeapon EquippedWeapon => equippedWeapon;
+        public IPrimaryAttack PrimaryAttack => primaryAttack;
+        public MeleeWeapon EquippedWeapon => primaryAttack as MeleeWeapon;
 
         private void Awake()
         {
@@ -44,9 +48,25 @@ namespace DungeonRoguelite.Player
 
         private void ResolveWeapon()
         {
-            if (equippedWeapon == null)
+            if (primaryWeapon != null)
             {
-                equippedWeapon = GetComponentInChildren<MeleeWeapon>();
+                if (primaryWeapon is IPrimaryAttack attack)
+                {
+                    primaryAttack = attack;
+                }
+                else
+                {
+                    Debug.LogError($"[PlayerAttack] Assigned primaryWeapon '{primaryWeapon.name}' ({primaryWeapon.GetType().Name}) does not implement IPrimaryAttack.", this);
+                    primaryAttack = null;
+                }
+                return;
+            }
+
+            // Fallback: check children on this character hierarchy only (no scene-wide search)
+            primaryAttack = GetComponentInChildren<IPrimaryAttack>();
+            if (primaryAttack is MonoBehaviour mb)
+            {
+                primaryWeapon = mb;
             }
         }
 
@@ -129,10 +149,10 @@ namespace DungeonRoguelite.Player
         }
 
         /// <summary>
-        /// Requests the equipped weapon to perform an attack.
+        /// Requests the configured primary weapon to perform an attack.
         /// Part of the standard gameplay API; also used for deterministic verification.
         /// </summary>
-        /// <returns>True if the attack succeeded; false if blocked by cooldown or missing weapon.</returns>
+        /// <returns>True if the attack succeeded; false if blocked by cooldown, pause, or missing weapon.</returns>
         public bool TryAttack()
         {
             if (Time.timeScale <= 0f)
@@ -140,25 +160,34 @@ namespace DungeonRoguelite.Player
                 return false;
             }
 
-            if (equippedWeapon == null)
+            if (primaryAttack == null)
             {
                 ResolveWeapon();
             }
 
-            if (equippedWeapon != null)
+            if (primaryAttack != null)
             {
-                return equippedWeapon.TryAttack();
+                return primaryAttack.TryAttack();
             }
 
             return false;
         }
 
         /// <summary>
-        /// Sets or swaps the currently equipped melee weapon.
+        /// Configures the primary attack component. Retained for setup tooling and test initialization.
+        /// </summary>
+        public void SetPrimaryWeapon(IPrimaryAttack weapon)
+        {
+            primaryAttack = weapon;
+            primaryWeapon = weapon as MonoBehaviour;
+        }
+
+        /// <summary>
+        /// Retained backward-compatibility setter for existing setup tooling.
         /// </summary>
         public void SetEquippedWeapon(MeleeWeapon weapon)
         {
-            equippedWeapon = weapon;
+            SetPrimaryWeapon(weapon);
         }
     }
 }

@@ -3,8 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 8.2 completed and verified in Unity Play Mode.
-- Runtime Player Spawning & Explicit Binding established.
+- Milestone 8.3 completed and verified in Unity Play Mode.
+- Archer Combat Prototype (IPrimaryAttack, BowWeapon, ArrowProjectile, Archer.prefab) established.
 
 ---
 
@@ -12,10 +12,10 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 8: Character System (Milestone 8.2: Runtime Player Spawning & Explicit Binding)**  
-**NEXT UP — Phase 8: Character System (Milestone 8.3: Archer)**
+**COMPLETED — Phase 8: Character System (Milestone 8.3: Archer Combat Prototype)**  
+**NEXT UP — Phase 8: Character System (Milestone 8.4: Gunner)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), and 8.2 (Runtime Player Spawning & Explicit Binding) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), and 8.3 (Archer Combat Prototype) are completed and verified.
 
 ---
 
@@ -25,8 +25,8 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
 
 - Milestone 8.1: Character Definition & Architecture (Completed)
 - Milestone 8.2: Runtime Player Spawning & Explicit Binding (Completed)
-- Milestone 8.3: Archer (Next Up)
-- Milestone 8.4: Gunner (Deferred)
+- Milestone 8.3: Archer (Completed)
+- Milestone 8.4: Gunner (Next Up)
 
 ---
 
@@ -202,21 +202,86 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
     - Preserved restart flow: reloading scene naturally spawns a fresh Warrior at Level 1 with 0 XP and neutral stats.
     - Verified scene cleanliness: zero verifiers or test-only components saved on disk.
   - Automated Play Mode verification suite (`Milestone8_2_Verifier.cs`) ran and passed all 45 checks with 0 errors and 0 runtime exceptions.
+- **Milestone 8.3 — Archer Combat Prototype (Ranged Combat & Polymorphic Attacks)**:
+  - Primary Attack Abstraction:
+    - Defined minimal `IPrimaryAttack.cs` interface in `Assets/Scripts/Weapons/` with `bool TryAttack();` contract.
+    - Implemented `IPrimaryAttack` natively across both `MeleeWeapon.cs` (Warrior) and `BowWeapon.cs` (Archer).
+    - Preserved `MeleeWeapon.BaseDamage => damage` and backward compatibility.
+  - PlayerAttack Input-Forwarding Architecture:
+    - Refactored `PlayerAttack.cs` to coordinate primary attacks polymorphically through `IPrimaryAttack`.
+    - Preserved `Warrior.prefab` serialization via `[FormerlySerializedAs("equippedWeapon")] [SerializeField] private MonoBehaviour primaryWeapon;`.
+    - Pure input forwarding: delegates `TryAttack()` directly to `primaryAttack.TryAttack()`, with zero character branching, zero weapon inventories, zero weapon switching, and zero damage math.
+    - Retained backward-compatible `EquippedWeapon` getter and setters `SetPrimaryWeapon(IPrimaryAttack)` / `SetEquippedWeapon(MeleeWeapon)` for legacy tooling.
+  - BowWeapon Implementation:
+    - Implemented `BowWeapon.cs` component in `Assets/Scripts/Weapons/` implementing `IPrimaryAttack`.
+    - Prototype weapon values: `damage = 20f`, `attackCooldown = 0.6f`, `projectileSpeed = 18f`, `projectileLifetime = 2.0f`.
+    - Integrated with `PlayerStats` multipliers (`EffectiveDamage = damage * DamageMultiplier`, `EffectiveAttackCooldown = attackCooldown / AttackSpeedMultiplier`).
+    - Enforced cooldown timing and pause guards (`Time.timeScale <= 0f`).
+    - Single-fire instantiation: instantiates exactly one `ArrowProjectile` at child `ProjectileSpawnPoint` aligned with character facing direction. Emits `OnAttack` event.
+  - ArrowProjectile Single Authoritative Collision Architecture:
+    - Implemented `ArrowProjectile.cs` component in `Assets/Scripts/Weapons/`.
+    - Strictly **one authoritative hit-resolution path** via `FixedUpdate()` physics sweep using `Physics.SphereCastAll(..., sweepRadius, travelDirection, travelDistance, collisionLayers, QueryTriggerInteraction.Ignore)`.
+    - Trigger-ignore behavior: `QueryTriggerInteraction.Ignore` guarantees trigger volumes (e.g. `ExperiencePickup` collectibles) do not block, explode, or take damage from arrows.
+    - Hierarchy-safe owner immunity: ignores hits against `ownerRoot` and any of its children (`hitTransform == ownerRoot || hitTransform.IsChildOf(ownerRoot)`), guaranteeing complete self-damage immunity regardless of collider configuration.
+    - Single-hit guard: `hitResolved = true` flag ensures a single arrow impacts exactly one `IDamageable` target or solid wall without multi-hit penetrations.
+    - Obstacle destruction: solid walls (`BoxCollider` / `MeshCollider` with `isTrigger = false`) trigger immediate arrow destruction.
+    - Pause behavior: when `Time.timeScale <= 0f`, projectile displacement is frozen, lifetime timer does not advance, and attacks cannot be initiated.
+    - Auto-destruction: destroys itself cleanly when elapsed scaled lifetime exceeds `lifetime = 2.0s`.
+    - Purity: zero competing `OnTriggerEnter` or `OnCollisionEnter` damage paths; zero test-only APIs.
+  - Archer Assets & Prefab:
+    - Created `Character_Archer.asset` under `Assets/ScriptableObjects/Characters/` (`id = "archer"`, `displayName = "Archer"`, description, referencing `Archer.prefab`).
+    - Created `Arrow.prefab` at `Assets/Prefabs/Weapons/Arrow.prefab` configured with `ArrowProjectile` (`sweepRadius = 0.15f`), trigger `CapsuleCollider`, kinematic `Rigidbody` (`isKinematic = true`, `useGravity = false`), and placeholder elongated cyan cylinder visual.
+    - Created `Archer.prefab` at `Assets/Prefabs/Characters/Archer.prefab`:
+      - Shares identical player systems: `Tag = "Player"`, `CharacterController` (height 2.0, radius 0.5), `PlayerMovement` (moveSpeed = 6.5), `PlayerAim`, `PlayerHealth` (maxHealth = 100), `PlayerStats`, `PlayerExperience` (baseRequiredXP = 100), `PlayerAttack`, and `PlayableCharacter` referencing `Character_Archer.asset`.
+      - Configured with `BowWeapon` (`damage = 20`, `attackCooldown = 0.6s`, `projectileSpeed = 18m/s`, `projectileLifetime = 2.0s`, `arrowPrefab = Arrow.prefab`).
+      - Visual hierarchy: placeholder capsule body, `FacingIndicator`, `WeaponAnchor`, `BowVisual` placeholder, and `ProjectileSpawnPoint` at `(0.35, 1.0, 0.55)`.
+      - Does NOT contain `MeleeWeapon`.
+  - Universal Stat Scaling:
+    - Confirmed universal `PlayerStats` compatibility without character branching:
+      - Damage +20%: Bow effective damage scales 20 -> 24.
+      - Attack Speed +15%: Bow effective cooldown scales 0.6s -> 0.5217s.
+      - Movement Speed +10%: Archer movement speed scales 6.5 -> 7.15.
+  - Spawner & Explicit Scene Binding Compatibility:
+    - `PlayerSpawner.Spawn(Character_Archer)` cleanly instantiates Archer at `PlayerSpawnPoint`.
+    - All scene systems (`CameraFollow`, `WaveManager`, `UpgradeManager`, `PlayerExperienceUI`, `DungeonCompletionController`) bind explicitly and dynamically without modification.
+    - Zombie pursue and damage Archer via `IDamageable.TakeDamage()`.
+    - Archer fires arrows, damages Zombie (`50 -> 30 HP`), and kills award XP drops.
+  - Production Scene Cleanliness & Non-Regression:
+    - `Dungeon_Prototype.unity` on disk remains 100% untouched and defaulted to `Character_Warrior.asset`, with zero pre-placed players and zero attached verifiers.
+    - Warrior vertical slice remains regression-free: spawns and attacks with `MeleeWeapon` (Check 68 passed).
+  - Check 33 Verifier Timing Diagnosis & Resolution:
+    - Check 33 initially failed because the verifier only yielded 2 FixedUpdate frames (0.04s) for a 30 m/s arrow starting at z=0, leaving the arrow at z=1.2m when asserting z > 2.2m.
+    - Diagnosed and proved to be an assertion timing bug in the verifier, NOT an active production bug (production `ArrowProjectile` was alive and correctly ignoring the trigger).
+    - Isolated deterministic test implemented: validates trigger passthrough, zero damage applied to trigger (`HitCount == 0`, `TotalDamage == 0`), subsequent solid wall collision, and immediate arrow destruction. Confirmed passing in targeted run and full suite.
+  - Verification Results:
+    - Automated Play Mode verification suite (`Milestone8_3_Verifier.cs`) ran and passed all 68 checks with 0 errors and 0 runtime exceptions.
+  - Safe Manual Playtesting Helper:
+    - Created editor-only `Milestone8_3_ManualPlayHelper.cs` under `Assets/Editor/` with menu items to playtest Archer or Warrior in-memory, automatically restoring `Character_Warrior` default upon exiting Play Mode without dirtying the scene on disk.
 
 ---
 
 # Next Task
 
-**Milestone 8.3 — Character System (Archer)**
+**Milestone 8.4 — Character System (Gunner)**
 
-Tasks for Milestone 8.3:
-1. Implement Archer character definition and archetype assets.
-2. Implement Bow weapon and ranged projectile system.
-3. Verify projectile collisions, damage application, and stat scaling (Damage, Attack Speed, Movement Speed).
-4. Verify character selection / spawning for Archer.
+Tasks for Milestone 8.4:
+1. Implement Gunner character definition and archetype assets.
+2. Implement Gunner weapon system (hitscan or high-speed projectile rifle).
+3. Evaluate projectile architecture reuse vs. hitscan approach.
+4. Verify universal stat scaling and explicit runtime binding for Gunner.
+
+Deferred Work (Post-Milestone 8):
+- Character Selection UI / pre-run menu
+- `CharacterRoster` catalog ScriptableObject
+- Generic projectile base class abstraction (deferred pending Gunner weapon design)
+- 3D models, character animations, audio, and particle VFX
+- Corpse cleanup / fading system
+- World Map & multi-dungeon progression (Phase 9)
+- Permanent skill trees & save/load (Phase 10)
 
 Do NOT start:
-- Gunner / rifle system (Milestone 8.4)
+- Gunner / rifle system (Milestone 8.4) until instructed
+- Character Selection UI
 - World Map / multi-dungeon progression (Phase 9)
 - Permanent skill trees (Phase 10)
 
@@ -232,7 +297,8 @@ Do NOT start:
 - Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
 - Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
 - Combat Abstraction: Minimal `IDamageable` interface (`TakeDamage(float amount)`) in `Assets/Scripts/Combat/`
-- Weapon Architecture: Decoupled `PlayerAttack.cs` (input coordination) and `MeleeWeapon.cs` (hit detection & cooldown tracking)
+- Weapon & Attack Architecture: Polymorphic primary attack via minimal `IPrimaryAttack.cs` (`bool TryAttack()`). `PlayerAttack.cs` coordinates input forwarding with zero weapon management, inventory, or character branching. Concrete implementations: `MeleeWeapon.cs` (Warrior forward arc overlap query) and `BowWeapon.cs` (Archer arrow projectile instantiation).
+- Projectile Architecture: Single authoritative collision sweep via `ArrowProjectile.cs` using `FixedUpdate()` `Physics.SphereCastAll(..., QueryTriggerInteraction.Ignore)`. Enforces trigger immunity, hierarchy-safe owner self-damage immunity, single-hit guard, solid obstacle destruction, and scaled-time pause freezing. Zero competing `OnTriggerEnter` or `OnCollisionEnter` damage logic.
 - Health Architecture: `PlayerHealth.cs` and `EnemyHealth.cs` both implement `IDamageable` independently with clamped health and single-fire death events
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
 - Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points
@@ -411,84 +477,96 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 8.2 Runtime Player Spawning & Explicit Binding implementation and Play Mode verification.
-- Assets/Scripts/Characters/PlayerSpawner.cs: data-driven character factory with explicit spawn point, ActiveCharacter, OnPlayerSpawned, and robust failure handling.
-- Assets/Scripts/Camera/CameraFollow.cs: runtime binding via BindTarget() and SetPlayerSpawner().
-- Assets/Scripts/Waves/WaveManager.cs: runtime binding via BindPlayer(), SetPlayerSpawner(), and single-fire BeginDungeon() / OnDungeonStarted lifecycle.
-- Assets/Scripts/Upgrades/UpgradeManager.cs: runtime binding via BindPlayer() and SetPlayerSpawner().
-- Assets/Scripts/UI/PlayerExperienceUI.cs: runtime binding via Bind() and SetPlayerSpawner(), with immediate Level 1 / 0 XP refresh.
-- Assets/Scripts/Dungeons/DungeonRunStats.cs: decoupled timing initiating strictly on WaveManager.OnDungeonStarted.
-- Assets/Scripts/Dungeons/DungeonCompletionController.cs: runtime binding via BindPlayer() and SetPlayerSpawner().
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity: migrated to 0 pre-placed players, PlayerSpawnPoint at (0,0,0), PlayerSpawner configured with Character_Warrior.asset.
-- Assets/Editor/Milestone8_2_Setup.cs: automated setup utility.
-- Assets/Tests/Verification/Milestone8_2_Verifier.cs: 45 automated checks passed in Play Mode.
+- Milestone 8.3 Archer Combat Prototype implementation and Play Mode verification.
+- Assets/Scripts/Weapons/IPrimaryAttack.cs: minimal polymorphic primary attack contract bool TryAttack().
+- Assets/Scripts/Player/PlayerAttack.cs: refactored to forward attack input polymorphically via IPrimaryAttack; preserved Warrior prefab serialization via [FormerlySerializedAs("equippedWeapon")].
+- Assets/Scripts/Weapons/MeleeWeapon.cs: implemented IPrimaryAttack, exposed BaseDamage, preserved backward compatibility.
+- Assets/Scripts/Weapons/BowWeapon.cs: implemented IPrimaryAttack, cooldown enforcement (0.6s), PlayerStats scaling, and ArrowProjectile instantiation.
+- Assets/Scripts/Weapons/ArrowProjectile.cs: single authoritative FixedUpdate collision sweep using Physics.SphereCastAll(..., QueryTriggerInteraction.Ignore), trigger immunity, owner self-damage immunity, single-hit guard, solid obstacle destruction, pause freezing.
+- Assets/ScriptableObjects/Characters/Character_Archer.asset: character archetype definition.
+- Assets/Prefabs/Weapons/Arrow.prefab: projectile prefab with ArrowProjectile, kinematic Rigidbody, trigger CapsuleCollider.
+- Assets/Prefabs/Characters/Archer.prefab: Archer playable character prefab with BowWeapon, BowVisual, ProjectileSpawnPoint, sharing standard player systems.
+- Assets/Editor/Milestone8_3_Setup.cs: automated setup and batchmode verification runner.
+- Assets/Editor/Milestone8_3_ManualPlayHelper.cs: safe in-memory manual playtest helper with automatic scene revert on exit.
+- Assets/Tests/Verification/Milestone8_3_Verifier.cs: 68-check Play Mode verification suite.
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Editor/Milestone8_2_Setup.cs
-- Assets/Editor/Milestone8_2_Setup.cs.meta
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Scripts/Camera/CameraFollow.cs
-- Assets/Scripts/Characters/PlayerSpawner.cs
-- Assets/Scripts/Characters/PlayerSpawner.cs.meta
-- Assets/Scripts/Dungeons/DungeonCompletionController.cs
-- Assets/Scripts/Dungeons/DungeonRunStats.cs
-- Assets/Scripts/UI/PlayerExperienceUI.cs
-- Assets/Scripts/Upgrades/UpgradeManager.cs
-- Assets/Scripts/Waves/WaveManager.cs
-- Assets/Tests/Verification/Milestone8_2_Verifier.cs
-- Assets/Tests/Verification/Milestone8_2_Verifier.cs.meta
+- Assets/Editor/Milestone8_3_ManualPlayHelper.cs
+- Assets/Editor/Milestone8_3_ManualPlayHelper.cs.meta
+- Assets/Editor/Milestone8_3_Setup.cs
+- Assets/Editor/Milestone8_3_Setup.cs.meta
+- Assets/Prefabs/Characters/Archer.prefab
+- Assets/Prefabs/Characters/Archer.prefab.meta
+- Assets/Prefabs/Weapons.meta
+- Assets/Prefabs/Weapons/Arrow.prefab
+- Assets/Prefabs/Weapons/Arrow.prefab.meta
+- Assets/ScriptableObjects/Characters/Character_Archer.asset
+- Assets/ScriptableObjects/Characters/Character_Archer.asset.meta
+- Assets/Scripts/Player/PlayerAttack.cs
+- Assets/Scripts/Weapons/ArrowProjectile.cs
+- Assets/Scripts/Weapons/ArrowProjectile.cs.meta
+- Assets/Scripts/Weapons/BowWeapon.cs
+- Assets/Scripts/Weapons/BowWeapon.cs.meta
+- Assets/Scripts/Weapons/IPrimaryAttack.cs
+- Assets/Scripts/Weapons/IPrimaryAttack.cs.meta
+- Assets/Scripts/Weapons/MeleeWeapon.cs
+- Assets/Tests/Verification/Milestone8_3_Verifier.cs
+- Assets/Tests/Verification/Milestone8_3_Verifier.cs.meta
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 45 checks passed)
-- Zero pre-placed PlayableCharacter instances in Dungeon_Prototype.unity on disk
-- PlayerSpawner and PlayerSpawnPoint configuration
-- PlayerSpawner default character reference to Character_Warrior.asset
-- Runtime instantiation of exactly one Warrior instance with PlayableCharacter
-- Spawn transform matching PlayerSpawnPoint position and rotation
-- Duplicate spawn rejection preventing multi-player instantiation
-- Missing spawn point failure without silent Vector3.zero fallback
-- Rejection of null CharacterDefinition, null prefab, and prefab missing PlayableCharacter
-- Explicit CameraFollow binding and translation tracking
-- Explicit WaveManager binding and single-fire BeginDungeon / OnDungeonStarted lifecycle
-- Wave 1 start guard requiring valid player target
-- Zombie pursuit of runtime Warrior target and IDamageable damage application
-- MeleeWeapon functionality and enemy health reduction
-- Explicit UpgradeManager binding and additive stat modifiers (+20% Dmg, +15% AtkSpeed, +10% MoveSpeed)
-- Explicit PlayerExperienceUI binding and initial Level 1 (0 / 100 XP) refresh
-- ExperiencePickup collection and level-up sequencing
-- DungeonRunStats tracking active run time starting from OnDungeonStarted
-- DungeonCompletionController final XP pickup resolution and DungeonRunSummary creation
-- Catch-up subscription pattern (subscribing after spawn binds immediately via ActiveCharacter)
-- Pre-spawn subscription pattern (subscribing before spawn binds via OnPlayerSpawned)
-- Repeated binding idempotency avoiding duplicate delegate subscriptions
-- Dynamic scene system binding with zero pre-placed player dependencies
-- Zero global GameManager/service locator singletons
-- CharacterDefinition immutability with zero runtime selection state
-- Production scene cleanliness with zero verifiers on disk
-- Unity compilation with 0 errors and 0 runtime exceptions
+- 68/68 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions
+- Targeted Check 33 verified: trigger volume passthrough, zero damage to trigger, and subsequent solid wall destruction
+- Check 33 issue isolated and documented as resolved verifier timing, not a production bug
+- IPrimaryAttack contract and MeleeWeapon / BowWeapon implementation
+- PlayerAttack input forwarding with zero weapon management or character branching
+- Warrior.prefab serialization migration via [FormerlySerializedAs("equippedWeapon")]
+- Backward compatibility of PlayerAttack.EquippedWeapon getter and SetEquippedWeapon setter
+- BowWeapon cooldown enforcement (0.6s) and pause blocking (Time.timeScale == 0)
+- BowWeapon single arrow instantiation at ProjectileSpawnPoint
+- BowWeapon event emission (OnAttack)
+- ArrowProjectile travel along assigned horizontal direction
+- ArrowProjectile freeze during pause (position and lifetime do not advance)
+- ArrowProjectile self-destruction upon lifetime expiration
+- ArrowProjectile owner hierarchy immunity (zero self-damage)
+- ArrowProjectile trigger-ignore behavior (passes through triggers without impact or damage)
+- ArrowProjectile IDamageable hit detection and exact 20 damage application
+- ArrowProjectile solid obstacle impact and destruction
+- ArrowProjectile single-hit guard preventing multi-hit penetrations
+- Character_Archer.asset metadata integrity and link to Archer.prefab
+- Archer.prefab Tag == "Player", CharacterController dimensions, moveSpeed == 6.5, maxHealth == 100, baseRequiredXP == 100
+- Archer.prefab BowWeapon configuration and absence of MeleeWeapon
+- Archer.prefab FacingIndicator, BowVisual, and ProjectileSpawnPoint transforms
+- Arrow.prefab ArrowProjectile, trigger collider, and kinematic Rigidbody
+- Runtime PlayerSpawner instantiation of Archer via PlayerSpawner.Spawn(Character_Archer)
+- Dynamic explicit binding of CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, and DungeonCompletionController to Archer
+- Universal UpgradeManager stat scaling on Archer: +20% damage (20 -> 24), +15% attack speed (cooldown 0.6 -> 0.5217s), +10% move speed (6.5 -> 7.15)
+- Zombie attacks Archer and Archer takes damage via IDamageable (100 -> 90 HP)
+- Archer fires arrows, damages Zombie (50 -> 30 HP), and kills drop XP
+- Production Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers
+- Warrior vertical slice non-regression: spawns and attacks with MeleeWeapon
 ```
 
 ## Known Issues
 
 ```text
-None.
+None. (Check 33 was an assertion timing bug in the verifier suite, resolved; production ArrowProjectile behavior verified 100% compliant).
 ```
 
 ## Next Task
 
 ```text
-Milestone 8.3 — Character System (Archer)
+Milestone 8.4 — Character System (Gunner)
 ```
 
 ## Latest Verified Commit
 
 ```text
-3ee9c7c feat: add runtime player spawning and binding
+(pending commit)
 ```
