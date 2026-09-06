@@ -1,0 +1,396 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using DungeonRoguelite.Enemies;
+
+namespace DungeonRoguelite.Waves
+{
+    /// <summary>
+    /// Lifecycle states for the wave progression system.
+    /// </summary>
+    public enum WaveState
+    {
+        NotStarted,
+        Spawning,
+        WaveActive,
+        WaveCompleted,
+        DungeonCompleted
+    }
+
+    /// <summary>
+    /// Orchestrates data-driven sequential enemy wave spawning, living enemy tracking,
+    /// and dungeon completion notifications for the dungeon.
+    /// Strictly maintains single responsibility over wave progression and spawning.
+    /// </summary>
+    public class WaveManager : MonoBehaviour
+    {
+        [Header("Wave Configuration")]
+        [Tooltip("Ordered list of wave definitions to spawn sequentially.")]
+        [SerializeField] private WaveDefinition[] waves;
+
+        [Header("Scene References")]
+        [Tooltip("Target transform that spawned enemies will pursue and attack (defaults to tag 'Player').")]
+        [SerializeField] private Transform playerTarget;
+
+        [Tooltip("Spawn point transforms cycled in round-robin order.")]
+        [SerializeField] private Transform[] spawnPoints;
+
+        [Header("Pacing")]
+        [Tooltip("Delay in seconds between clearing a wave and beginning the next wave.")]
+        [SerializeField] private float waveTransitionDelay = 0.5f;
+
+        [Tooltip("Whether to automatically begin Wave 1 on Start.")]
+        [SerializeField] private bool autoStart = true;
+
+        // Authoritative collections & mappings
+        private readonly HashSet<EnemyHealth> activeEnemies = new HashSet<EnemyHealth>();
+        private readonly List<EnemyHealth> currentWaveSpawned = new List<EnemyHealth>();
+        private readonly Dictionary<EnemyHealth, Action> deathCallbacks = new Dictionary<EnemyHealth, Action>();
+
+        // Runtime state
+        private WaveState currentState = WaveState.NotStarted;
+        private int currentWaveIndex = 0;
+        private int nextSpawnPointIndex = 0;
+        private bool isSpawning = false;
+        private bool hasCompletedDungeon = false;
+
+        private Coroutine activeWaveCoroutine;
+        private Coroutine transitionCoroutine;
+
+        #region Public Properties
+
+        public WaveState CurrentState => currentState;
+        public int CurrentWaveIndex => currentWaveIndex;
+        public int CurrentWaveNumber => currentWaveIndex + 1;
+        public int TotalWaves => waves != null ? waves.Length : 0;
+        public int LivingEnemyCount => activeEnemies.Count;
+        public bool IsSpawning => isSpawning;
+        public Transform PlayerTarget => playerTarget;
+        public IReadOnlyCollection<EnemyHealth> ActiveEnemies => activeEnemies;
+        public IReadOnlyList<EnemyHealth> CurrentWaveSpawned => currentWaveSpawned;
+
+        #endregion
+
+        #region Public Events
+
+        /// <summary>
+        /// Fired when a wave begins spawning. Passes (currentWaveNumber, totalWaves).
+        /// </summary>
+        public event Action<int, int> OnWaveStarted;
+
+        /// <summary>
+        /// Fired when all enemies in a wave have spawned and died. Passes (completedWaveNumber, totalWaves).
+        /// </summary>
+        public event Action<int, int> OnWaveCompleted;
+
+        /// <summary>
+        /// Fired exactly once after the final wave is cleared.
+        /// </summary>
+        public event Action OnDungeonCompleted;
+
+        #endregion
+
+        private void Awake()
+        {
+            ResolvePlayerTarget();
+        }
+
+        private void Start()
+        {
+            if (autoStart)
+            {
+                StartWaves();
+            }
+        }
+
+        private void OnDisable()
+        {
+            CleanupSubscriptionsAndRoutines();
+        }
+
+        private void OnDestroy()
+        {
+            CleanupSubscriptionsAndRoutines();
+        }
+
+        private void ResolvePlayerTarget()
+        {
+            if (playerTarget == null)
+            {
+                var playerGo = GameObject.FindWithTag("Player");
+                if (playerGo != null)
+                {
+                    playerTarget = playerGo.transform;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets a custom array of wave definitions.
+        /// </summary>
+        public void SetWaves(WaveDefinition[] newWaves)
+        {
+            waves = newWaves;
+        }
+
+        /// <summary>
+        /// Sets the spawn points used for round-robin instantiation.
+        /// </summary>
+        public void SetSpawnPoints(Transform[] newSpawnPoints)
+        {
+            spawnPoints = newSpawnPoints;
+            nextSpawnPointIndex = 0;
+        }
+
+        /// <summary>
+        /// Explicitly sets the target transform for spawned enemies.
+        /// </summary>
+        public void SetPlayerTarget(Transform target)
+        {
+            playerTarget = target;
+        }
+
+        /// <summary>
+        /// Starts wave progression from the first configured wave.
+        /// </summary>
+        public void StartWaves()
+        {
+            if (waves == null || waves.Length == 0)
+            {
+                Debug.LogWarning("[WaveManager] No wave definitions configured. Cannot start waves.");
+                return;
+            }
+
+            ResolvePlayerTarget();
+            CleanupSubscriptionsAndRoutines();
+
+            currentWaveIndex = 0;
+            nextSpawnPointIndex = 0;
+            hasCompletedDungeon = false;
+
+            StartWave(currentWaveIndex);
+        }
+
+        /// <summary>
+        /// Halts current spawning, unsubscribes all active callbacks, and resets state.
+        /// </summary>
+        public void StopWaves()
+        {
+            CleanupSubscriptionsAndRoutines();
+            currentState = WaveState.NotStarted;
+        }
+
+        private void StartWave(int waveIndex)
+        {
+            if (waveIndex < 0 || waveIndex >= waves.Length)
+            {
+                return;
+            }
+
+            WaveDefinition waveDef = waves[waveIndex];
+            if (waveDef == null)
+            {
+                Debug.LogError($"[WaveManager] WaveDefinition at index {waveIndex} is null.");
+                return;
+            }
+
+            currentWaveSpawned.Clear();
+            activeWaveCoroutine = StartCoroutine(SpawnWaveRoutine(waveDef));
+        }
+
+        private IEnumerator SpawnWaveRoutine(WaveDefinition waveDef)
+        {
+            currentState = WaveState.Spawning;
+            isSpawning = true;
+            OnWaveStarted?.Invoke(CurrentWaveNumber, TotalWaves);
+
+            float interval = Mathf.Max(0.001f, waveDef.SpawnInterval);
+            var entries = waveDef.EnemyEntries;
+
+            if (entries != null)
+            {
+                for (int e = 0; e < entries.Count; e++)
+                {
+                    var entry = entries[e];
+                    if (entry.EnemyPrefab == null || entry.Count <= 0)
+                    {
+                        continue;
+                    }
+
+                    for (int c = 0; c < entry.Count; c++)
+                    {
+                        SpawnEnemy(entry.EnemyPrefab);
+
+                        if (interval > 0f)
+                        {
+                            yield return new WaitForSeconds(interval);
+                        }
+                    }
+                }
+            }
+
+            isSpawning = false;
+
+            if (activeEnemies.Count > 0)
+            {
+                currentState = WaveState.WaveActive;
+            }
+            else
+            {
+                CheckWaveProgression();
+            }
+        }
+
+        private void SpawnEnemy(GameObject enemyPrefab)
+        {
+            Transform spawnPoint = GetNextSpawnPoint();
+            Vector3 spawnPos = spawnPoint != null ? spawnPoint.position : transform.position;
+            Quaternion spawnRot = spawnPoint != null ? spawnPoint.rotation : Quaternion.identity;
+
+            GameObject enemyInstance = Instantiate(enemyPrefab, spawnPos, spawnRot);
+
+            // Assign target explicitly to prevent per-frame scene searching
+            if (playerTarget != null)
+            {
+                var movement = enemyInstance.GetComponent<EnemyMovement>();
+                if (movement != null)
+                {
+                    movement.SetTarget(playerTarget);
+                }
+
+                var attack = enemyInstance.GetComponent<EnemyAttack>();
+                if (attack != null)
+                {
+                    attack.SetTarget(playerTarget);
+                }
+            }
+
+            // Register and track authoritative living status
+            var health = enemyInstance.GetComponent<EnemyHealth>();
+            if (health != null)
+            {
+                currentWaveSpawned.Add(health);
+                activeEnemies.Add(health);
+
+                // Create and store exact delegate for clean unsubscription
+                Action deathHandler = () => HandleEnemyDied(health);
+                deathCallbacks[health] = deathHandler;
+                health.OnDied += deathHandler;
+            }
+            else
+            {
+                Debug.LogWarning($"[WaveManager] Spawned enemy '{enemyInstance.name}' does not have an EnemyHealth component.");
+            }
+        }
+
+        private Transform GetNextSpawnPoint()
+        {
+            if (spawnPoints == null || spawnPoints.Length == 0)
+            {
+                return transform;
+            }
+
+            Transform selected = spawnPoints[nextSpawnPointIndex];
+            nextSpawnPointIndex = (nextSpawnPointIndex + 1) % spawnPoints.Length;
+            return selected != null ? selected : transform;
+        }
+
+        private void HandleEnemyDied(EnemyHealth enemy)
+        {
+            if (enemy == null)
+            {
+                return;
+            }
+
+            // Process death only if enemy is actively tracked in this wave
+            if (activeEnemies.Remove(enemy))
+            {
+                if (deathCallbacks.TryGetValue(enemy, out var handler))
+                {
+                    enemy.OnDied -= handler;
+                    deathCallbacks.Remove(enemy);
+                }
+
+                CheckWaveProgression();
+            }
+        }
+
+        private void CheckWaveProgression()
+        {
+            // Transition only when:
+            // 1. All enemies for the wave have finished spawning
+            // 2. Every tracked enemy is dead
+            if (isSpawning || activeEnemies.Count > 0)
+            {
+                return;
+            }
+
+            if (currentState == WaveState.Spawning || currentState == WaveState.WaveActive)
+            {
+                currentState = WaveState.WaveCompleted;
+                OnWaveCompleted?.Invoke(CurrentWaveNumber, TotalWaves);
+
+                if (currentWaveIndex + 1 < TotalWaves)
+                {
+                    transitionCoroutine = StartCoroutine(TransitionToNextWaveRoutine());
+                }
+                else
+                {
+                    TriggerDungeonCompleted();
+                }
+            }
+        }
+
+        private IEnumerator TransitionToNextWaveRoutine()
+        {
+            if (waveTransitionDelay > 0f)
+            {
+                yield return new WaitForSeconds(waveTransitionDelay);
+            }
+
+            currentWaveIndex++;
+            StartWave(currentWaveIndex);
+        }
+
+        private void TriggerDungeonCompleted()
+        {
+            if (hasCompletedDungeon)
+            {
+                return;
+            }
+
+            hasCompletedDungeon = true;
+            currentState = WaveState.DungeonCompleted;
+            OnDungeonCompleted?.Invoke();
+        }
+
+        private void CleanupSubscriptionsAndRoutines()
+        {
+            if (activeWaveCoroutine != null)
+            {
+                StopCoroutine(activeWaveCoroutine);
+                activeWaveCoroutine = null;
+            }
+
+            if (transitionCoroutine != null)
+            {
+                StopCoroutine(transitionCoroutine);
+                transitionCoroutine = null;
+            }
+
+            foreach (var kvp in deathCallbacks)
+            {
+                if (kvp.Key != null && kvp.Value != null)
+                {
+                    kvp.Key.OnDied -= kvp.Value;
+                }
+            }
+
+            deathCallbacks.Clear();
+            activeEnemies.Clear();
+            currentWaveSpawned.Clear();
+            isSpawning = false;
+        }
+    }
+}

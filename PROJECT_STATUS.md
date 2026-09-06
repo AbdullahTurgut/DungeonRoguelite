@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 3.1 completed and verified in Unity Play Mode.
+- Milestone 4.1 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,18 +11,18 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 3: Enemy Foundation (Milestone 3.1: Zombie Enemy)**
-**NEXT UP — Phase 4: Wave System (Milestone 4.1: Spawner / Wave Manager)**
+**COMPLETED — Phase 4: Wave System (Milestone 4.1: Spawner / Wave Manager)**
+**NEXT UP — Phase 5: Experience (Milestone 5.1: Experience Reward & Level-Up)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), and 3.1 (Basic Zombie Enemy) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), and 4.1 (Spawner and Wave System) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 3 — Enemy Foundation (Completed)
+## PHASE 4 — Wave System (Completed)
 
-All milestones in Phase 3 are complete.
+All milestones in Phase 4 are complete.
 
 ---
 
@@ -87,25 +87,35 @@ All milestones in Phase 3 are complete.
   - Implemented `EnemyMovement.cs` with direct pursuit using `CharacterController` on the X/Z plane with configurable `moveSpeed` (3) and `stoppingDistance` (1.3). Subscribes cleanly to `EnemyHealth.OnDied` to disable movement and its `CharacterController`.
   - Implemented `EnemyAttack.cs` executing attacks within `attackRange` (1.5) dealing `damage` (10) with `attackCooldown` (1.0s) via `IDamageable.TakeDamage()`. Subscribes cleanly to `EnemyHealth.OnDied` to halt attacks.
   - Created reusable `Zombie.prefab` at `Assets/Prefabs/Enemies/Zombie.prefab` with placeholder capsule and facing indicator.
-  - Automated Play Mode verification suite (`Milestone3_1_Verifier.cs`) passed all 27 checks with 0 errors.
+  - **Milestone 4.1 — Spawner and Wave System**:
+  - Implemented data-driven `WaveDefinition.cs` ScriptableObject defining wave composition (`EnemySpawnEntry[]`) and pacing (`spawnInterval = 0.5f`).
+  - Created prototype wave assets `Wave_01.asset` (10 Zombies), `Wave_02.asset` (15 Zombies), `Wave_03.asset` (20 Zombies) under `Assets/ScriptableObjects/Waves/`.
+  - Implemented `WaveManager.cs` component in `Assets/Scripts/Waves/` maintaining single responsibility over wave sequencing, player targeting, and round-robin spawning.
+  - Configured 4 scene spawn points (`SpawnPoints` hierarchy) around the arena perimeter.
+  - Implemented authoritative living enemy tracking using `HashSet<EnemyHealth> activeEnemies` with `LivingEnemyCount => activeEnemies.Count`. Zero frame-by-frame polling.
+  - Per-enemy event subscription to `EnemyHealth.OnDied` with clean delegate unsubscription upon death and component cleanup. Idempotent death processing.
+  - Enforced strict wave progression gating: next wave begins only after all enemies have finished spawning AND every living enemy is dead.
+  - Emits clean `OnDungeonCompleted` event exactly once when Wave 3 is cleared.
+  - Preserved non-obstructing corpse retention without impeding wave progression.
+  - Verified in Unity Play Mode: all 26 automated verification checks passed with 0 compiler errors and 0 runtime exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 4.1 — Spawner / Wave Manager**
+**Milestone 5.1 — Experience System (XP Reward & Level-Up)**
 
-Tasks for Milestone 4.1:
-1. Create `WaveDefinition` ScriptableObject or wave configuration data structure.
-2. Create `WaveManager.cs` or `EnemySpawner.cs` component in `Assets/Scripts/Waves/`.
-3. Implement sequential wave spawning (e.g. 3 waves for vertical slice).
-4. Track active enemies and trigger wave completion when all enemies in a wave are defeated.
-5. Provide clean events for wave start, wave clear, and dungeon completion.
+Tasks for Milestone 5.1:
+1. Implement enemy XP reward logic on death.
+2. Implement XP pickup prefab / collection mechanism.
+3. Implement `PlayerExperience.cs` tracking XP and level thresholds.
+4. Provide clean events for XP gained and level-up triggered.
+5. Create XP bar UI listening to player experience events.
 
 Do NOT start:
-- Temporary level-up upgrades / XP bar (Milestones 5.1 / 5.2)
-- Boss logic (Milestone 6.1)
-- UI / Game complete screen (Milestones 7.1 / 7.2)
+- Temporary upgrade selection UI / pause menu (Milestone 6.1)
+- Boss logic (Milestone 6.1 / 12)
+- Dungeon complete UI (Milestone 7.1)
 
 ---
 
@@ -122,8 +132,10 @@ Do NOT start:
 - Weapon Architecture: Decoupled `PlayerAttack.cs` (input coordination) and `MeleeWeapon.cs` (hit detection & cooldown tracking)
 - Health Architecture: `PlayerHealth.cs` and `EnemyHealth.cs` both implement `IDamageable` independently with clamped health and single-fire death events
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
+- Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points
+- Enemy Tracking: Authoritative `HashSet<EnemyHealth>` with clean event lifecycle management and zero scene-wide polling
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Separate components across Player, Combat, Weapons, and Enemies
+- Single Responsibility: Separate components across Player, Combat, Weapons, Enemies, and Waves
 - Visuals: Primitives/placeholders (Capsules with FacingIndicators and SwordVisual)
 - Git used as checkpoint and handoff system
 
@@ -137,6 +149,8 @@ None.
 
 # Future Maintenance & Technical Debt
 
+- **DungeonDefinition Deferred**: `DungeonDefinition` remains deferred until Phase 9 / multi-dungeon progression actually requires dungeon-level metadata.
+- **Corpse Cleanup and Object Pooling Deferred**: Defeated enemy corpses remain in scene as non-obstructing entities. Object pooling and corpse cleanup will be introduced in later milestones.
 - **Direct Pursuit vs Pathfinding**: Current `EnemyMovement` uses direct `CharacterController` pursuit. This is sufficient for the prototype but does not provide full pathfinding around complex dungeon geometry. Re-evaluate NavMesh when dungeon layouts require real obstacle navigation.
 - **Verifier Script Reorganization**: Legacy verifier scripts currently located under production script folders (`Assets/Scripts/Player/Milestone1_1_Verifier.cs` and `Assets/Scripts/Player/Milestone1_2_Verifier.cs`) should later be moved into the dedicated test/verification structure (`Assets/Tests/Verification/`).
 
@@ -144,29 +158,35 @@ None.
 
 # Testing Status
 
-## Milestone 3.1 Verification
+## Milestone 4.1 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_m3_1.log`):
-- **Test 1 & 2 - Initial Health**: Zombie starts with `MaxHealth == 50`, `CurrentHealth == 50`, `IsDead == false` (PASSED)
-- **Test 3 & 4 - Follow & Stopping Distance**: Zombie pursues player from 4m and halts at `CurrentDist = 1.30m` near `stoppingDistance = 1.3m` (PASSED)
-- **Test 5 - Range Guard**: Zombie does not attack when outside range at 4m (PlayerHealth remains 100) (PASSED)
-- **Test 6 & 7 - Inside Range Attack**: Zombie strikes inside 1.5m range applying exactly 10 damage (PlayerHealth drops 100 $\rightarrow$ 90) (PASSED)
-- **Test 8 - Attack Cooldown Guard**: Attack cooldown prevents immediate repeat attack (PlayerHealth remains 90) (PASSED)
-- **Test 9 - Attack Recovery**: Second attack executes after 1.0s cooldown expires (PlayerHealth drops 90 $\rightarrow$ 80) (PASSED)
-- **Test 10 - Pursuit Resumption**: Zombie immediately resumes pursuit when player moves away, closing distance to 1.30m (PASSED)
-- **Test 11 & 12 - First Sword Hit**: Player sword resolves `IDamageable` on Zombie, dealing 25 damage (Zombie health 50 $\rightarrow$ 25) (PASSED)
-- **Test 13-16 - Second Sword Hit & Death**: Second hit reduces health 25 $\rightarrow$ 0, clamps to 0, sets `IsDead == true`, and fires `OnDied` exactly once (PASSED)
-- **Test 17 & 18 - Component Disabling**: Dead Zombie sets `EnemyMovement.enabled == false` and `EnemyAttack.enabled == false` (PASSED)
-- **Test 19 - Dead Zombie Harmless**: Dead Zombie cannot damage player even when standing adjacent (PlayerHealth untouched) (PASSED)
-- **Test 20 - Non-Obstruction**: Dead Zombie disables `CharacterController` so corpse does not block player (PASSED)
-- **Test 21 - PlayerMovement Integrity**: Player moves freely via WASD (moveSpeed = 6) (PASSED)
-- **Test 22 - PlayerAim Integrity**: Player rotates and aims toward cursor without drift (angle diff $0.00^\circ$) (PASSED)
-- **Test 23 - PlayerHealth Integrity**: Player health reception and clamps intact (PASSED)
-- **Test 24 - Sword Combat Integrity**: Player sword attack remains fully operational (PASSED)
-- **Test 25 - Grounding & Collision**: CharacterController grounding and collisions intact (PASSED)
-- **Event Subscription Idempotency**: Disabling/enabling enemy components does not produce duplicate callbacks (PASSED)
-- **Test 26 - Compilation**: 0 compiler errors or warnings (PASSED)
-- **Test 27 - Runtime Diagnostics**: 0 exceptions in Play Mode (PASSED)
+Automated Play Mode verification suite ran and passed in Unity (`playmode_m4_1.log`):
+- **Check 1 - Production Wave Configuration**: Loaded and validated `Wave_01.asset` (10 Zombies), `Wave_02.asset` (15 Zombies), `Wave_03.asset` (20 Zombies) with valid spawn intervals and Zombie prefab references (PASSED).
+- **Check 2 - Wave 1 Initialization**: Wave 1 starts cleanly, transitions to `Spawning` state, and fires `OnWaveStarted(1, 3)` (PASSED).
+- **Check 3 - Wave 1 Spawn Count**: Exactly 10 Zombies spawned in Wave 1; active count reaches 10 (PASSED).
+- **Check 4 - Spawn Point Utilization**: All spawned enemies instantiated at configured scene spawn points (PASSED).
+- **Check 5 - Round-Robin Selection**: Spawn point cycling strictly alternates NW, NE, SE, SW, NW... without clustering (PASSED).
+- **Check 6 - Spawn Interval Timing**: Pacing interval respected (expected ~0.10s, measured 0.101s) (PASSED).
+- **Check 7 - Wave Progression Gating (Wave 1)**: Wave 2 cannot begin while any Wave 1 enemy remains alive; manager enters `WaveActive` state (PASSED).
+- **Check 8 - Wave 1 Clear & Transition**: Eliminating the 10th Wave 1 Zombie fires `OnWaveCompleted(1, 3)` and cleanly advances to Wave 2 (PASSED).
+- **Check 9 - Wave 2 Spawn Count**: Exactly 15 Zombies spawn in Wave 2; active count reaches 15 (PASSED).
+- **Check 10 - Wave Progression Gating (Wave 2)**: Wave 3 cannot begin while Wave 2 enemies are alive (PASSED).
+- **Check 11 - Wave 3 Spawn Count**: Exactly 20 Zombies spawn in Wave 3; active count reaches 20 (PASSED).
+- **Check 12 - Authoritative Living Enemy Tracking**: `LivingEnemyCount` strictly reflects `activeEnemies.Count` at all times (PASSED).
+- **Check 13 - Single Death Processing**: Individual enemy death decrements living count exactly once (PASSED).
+- **Check 14 - Duplicate Death Idempotency**: Repeated damage or death notifications on an already-dead Zombie cannot decrement count again (PASSED).
+- **Check 15 - Corpse Non-Obstruction**: Retained corpses remain in the scene hierarchy without hindering wave progression (PASSED).
+- **Check 16 - Dungeon Completion Guard**: Early dungeon completion prevented during active waves (PASSED).
+- **Check 17 - Single-Fire Dungeon Completion**: `OnDungeonCompleted` fires exactly once after all 20 Wave 3 Zombies are defeated (PASSED).
+- **Check 18 - Spawned Enemy Pursuit**: Spawned Zombies acquire the Player target and actively close distance (PASSED).
+- **Check 19 - Spawned Enemy Melee Attack**: Spawned Zombies execute attacks inside 1.5m range, dealing 10 damage to player (PASSED).
+- **Check 20 - Player Sword Combat Integration**: Player sword damages (50 $\rightarrow$ 25) and kills spawned Zombie (25 $\rightarrow$ 0) (PASSED).
+- **Check 21 - PlayerMovement Integrity**: WASD movement and CharacterController integration intact (PASSED).
+- **Check 22 - PlayerAim Integrity**: Pointer aiming and Y-axis rotation intact (angle diff 0.00°) (PASSED).
+- **Check 23 - PlayerHealth Integrity**: Health reception, clamping, and reset logic intact (PASSED).
+- **Check 24 - Sword Combat Integrity**: Weapon damage, range, cooldown, and arc filtering intact (PASSED).
+- **Check 25 - Compilation**: 0 compiler errors or warnings (PASSED).
+- **Check 26 - Runtime Diagnostics**: 0 runtime exceptions in Play Mode (PASSED).
 
 ---
 
@@ -174,7 +194,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m3_1.l
  
 ```text
 Latest verified commit:
-f5c294f feat: add basic zombie enemy
+<pending commit for Milestone 4.1>
 ```
 
 ---
@@ -193,33 +213,37 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 3.1 Basic Zombie Enemy implementation and verification.
-- Assets/Scripts/Enemies/EnemyHealth.cs
-- Assets/Scripts/Enemies/EnemyMovement.cs
-- Assets/Scripts/Enemies/EnemyAttack.cs
-- Assets/Prefabs/Enemies/Zombie.prefab
-- Assets/Tests/Verification/Milestone3_1_Verifier.cs
-- Assets/Editor/Milestone3_1_Setup.cs
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Milestone3_1_Verifier)
+- Milestone 4.1 Spawner and Wave System implementation and verification.
+- Assets/Scripts/Waves/WaveDefinition.cs
+- Assets/Scripts/Waves/WaveManager.cs
+- Assets/ScriptableObjects/Waves/Wave_01.asset
+- Assets/ScriptableObjects/Waves/Wave_02.asset
+- Assets/ScriptableObjects/Waves/Wave_03.asset
+- Assets/Tests/Verification/Milestone4_1_Verifier.cs
+- Assets/Editor/Milestone4_1_Setup.cs
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured SpawnPoints, WaveManager, and Milestone4_1_Verifier)
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Enemies/EnemyHealth.cs
-- Assets/Scripts/Enemies/EnemyHealth.cs.meta
-- Assets/Scripts/Enemies/EnemyMovement.cs
-- Assets/Scripts/Enemies/EnemyMovement.cs.meta
-- Assets/Scripts/Enemies/EnemyAttack.cs
-- Assets/Scripts/Enemies/EnemyAttack.cs.meta
-- Assets/Scripts/Enemies.meta
-- Assets/Prefabs/Enemies/Zombie.prefab
-- Assets/Prefabs/Enemies/Zombie.prefab.meta
-- Assets/Prefabs/Enemies.meta
-- Assets/Tests/Verification/Milestone3_1_Verifier.cs
-- Assets/Tests/Verification/Milestone3_1_Verifier.cs.meta
-- Assets/Editor/Milestone3_1_Setup.cs
-- Assets/Editor/Milestone3_1_Setup.cs.meta
+- Assets/Scripts/Waves/WaveDefinition.cs
+- Assets/Scripts/Waves/WaveDefinition.cs.meta
+- Assets/Scripts/Waves/WaveManager.cs
+- Assets/Scripts/Waves/WaveManager.cs.meta
+- Assets/Scripts/Waves.meta
+- Assets/ScriptableObjects/Waves/Wave_01.asset
+- Assets/ScriptableObjects/Waves/Wave_01.asset.meta
+- Assets/ScriptableObjects/Waves/Wave_02.asset
+- Assets/ScriptableObjects/Waves/Wave_02.asset.meta
+- Assets/ScriptableObjects/Waves/Wave_03.asset
+- Assets/ScriptableObjects/Waves/Wave_03.asset.meta
+- Assets/ScriptableObjects/Waves.meta
+- Assets/ScriptableObjects.meta
+- Assets/Tests/Verification/Milestone4_1_Verifier.cs
+- Assets/Tests/Verification/Milestone4_1_Verifier.cs.meta
+- Assets/Editor/Milestone4_1_Setup.cs
+- Assets/Editor/Milestone4_1_Setup.cs.meta
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
 - PROJECT_STATUS.md
 ```
@@ -227,15 +251,19 @@ When switching between agents:
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 27 checks passed)
-- Zombie initialization, health state, and clamping
-- Direct pursuit, speed, and stopping distance (1.3m)
-- Melee attack damage (10 dmg), range check (1.5m), and attack cooldown (1.0s)
-- Pursuit resumption when target moves away
-- Player sword hit detection and damage application (2 hits defeat Zombie)
-- Clean death handling: OnDied event, component disabling, CharacterController disabled (non-obstructing)
-- Event subscription idempotency upon component toggle
-- Non-interference with PlayerMovement, PlayerAim, PlayerHealth, and MeleeWeapon
+- In-engine Play Mode automated verification suite (all 26 checks passed)
+- Data-driven WaveDefinition ScriptableObject loading and validation
+- Sequential 3-wave progression (Wave 1: 10, Wave 2: 15, Wave 3: 20 Zombies)
+- 4 perimeter scene spawn points with deterministic round-robin cycling
+- Configured spawn interval timing validation (~0.10s test measured 0.101s)
+- Wave progression gating (wave cannot advance while current wave has living enemies)
+- Authoritative HashSet<EnemyHealth> living enemy tracking
+- Single-execution death counting and duplicate death idempotency
+- Corpse retention non-obstruction
+- Single-fire OnDungeonCompleted event after final wave
+- Spawned enemy player acquisition, pursuit, and attack
+- Player sword combat dealing damage and killing spawned enemies
+- Regression testing: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon all intact
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
 
@@ -248,11 +276,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 4.1 — Spawner / Wave Manager
+Milestone 5.1 — Experience System (XP Reward & Level-Up)
 ```
 
 ## Latest Verified Commit
 
 ```text
-f5c294f feat: add basic zombie enemy
+<pending commit for Milestone 4.1>
 ```
