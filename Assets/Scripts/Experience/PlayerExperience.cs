@@ -19,10 +19,12 @@ namespace DungeonRoguelite.Experience
         [Header("Runtime State (Read-Only)")]
         [SerializeField] private int currentLevel = 1;
         [SerializeField] private int currentXP = 0;
+        [SerializeField] private int totalXPEarned = 0;
         [SerializeField] private int xpToNextLevel;
 
         public int Level => currentLevel;
         public int CurrentXP => currentXP;
+        public int TotalXPEarned => totalXPEarned;
         public int XPToNextLevel => xpToNextLevel;
         public float ProgressNormalized => xpToNextLevel > 0 ? Mathf.Clamp01((float)currentXP / xpToNextLevel) : 0f;
 
@@ -92,6 +94,7 @@ namespace DungeonRoguelite.Experience
                 return;
             }
 
+            totalXPEarned += amount;
             currentXP += amount;
 
             while (currentXP >= xpToNextLevel)

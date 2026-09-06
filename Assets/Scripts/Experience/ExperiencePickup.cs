@@ -29,6 +29,26 @@ namespace DungeonRoguelite.Experience
             xpValue = Mathf.Max(1, value);
         }
 
+        /// <summary>
+        /// Attempts to collect this pickup for the specified PlayerExperience.
+        /// Returns true if collected; false if already collected or if playerExperience is null.
+        /// Guarded against duplicate collection and deferred destruction.
+        /// </summary>
+        /// <param name="playerExperience">The PlayerExperience to award XP to.</param>
+        /// <returns>True if XP was awarded; false if already collected or invalid target.</returns>
+        public bool TryCollect(PlayerExperience playerExperience)
+        {
+            if (isCollected || playerExperience == null)
+            {
+                return false;
+            }
+
+            isCollected = true;
+            playerExperience.GainExperience(xpValue);
+            Destroy(gameObject);
+            return true;
+        }
+
         private void OnTriggerEnter(Collider other)
         {
             if (isCollected)
@@ -44,9 +64,7 @@ namespace DungeonRoguelite.Experience
 
             if (playerExperience != null)
             {
-                isCollected = true;
-                playerExperience.GainExperience(xpValue);
-                Destroy(gameObject);
+                TryCollect(playerExperience);
             }
         }
     }

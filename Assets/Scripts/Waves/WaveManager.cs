@@ -85,6 +85,11 @@ namespace DungeonRoguelite.Waves
         public event Action<int, int> OnWaveCompleted;
 
         /// <summary>
+        /// Fired exactly once when an actively tracked wave enemy is defeated. Passes (enemy).
+        /// </summary>
+        public event Action<EnemyHealth> OnEnemyDefeated;
+
+        /// <summary>
         /// Fired exactly once after the final wave is cleared.
         /// </summary>
         public event Action OnDungeonCompleted;
@@ -312,6 +317,7 @@ namespace DungeonRoguelite.Waves
                     deathCallbacks.Remove(enemy);
                 }
 
+                OnEnemyDefeated?.Invoke(enemy);
                 CheckWaveProgression();
             }
         }
