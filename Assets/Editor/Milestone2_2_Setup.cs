@@ -9,7 +9,7 @@ namespace DungeonRoguelite.Editor
 {
     public static class Milestone2_2_Setup
     {
-        private const string PrefabPath = "Assets/Prefabs/Characters/Player.prefab";
+        private const string PrefabPath = "Assets/Prefabs/Characters/Warrior.prefab";
         private const string ScenePath = "Assets/Scenes/Dungeons/Dungeon_Prototype.unity";
 
         [MenuItem("DungeonRoguelite/Setup Milestone 2.2")]

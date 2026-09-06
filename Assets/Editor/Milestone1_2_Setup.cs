@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using DungeonRoguelite.Player;
@@ -8,7 +8,7 @@ namespace DungeonRoguelite.Editor
 {
     public static class Milestone1_2_Setup
     {
-        private const string PrefabPath = "Assets/Prefabs/Characters/Player.prefab";
+        private const string PrefabPath = "Assets/Prefabs/Characters/Warrior.prefab";
         private const string ScenePath = "Assets/Scenes/Dungeons/Dungeon_Prototype.unity";
 
         [MenuItem("DungeonRoguelite/Setup Milestone 1.2")]

@@ -18,7 +18,7 @@ namespace DungeonRoguelite.Editor
         private const string DamageUpgradePath = "Assets/ScriptableObjects/Upgrades/Upgrade_Damage.asset";
         private const string AttackSpeedUpgradePath = "Assets/ScriptableObjects/Upgrades/Upgrade_AttackSpeed.asset";
         private const string MovementSpeedUpgradePath = "Assets/ScriptableObjects/Upgrades/Upgrade_MovementSpeed.asset";
-        private const string PlayerPrefabPath = "Assets/Prefabs/Characters/Player.prefab";
+        private const string PlayerPrefabPath = "Assets/Prefabs/Characters/Warrior.prefab";
         private const string ScenePath = "Assets/Scenes/Dungeons/Dungeon_Prototype.unity";
 
         [MenuItem("DungeonRoguelite/Setup Milestone 6.1")]

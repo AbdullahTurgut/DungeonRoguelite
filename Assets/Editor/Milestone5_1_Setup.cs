@@ -18,7 +18,7 @@ namespace DungeonRoguelite.Editor
         private const string PickupPrefabPath = "Assets/Prefabs/Pickups/ExperiencePickup.prefab";
         private const string MaterialsDir = "Assets/Materials/Pickups";
         private const string MaterialPath = "Assets/Materials/Pickups/M_ExperiencePickup.mat";
-        private const string PlayerPrefabPath = "Assets/Prefabs/Characters/Player.prefab";
+        private const string PlayerPrefabPath = "Assets/Prefabs/Characters/Warrior.prefab";
         private const string ZombiePrefabPath = "Assets/Prefabs/Enemies/Zombie.prefab";
         private const string ScenePath = "Assets/Scenes/Dungeons/Dungeon_Prototype.unity";
 

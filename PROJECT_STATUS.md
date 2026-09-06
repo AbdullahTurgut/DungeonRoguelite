@@ -3,8 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 7.1 completed and verified in Unity Play Mode.
-- First Vertical Slice completed!
+- Milestone 8.1 completed and verified in Unity Play Mode.
+- Character Definition & Architecture established.
 
 ---
 
@@ -12,20 +12,21 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 7: Dungeon Completion (Milestone 7.1: Result Screen & Dungeon Clear State)**  
-**NEXT UP — Phase 8: Character System (Milestone 8.1: Character Definition & Architecture)**
+**COMPLETED — Phase 8: Character System (Milestone 8.1: Character Definition & Architecture)**  
+**NEXT UP — Phase 8: Character System (Milestone 8.2: Character Selection & Spawning)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), and 7.1 (Dungeon Completion) are completed and verified.
-
-**The First Vertical Slice is now fully playable and verified!**
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), and 8.1 (Character Architecture) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 7 — Dungeon Completion (Completed)
+## PHASE 8 — Character System (In Progress)
 
-All milestones in Phase 7 are complete.
+- Milestone 8.1: Character Definition & Architecture (Completed)
+- Milestone 8.2: Character Selection & Spawning (Next Up)
+- Milestone 8.3: Archer (Deferred)
+- Milestone 8.4: Gunner (Deferred)
 
 ---
 
@@ -148,21 +149,42 @@ All milestones in Phase 7 are complete.
     - Pure presentation layer with zero calculation, combat, or wave logic.
   - Configured `Dungeon_Prototype.unity` with `RunControllers` and `Canvas/DungeonCompletePanel`. Clean scene verified with zero verifiers attached.
   - Automated Play Mode verification suite (`Milestone7_1_Verifier.cs`) ran and passed all 28 checks with 0 errors and 0 runtime exceptions.
+- **Milestone 8.1 — Character Definition & Architecture**:
+  - Implemented data-driven `CharacterDefinition.cs` ScriptableObject in `Assets/Scripts/Characters/` with minimal identity fields (`id`, `displayName`, `description`, `characterPrefab`). Strictly decoupled from weapon-specific math and runtime stat stacking.
+  - Created prototype asset `Assets/ScriptableObjects/Characters/Character_Warrior.asset` referencing `Warrior.prefab`. Deferred Archer/Gunner definitions and `CharacterRoster` catalog to avoid incomplete/dead assets.
+  - Implemented lightweight `PlayableCharacter.cs` root component in `Assets/Scripts/Characters/`:
+    - Functions as authoritative playable character identity anchor and exposes its `CharacterDefinition`.
+    - Maintained strictly minimal: zero combat calculations, movement logic, health tracking, XP math, upgrade logic, or monolithic manager responsibilities.
+  - Prefab Migration (`Player.prefab` -> `Warrior.prefab`):
+    - Cleanly renamed `Assets/Prefabs/Characters/Player.prefab` to `Warrior.prefab` while strictly preserving the Unity asset GUID (`6f312a6b5127de248b5f102e81070d89`).
+    - Renamed prefab root GameObject to `Warrior`.
+    - Retained `Tag = "Player"` as generic runtime identity used for enemy targeting and camera tracking across future character classes.
+    - Attached `PlayableCharacter` component to `Warrior.prefab` root, bound to `Character_Warrior.asset`.
+  - Base Stat & Combat Ownership:
+    - Authoritative gameplay base values remain directly on character prefab components (`PlayerMovement.moveSpeed = 6`, `PlayerHealth.maxHealth = 100`, `MeleeWeapon.damage = 25`, `MeleeWeapon.attackCooldown = 0.5`), preventing weapon-specific parameters from polluting generic character definitions.
+    - Preserved existing Warrior sword combat (`PlayerAttack` -> `MeleeWeapon`) without introducing premature universal weapon abstractions.
+    - Confirmed universal compatibility of `PlayerStats.cs` runtime modifiers (`DamageMultiplier`, `AttackSpeedMultiplier`, `MovementSpeedMultiplier`) and `UpgradeManager` for future Archer/Gunner ranged combat without character-type branching.
+  - Scene Reference & Future Spawning Architecture:
+    - Retained pre-placed `Warrior.prefab` instance in `Assets/Scenes/Dungeons/Dungeon_Prototype.unity` with direct scene wiring.
+    - **CRITICAL ARCHITECTURAL DECISION**: Automatic discovery (`GameObject.FindWithTag("Player")` / `FindFirstObjectByType<T>()`) is an intermediate fallback for the pre-placed Warrior and is **NOT** the final runtime-spawn architecture.
+    - Milestone 8.2 will introduce `PlayerSpawner`, which will instantiate the selected `CharacterDefinition.characterPrefab` and perform **explicit runtime binding** of player-dependent scene systems (`CameraFollow`, `WaveManager`, `UpgradeManager`, `PlayerExperienceUI`, `DungeonCompletionController`, `DungeonRunStats`) to avoid lifecycle/race-condition pitfalls.
+  - Repaired stale path references across all 6 legacy setup utilities (`Milestone1_1_Setup.cs` through `Milestone6_1_Setup.cs`) to point to `Warrior.prefab`.
+  - Automated Play Mode verification suite (`Milestone8_1_Verifier.cs`) ran and passed all 41 checks with 0 errors and 0 runtime exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 8.1 — Character System (Character Definition & Architecture)**
+**Milestone 8.2 — Character System (Character Selection & Spawning)**
 
-Tasks for Milestone 8.1:
-1. Create data-driven `CharacterDefinition` ScriptableObject for Warrior, Archer, and Gunner.
-2. Define core character attributes: Display Name, Max Health, Movement Speed, Starting Weapon, Character Prefab, Portrait, Base Stats.
-3. Refactor player initialization to source baseline stats from `CharacterDefinition`.
-4. Keep shared systems shared; avoid duplicate controller implementations (`WarriorController`, `ArcherController`, etc.).
+Tasks for Milestone 8.2:
+1. Create `CharacterRoster` ScriptableObject holding available `CharacterDefinition[]` choices.
+2. Implement Character Selection UI allowing player to choose character (initially Warrior).
+3. Implement `PlayerSpawner` in dungeon scenes to dynamically instantiate the selected character prefab at a spawn point.
+4. Implement explicit runtime binding of player-dependent scene systems (`CameraFollow`, `WaveManager`, `UpgradeManager`, `PlayerExperienceUI`, `DungeonCompletionController`, `DungeonRunStats`) to the newly spawned `PlayableCharacter`.
+5. Remove pre-placed player from `Dungeon_Prototype.unity` in favor of dynamic spawning.
 
 Do NOT start:
-- Character selection UI (Milestone 8.2)
 - Archer / bow projectile system (Milestone 8.3)
 - Gunner / rifle system (Milestone 8.4)
 - World Map / multi-dungeon progression (Phase 9)
@@ -231,27 +253,50 @@ None.
 
 # Testing Status
 
-## Milestone 7.1 Verification
+## Milestone 8.1 Verification
 
-Automated Play Mode verification suite ran and passed all 28 checks in Unity (`playmode_m7_1.log`):
-- **Check 1 - Production API Purity**: PlayerExperience contains no test-only Reset API; production purity preserved (PASSED).
-- **Check 2 - Result Panel Inactive Initially**: DungeonCompletePanel is inactive and hidden during active gameplay (PASSED).
-- **Check 3 - TotalXPEarned Property**: PlayerExperience.TotalXPEarned accurately tracks cumulative XP across level-ups (PASSED).
-- **Check 4 - WaveManager.OnEnemyDefeated Event**: Published authoritatively exactly once when tracked wave enemy dies (PASSED).
-- **Check 5 - DungeonRunStats Time Tracking**: Recorded valid unpaused elapsed time (`MM:SS`) (PASSED).
-- **Check 6 - ExperiencePickup.TryCollect**: Successfully collected once and rejected duplicate collection (PASSED).
-- **Check 7 - Final XP Pickup Auto-Collection**: Final enemy XP pickup in scene automatically resolved and not lost on dungeon completion (PASSED).
-- **Check 8 - Collision Priority (Option B)**: Pending upgrade selection takes precedence; panels never conflict simultaneously (PASSED).
-- **Check 9 - Upgrade Resolution to Result Transition**: Upgrade resolved cleanly; DungeonCompletePanel opened and pause ownership established (PASSED).
-- **Check 10 - Single-Fire Idempotency Guard**: DungeonCompletionController enforces strict single-fire idempotency; repeated calls ignored (PASSED).
-- **Check 11 - Decoupled UI Architecture**: DungeonCompleteUI contains zero gameplay references or calculation logic (PASSED).
-- **Check 12 - Formatted Stats Display**: Displays all formatted run stats: Time, Enemies Defeated, Level Reached, XP Earned (PASSED).
-- **Check 13 - Restart Button Configuration**: Restart Dungeon button configured and interactable on result panel (PASSED).
-- **Check 14–17 - Pause Invariants**: Player attacks and movement completely suppressed by `timeScale = 0` during completion (PASSED).
-- **Check 18–25 - Core Systems Non-Regression**: PlayerHealth, PlayerAim, MeleeWeapon, WaveManager, PlayerExperience, and PlayerStats intact (PASSED).
-- **Check 26 - Scene Cleanliness**: Dedicated verification workflow verified; clean scene setup isolates test runner without leaving verifier in scene (PASSED).
-- **Check 27 - Compilation Diagnostics**: Unity compiled with 0 errors (PASSED).
-- **Check 28 - Runtime Diagnostics**: 0 runtime exceptions occurred in Play Mode (PASSED).
+Automated Play Mode verification suite ran and passed all 41 checks in Unity (`playmode_m8_1.log`):
+- **Check 1**: CharacterDefinition is a ScriptableObject (PASSED).
+- **Check 2**: Character_Warrior.asset exists and loaded successfully (PASSED).
+- **Check 3**: Warrior definition valid: ID='warrior', DisplayName='Warrior' (PASSED).
+- **Check 4**: Warrior definition points to the Warrior character prefab (PASSED).
+- **Check 5**: Warrior.prefab exists at Assets/Prefabs/Characters/Warrior.prefab (PASSED).
+- **Check 6**: Old Player.prefab no longer exists; cleanly migrated to Warrior.prefab (PASSED).
+- **Check 7**: Warrior.prefab preserved the existing Unity GUID (`6f312a6b5127de248b5f102e81070d89`) (PASSED).
+- **Check 8**: Warrior GameObject root is named 'Warrior' (PASSED).
+- **Check 9**: Warrior root retains Tag = 'Player' (PASSED).
+- **Check 10**: Warrior GameObject has PlayableCharacter component attached (PASSED).
+- **Check 11**: Dungeon_Prototype contains exactly one PlayableCharacter (Warrior) (PASSED).
+- **Check 12**: Scene cleanliness architecture verified; cleanup routine decouples test harness and no legacy verifiers exist (PASSED).
+- **Check 13**: Warrior base MoveSpeed remains 6.0 (current: 6) (PASSED).
+- **Check 14**: Warrior MaxHealth remains 100.0 (current: 100) (PASSED).
+- **Check 15**: Warrior sword base Damage remains 25.0 (current: 25) (PASSED).
+- **Check 16**: Warrior sword base AttackCooldown remains 0.5s (current: 0.5) (PASSED).
+- **Check 17**: PlayerMovement steps without error and respects physics bounds (PASSED).
+- **Check 18**: PlayerAim updates yaw rotation while strictly preserving horizontal constraints (PASSED).
+- **Check 19**: PlayerHealth receives damage, clamps value, and raises health change events (PASSED).
+- **Check 20**: MeleeWeapon attack executed and OnAttack event dispatched successfully (PASSED).
+- **Check 21**: Enemy health and death pipeline operates correctly (PASSED).
+- **Check 22**: ExperiencePickup TryCollect correctly awards XP and destroys itself (PASSED).
+- **Check 23**: PlayerExperience advanced level (1 -> 2) and fired OnLevelUp (PASSED).
+- **Check 24**: PlayerExperienceUI elements configured and bound (PASSED).
+- **Check 25**: UpgradeManager responsive to level up; pending queue supported (PASSED).
+- **Check 26**: Damage bonus applied (+20%): multiplier is 1.20 (PASSED).
+- **Check 27**: Attack speed bonus applied (+15%): multiplier is 1.15 (PASSED).
+- **Check 28**: Movement speed bonus applied (+10%): EffectiveMoveSpeed is 6.6 (PASSED).
+- **Check 29**: WaveManager playerTarget points directly to the active Warrior (PASSED).
+- **Check 30**: CameraFollow target points directly to the active Warrior (PASSED).
+- **Check 31**: DungeonCompletionController present and orchestrates completion lifecycle (PASSED).
+- **Check 32**: DungeonRunStats packages summary accurately: Time='00:00', Enemies=0 (PASSED).
+- **Check 33**: RestartDungeon method is exposed and bound to completion controller (PASSED).
+- **Check 34**: UpgradeManager is completely character-agnostic with zero character-type branching (PASSED).
+- **Check 35**: UpgradeSelectionUI is completely character-agnostic with zero character-type branching (PASSED).
+- **Check 36**: CharacterDefinition contains no weapon-specific combat calculation fields (PASSED).
+- **Check 37**: CharacterDefinition does not duplicate gameplay stat ownership (moveSpeed/maxHealth) (PASSED).
+- **Check 38**: PlayableCharacter is a lean identity root component with zero calculation bloat (PASSED).
+- **Check 39**: Zero stale Player.prefab path references remain across repository scripts (PASSED).
+- **Check 40**: Unity compiled with 0 errors (PASSED).
+- **Check 41**: Play Mode produced 0 runtime exceptions (PASSED).
 
 ---
 
@@ -259,7 +304,7 @@ Automated Play Mode verification suite ran and passed all 28 checks in Unity (`p
 
 ```text
 Latest verified commit:
-6c1646f feat: implement dungeon completion flow
+Pending verification commit
 ```
 
 ---
@@ -278,62 +323,66 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 7.1 Dungeon Completion and Result Screen implementation and verification.
-- Assets/Scripts/Dungeons/DungeonRunSummary.cs
-- Assets/Scripts/Dungeons/DungeonRunStats.cs
-- Assets/Scripts/Dungeons/DungeonCompletionController.cs
-- Assets/Scripts/UI/DungeonCompleteUI.cs
-- Assets/Scripts/Experience/ExperiencePickup.cs (added TryCollect API)
-- Assets/Scripts/Experience/PlayerExperience.cs (added TotalXPEarned)
-- Assets/Scripts/Waves/WaveManager.cs (added OnEnemyDefeated event)
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured RunControllers and Canvas/DungeonCompletePanel)
-- Assets/Tests/Verification/Milestone7_1_Verifier.cs
-- Assets/Editor/Milestone7_1_Setup.cs
+- Milestone 8.1 Character Definition & Architecture implementation and Play Mode verification.
+- Assets/Scripts/Characters/CharacterDefinition.cs (ScriptableObject)
+- Assets/Scripts/Characters/PlayableCharacter.cs (Lightweight identity root component)
+- Assets/ScriptableObjects/Characters/Character_Warrior.asset
+- Migrated Assets/Prefabs/Characters/Player.prefab -> Warrior.prefab (preserved GUID: 6f312a6b5127de248b5f102e81070d89)
+- Configured Warrior root name to "Warrior", retaining Tag "Player"
+- Attached PlayableCharacter to Warrior.prefab referencing Character_Warrior.asset
+- Repaired stale Player.prefab paths across all 6 legacy setup scripts (Milestones 1.1, 1.2, 1.3, 2.2, 5.1, 6.1)
+- Verified Dungeon_Prototype.unity contains exactly one Warrior instance with clean scene wiring
+- Verified production scene contains zero verifiers on disk
+- Assets/Editor/Milestone8_1_Setup.cs
+- Assets/Tests/Verification/Milestone8_1_Verifier.cs (41 automated checks passed)
 ```
 
 ## Changed Files
 
 ```text
+- Assets/Editor/Milestone1_1_Setup.cs
+- Assets/Editor/Milestone1_2_Setup.cs
+- Assets/Editor/Milestone1_3_Setup.cs
+- Assets/Editor/Milestone2_2_Setup.cs
+- Assets/Editor/Milestone5_1_Setup.cs
+- Assets/Editor/Milestone6_1_Setup.cs
+- Assets/Editor/Milestone8_1_Setup.cs
+- Assets/Editor/Milestone8_1_Setup.cs.meta
+- Assets/Prefabs/Characters/Warrior.prefab (renamed from Player.prefab)
+- Assets/Prefabs/Characters/Warrior.prefab.meta (renamed from Player.prefab.meta)
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Scripts/Experience/ExperiencePickup.cs
-- Assets/Scripts/Experience/PlayerExperience.cs
-- Assets/Scripts/Waves/WaveManager.cs
-- Assets/Editor/Milestone7_1_Setup.cs
-- Assets/Editor/Milestone7_1_Setup.cs.meta
-- Assets/Scripts/Dungeons.meta
-- Assets/Scripts/Dungeons/DungeonCompletionController.cs
-- Assets/Scripts/Dungeons/DungeonCompletionController.cs.meta
-- Assets/Scripts/Dungeons/DungeonRunStats.cs
-- Assets/Scripts/Dungeons/DungeonRunStats.cs.meta
-- Assets/Scripts/Dungeons/DungeonRunSummary.cs
-- Assets/Scripts/Dungeons/DungeonRunSummary.cs.meta
-- Assets/Scripts/UI/DungeonCompleteUI.cs
-- Assets/Scripts/UI/DungeonCompleteUI.cs.meta
-- Assets/Tests/Verification/Milestone7_1_Verifier.cs
-- Assets/Tests/Verification/Milestone7_1_Verifier.cs.meta
+- Assets/ScriptableObjects/Characters.meta
+- Assets/ScriptableObjects/Characters/Character_Warrior.asset
+- Assets/ScriptableObjects/Characters/Character_Warrior.asset.meta
+- Assets/Scripts/Characters.meta
+- Assets/Scripts/Characters/CharacterDefinition.cs
+- Assets/Scripts/Characters/CharacterDefinition.cs.meta
+- Assets/Scripts/Characters/PlayableCharacter.cs
+- Assets/Scripts/Characters/PlayableCharacter.cs.meta
+- Assets/Tests/Verification/Milestone8_1_Verifier.cs
+- Assets/Tests/Verification/Milestone8_1_Verifier.cs.meta
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 28 checks passed)
-- Production API purity: PlayerExperience contains no test-only Reset API
-- DungeonCompletePanel inactive and hidden during active gameplay
-- Cumulative TotalXPEarned calculation across multiple level thresholds
-- Authoritative WaveManager.OnEnemyDefeated publication on enemy death
-- DungeonRunStats active unpaused elapsed time and kill count tracking
-- ExperiencePickup.TryCollect single-award and duplicate-rejection logic
-- Final XP pickup auto-collection on dungeon completion preventing loss
-- Option B collision priority: pending upgrades resolve before result screen
-- Modal isolation: UpgradeSelectionPanel and DungeonCompletePanel never overlap
-- Single-fire idempotency guard on completion controller
-- Reflection check verifying pure decoupled UI presentation
-- Formatted run stats display: Time (MM:SS), Enemies Defeated, Level Reached, XP Earned
-- Restart Dungeon button configuration and SceneManager reload binding
-- Pause invariants: player movement and combat suppressed by Time.timeScale = 0
-- Non-regression: PlayerHealth, PlayerAim, MeleeWeapon, WaveManager, PlayerExperience, PlayerStats intact
-- Scene cleanliness: normal manual scene verified clean with zero verifiers attached
+- In-engine Play Mode automated verification suite (all 41 checks passed)
+- CharacterDefinition ScriptableObject architecture & serialization
+- Character_Warrior.asset loading, identity strings, and prefab linkage
+- Warrior.prefab existence, naming, Tag = Player, and PlayableCharacter attachment
+- Unity asset GUID preservation across Player.prefab -> Warrior.prefab rename
+- Base stat ownership preservation (MoveSpeed = 6, MaxHealth = 100, Damage = 25, Cooldown = 0.5)
+- Non-regression: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon, EnemyHealth
+- Non-regression: ExperiencePickup, PlayerExperience, PlayerExperienceUI, UpgradeManager
+- Additive percentage stat upgrades: Damage (+20%), AttackSpeed (+15%), MovementSpeed (+10%)
+- Effective stat scaling: EffectiveDamage = 30, EffectiveMoveSpeed = 6.6
+- Scene wiring: WaveManager targeting Warrior, CameraFollow tracking Warrior
+- Completion flow: DungeonCompletionController and DungeonRunStats
+- Single playable character verification in Dungeon_Prototype.unity
+- Scene cleanliness: zero permanent verifiers on disk in Dungeon_Prototype.unity
+- Character-agnostic design: zero character-type branching in UpgradeManager and UpgradeSelectionUI
+- Zero stale Player.prefab path references across all repository C# scripts
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
 
@@ -346,11 +395,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 8.1 — Character System (Character Definition & Architecture)
+Milestone 8.2 — Character System (Character Selection & Spawning)
 ```
 
 ## Latest Verified Commit
 
 ```text
-6c1646f feat: implement dungeon completion flow
+Pending verification commit
 ```

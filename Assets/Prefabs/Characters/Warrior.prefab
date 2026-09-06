@@ -108,8 +108,9 @@ GameObject:
   - component: {fileID: 8122806169242011842}
   - component: {fileID: 1690830145018986285}
   - component: {fileID: 5191688275893372911}
+  - component: {fileID: 819200000000000006}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Warrior
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -282,6 +283,7 @@ MonoBehaviour:
   xpGrowthMultiplier: 1.5
   currentLevel: 1
   currentXP: 0
+  totalXPEarned: 0
   xpToNextLevel: 100
 --- !u!114 &5191688275893372911
 MonoBehaviour:
@@ -298,6 +300,19 @@ MonoBehaviour:
   damageMultiplier: 1
   attackSpeedMultiplier: 1
   movementSpeedMultiplier: 1
+--- !u!114 &819200000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3441253740286043302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7151eb83e3ac4018a22ff798af00ff6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.PlayableCharacter
+  characterDefinition: {fileID: 11400000, guid: 8cb84c2076ee41f8896574292030b7a1, type: 2}
 --- !u!1 &3738605462662276778
 GameObject:
   m_ObjectHideFlags: 0
