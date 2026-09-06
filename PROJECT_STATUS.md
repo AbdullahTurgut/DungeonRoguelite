@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 5.1 completed and verified in Unity Play Mode.
+- Milestone 6.1 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,18 +11,18 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 5: Experience (Milestone 5.1: Experience Reward & Level-Up)**  
-**NEXT UP — Phase 6: Temporary Upgrades (Milestone 6.1: Upgrade Selection & Stat Modifiers)**
+**COMPLETED — Phase 6: Temporary Upgrades (Milestone 6.1: Upgrade Selection & Stat Modifiers)**  
+**NEXT UP — Phase 7: Dungeon Completion (Milestone 7.1: Result Screen & Dungeon Clear State)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), and 5.1 (Experience System) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), and 6.1 (Temporary Upgrades) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 5 — Experience (Completed)
+## PHASE 6 — Temporary Upgrades (Completed)
 
-All milestones in Phase 5 are complete.
+All milestones in Phase 6 are complete.
 
 ---
 
@@ -90,7 +90,7 @@ All milestones in Phase 5 are complete.
 - **Milestone 4.1 — Spawner and Wave System**:
   - Implemented data-driven `WaveDefinition.cs` ScriptableObject defining wave composition (`EnemySpawnEntry[]`) and pacing (`spawnInterval = 0.5f`).
   - Created prototype wave assets `Wave_01.asset` (10 Zombies), `Wave_02.asset` (15 Zombies), `Wave_03.asset` (20 Zombies) under `Assets/ScriptableObjects/Waves/`.
-  - Implemented `WaveManager.cs` component in `Assets/Scripts/Waves/` maintaining single responsibility over wave sequencing, player targeting, and round-robin spawning.
+  - Implemented `WaveManager.cs` component in `Assets/Scripts/Waves/` maintaining single responsibility over wave sequencing, player targeting, and round-robin perimeter spawn points.
   - Configured 4 scene spawn points (`SpawnPoints` hierarchy) around the arena perimeter.
   - Implemented authoritative living enemy tracking using `HashSet<EnemyHealth> activeEnemies` with `LivingEnemyCount => activeEnemies.Count`. Zero frame-by-frame polling.
   - Per-enemy event subscription to `EnemyHealth.OnDied` with clean delegate unsubscription upon death and component cleanup. Idempotent death processing.
@@ -111,24 +111,37 @@ All milestones in Phase 5 are complete.
   - Updated `Zombie.prefab` with `ExperienceReward.cs` component configured with `xpAmount = 10` and `pickupPrefab`.
   - Configured `Dungeon_Prototype.unity` with Canvas, EventSystem, ExperienceHUD (XPSlider + LevelText), and `Milestone5_1_Verifier.cs`.
   - Automated Play Mode verification suite ran and passed all 32 checks with 0 errors and 0 runtime exceptions.
+- **Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)**:
+  - Implemented `PlayerStats.cs` component on `Player.prefab` owning runtime temporary stat multipliers (`DamageMultiplier`, `AttackSpeedMultiplier`, `MovementSpeedMultiplier`), initialized neutrally at 1.0.
+  - Implemented additive percentage stacking logic (`AddDamageBonus`, `AddAttackSpeedBonus`, `AddMovementSpeedBonus`) with zero dependencies on `UpgradeDefinition` or UI. (e.g. Damage +20% once = 1.20, twice = 1.40; Attack Speed +15% twice = 1.30; Movement Speed +10% twice = 1.20).
+  - Defined `UpgradeType.cs` enum (`Damage`, `AttackSpeed`, `MovementSpeed`).
+  - Created data-driven `UpgradeDefinition.cs` ScriptableObject data structure with `id`, `displayName`, `description`, `upgradeType`, and `magnitude`.
+  - Created 3 prototype ScriptableObject upgrade assets under `Assets/ScriptableObjects/Upgrades/`: `Upgrade_Damage.asset` (Damage +20%, magnitude 0.20), `Upgrade_AttackSpeed.asset` (Attack Speed +15%, magnitude 0.15), and `Upgrade_MovementSpeed.asset` (Movement Speed +10%, magnitude 0.10).
+  - Integrated `PlayerStats` into `MeleeWeapon.cs` (`EffectiveDamage = damage * DamageMultiplier`, `EffectiveAttackCooldown = attackCooldown / AttackSpeedMultiplier`) and `PlayerMovement.cs` (`EffectiveMoveSpeed = moveSpeed * MovementSpeedMultiplier`).
+  - Implemented strict pause guards (`Time.timeScale <= 0f`) across `PlayerMovement`, `PlayerAttack`, `EnemyMovement`, and `EnemyAttack`, guaranteeing zero displacement or combat execution while paused.
+  - Implemented `UpgradeManager.cs` orchestrating level-up queue (`pendingChoicesCount`), pausing gameplay (`Time.timeScale = 0f`), emitting choices, guarding against rapid double-clicks, applying selected upgrades to `PlayerStats`, and resuming gameplay (`Time.timeScale = 1f`) when the queue empties.
+  - Implemented `UpgradeSelectionUI.cs` modal view controller attached to `Canvas`, listening to `UpgradeManager` events to show/hide `UpgradeSelectionPanel` with 3 dynamic `UpgradeChoiceButton` cards displaying formatted name and description.
+  - Enforced clean decoupled architecture: UI components contain zero stat calculation or player stats modification logic; `PlayerStats` contains zero upgrade or UI logic.
+  - Configured `Dungeon_Prototype.unity` scene with `UpgradeManager` and `Canvas/UpgradeSelectionPanel`.
+  - Automated Play Mode verification suite (`Milestone6_1_Verifier.cs`) ran and passed all 36 checks with 0 errors and 0 runtime exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)**
+**Milestone 7.1 — Dungeon Completion (Result Screen & Dungeon Clear State)**
 
-Tasks for Milestone 6.1:
-1. Define upgrade data structure (`UpgradeDefinition` ScriptableObject).
-2. Implement 3 prototype upgrades (e.g. +Attack Damage, +Move Speed, +Max Health).
-3. Implement upgrade manager / state tracking player stats.
-4. Hook `PlayerExperience.OnLevelUp` to pause/trigger upgrade selection.
-5. Create temporary upgrade selection UI presenting 3 random choices.
+Tasks for Milestone 7.1:
+1. Hook `WaveManager.OnDungeonCompleted` event.
+2. Implement dungeon complete result UI overlay / panel.
+3. Display victory / clear status and run summary stats (e.g. waves cleared, completion status).
+4. Handle game pause / state transition on dungeon clear.
+5. Provide button / option to restart or return (prototype placeholder).
 
 Do NOT start:
 - Permanent meta-progression / skill tree (Milestone 8.1)
-- Boss logic (Milestone 6.1 boss wave / Milestone 12)
-- Dungeon complete UI (Milestone 7.1)
+- Multi-dungeon progression / world map (Milestone 9)
+- Save / load persistence
 
 ---
 
@@ -152,8 +165,14 @@ Do NOT start:
   - `ExperienceReward` on enemy prefabs listens to `EnemyHealth.OnDied` and drops `ExperiencePickup` without coupling `EnemyHealth` or `WaveManager` to XP logic
   - `ExperiencePickup` physical collectible with trigger volume and kinematic `Rigidbody`
   - `PlayerExperienceUI` strictly event-driven; updates Slider and TextMeshProUGUI on `OnExperienceChanged` and `OnLevelUp`
+- Stat & Upgrade Architecture:
+  - `PlayerStats.cs` component on `Player.prefab` owns runtime temporary stat multipliers (`DamageMultiplier`, `AttackSpeedMultiplier`, `MovementSpeedMultiplier`) with additive percentage stacking rules (`1.0 + sum(bonus)`). Decoupled from `UpgradeDefinition` and UI.
+  - Data-driven `UpgradeDefinition` ScriptableObjects mapped by `UpgradeType` enum to dedicated `PlayerStats` methods.
+  - `UpgradeManager` listens to `PlayerExperience.OnLevelUp`, queues pending selections (`pendingChoicesCount`), pauses time (`Time.timeScale = 0f`), and only unpauses when the queue is fully resolved.
+  - Explicit `Time.timeScale <= 0f` checks across `PlayerMovement`, `PlayerAttack`, `EnemyMovement`, and `EnemyAttack` ensure full movement and combat suppression during pause.
+  - `UpgradeSelectionUI` and `UpgradeChoiceButton` are strictly presentation-layer components with zero stat calculation or modifier mutation logic.
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Separate components across Player, Combat, Weapons, Enemies, Waves, Experience, and UI
+- Single Responsibility: Separate components across Player, Combat, Weapons, Enemies, Waves, Experience, Upgrades, and UI
 - Visuals: Primitives/placeholders (Capsules with FacingIndicators, SwordVisual, and Cyan Pickup diamond)
 - Git used as checkpoint and handoff system
 
@@ -163,12 +182,12 @@ Do NOT start:
 
 None.
 
-*(Resolved: During test suite development, a test-side `MissingReferenceException` occurred when testing the double-award guard on an already destroyed GameObject. This was resolved by testing double collection synchronously in the same frame on a dedicated test instance prior to deferred GameObject destruction.)*
-
 ---
 
 # Future Maintenance & Technical Debt
 
+- **Randomized Upgrade Pool & Rarity Deferred**: The prototype presents a fixed pool of 3 upgrades (Damage, Attack Speed, Movement Speed). Weighted random rolling, upgrade rarity, rerolls, and bans are deferred to future upgrade polish milestones.
+- **Permanent Meta-Progression Deferred**: Skill tree and permanent stat upgrades are deferred to Milestone 8.1.
 - **DungeonDefinition Deferred**: `DungeonDefinition` remains deferred until Phase 9 / multi-dungeon progression actually requires dungeon-level metadata.
 - **Corpse Cleanup and Object Pooling Deferred**: Defeated enemy corpses remain in scene as non-obstructing entities. Object pooling and corpse cleanup will be introduced in later milestones.
 - **Direct Pursuit vs Pathfinding**: Current `EnemyMovement` uses direct `CharacterController` pursuit. This is sufficient for the prototype but does not provide full pathfinding around complex dungeon geometry. Re-evaluate NavMesh when dungeon layouts require real obstacle navigation.
@@ -179,41 +198,44 @@ None.
 
 # Testing Status
 
-## Milestone 5.1 Verification
+## Milestone 6.1 Verification
 
-Automated Play Mode verification suite ran and passed all 32 checks in Unity (`playmode_m5_1.log`):
-- **Check 1 - Level 1 Start**: Player starts at Level 1 (PASSED).
-- **Check 2 - Zero XP Start**: Player starts with 0 XP (PASSED).
-- **Check 3 - Level 1 XP Threshold**: Required XP for Level 1 is exactly 100 (PASSED).
-- **Check 4 - GainExperience Logic**: `GainExperience(50)` increases `CurrentXP` to 50 at Level 1 (PASSED).
-- **Check 5 - Non-Positive XP Guards**: XP gains $\le 0$ (0 and -25) are safely ignored without changing XP or firing events (PASSED).
-- **Check 6 - Required XP Formula**: Formula `RoundToInt(100 * 1.5^(level - 1))` confirmed (L1 = 100, L2 = 150, L3 = 225) (PASSED).
-- **Check 7 - Progress Normalization**: `ProgressNormalized` strictly stays in $[0, 1]$ range (50/100 = 0.50) (PASSED).
-- **Check 8 - Exact Threshold Level-Up**: Reaching exact 100 XP triggers level up to Level 2 with 0 remaining XP and 150 next threshold (PASSED).
-- **Check 9 - XP Carry-Over**: Excess XP carries over cleanly across level-ups (90 + 75 XP reaches Level 3 with 15/225 XP) (PASSED).
-- **Check 10 - Multi-Level Jumps**: Large single gain (500 XP) advances Player directly to Level 4 with 25 carry-over XP (PASSED).
-- **Check 11 - OnLevelUp Event Sequencing**: `OnLevelUp` fired exactly once per gained level in sequential order (2, 3, 4) (PASSED).
-- **Check 12 - OnExperienceChanged Event**: Fired accurately with updated `(currentXP, xpToNextLevel)` parameters (PASSED).
-- **Check 13 - ExperiencePickup Initialization**: Initializes with configured XP amount (42 XP) (PASSED).
-- **Check 14 - Pickup Minimum Clamping**: Clamps non-positive initialization values to at least 1 XP (PASSED).
-- **Check 15 - Pickup Trigger Collider**: `ExperiencePickup` has Collider configured with `isTrigger == true` (PASSED).
-- **Check 16 - Pickup Rigidbody**: `ExperiencePickup` has Rigidbody configured with `isKinematic == true` and `useGravity == false` (PASSED).
-- **Check 17 - Premature Award Guard**: Pickup does not award XP or flag collected before collision (PASSED).
-- **Check 18 - Physical Trigger Collection**: Player `CharacterController` entering pickup volume awards configured 10 XP (PASSED).
-- **Check 19 - Double-Award Guard**: Multiple trigger invocations in same frame award XP exactly once (`isCollected` guard) (PASSED).
-- **Check 20 - Pickup Destruction**: `ExperiencePickup` GameObjects successfully destroyed after collection (PASSED).
-- **Check 21 - Non-Player Rejection**: Non-player colliders (obstacles, enemies) do not collect or destroy pickup (PASSED).
-- **Check 22 - Zombie Reward Configuration**: Zombie prefab has `ExperienceReward` with `xpAmount = 10` and valid `pickupPrefab` (PASSED).
-- **Check 23 - Death Drop Instantiation**: Defeating Zombie instantiates `ExperiencePickup` containing 10 XP near death position (PASSED).
-- **Check 24 - Pickup Elevation**: `ExperienceReward` spawns pickup at proper ground elevation ($y = 0.25$) (PASSED).
-- **Check 25 - Duplicate Death Drop Guard**: Dead zombie corpse cannot produce duplicate XP drops upon subsequent damage (PASSED).
-- **Check 26 - Decoupled Architecture**: `WaveManager` and `EnemyHealth` have zero direct dependencies or references to XP components (PASSED).
-- **Check 27 - WaveManager Integration**: Zombie spawned via `WaveManager` drops `ExperiencePickup` upon death (PASSED).
-- **Check 28 - Wave Independence**: Wave progression and dungeon completion proceed cleanly independent of uncollected XP pickups (PASSED).
-- **Check 29 - PlayerExperienceUI Response**: UI Slider (0.50) and TextMeshProUGUI ('Level 1 (50 / 100 XP)') update accurately via events (PASSED).
-- **Check 30 - Core System Non-Regression**: `PlayerMovement`, `PlayerAim`, `PlayerHealth`, and `MeleeWeapon` integrity intact (PASSED).
-- **Check 31 - Compilation Diagnostics**: Unity compiled with 0 errors (PASSED).
-- **Check 32 - Runtime Diagnostics**: 0 runtime exceptions in Play Mode (PASSED).
+Automated Play Mode verification suite ran and passed all 36 checks in Unity (`playmode_m6_1.log`):
+- **Check 1 - Neutral Multipliers**: PlayerStats starts at neutral multipliers (Damage: 1.0, AttackSpeed: 1.0, MovementSpeed: 1.0) (PASSED).
+- **Check 2 - Pending Selection Queuing**: Level-up creates exactly one pending upgrade selection (PASSED).
+- **Check 3 - Panel Visibility**: UpgradeSelectionPanel root GameObject is active and visible (PASSED).
+- **Check 4 - Gameplay Pause**: Gameplay paused upon upgrade selection (`Time.timeScale == 0`) (PASSED).
+- **Check 5 - Three Choices Presented**: Exactly three upgrade choices presented on UI cards (PASSED).
+- **Check 6 - Damage Bonus Application**: Damage +20% applied exactly once (`DamageMultiplier == 1.20`) (PASSED).
+- **Check 7 - Sword Damage Scaling**: Sword effective damage increased from 25 to 30 (PASSED).
+- **Check 8 - Additive Stacking Rule**: Additive stacking verified on PlayerStats (Damage: 1.00 -> 1.20 -> 1.40; AtkSpeed: 1.00 -> 1.15 -> 1.30; MoveSpeed: 1.00 -> 1.10 -> 1.20) (PASSED).
+- **Check 9 - Attack Speed Scaling**: Attack Speed +15% updated EffectiveAttackCooldown to 0.5 / 1.15 (0.4348s) (PASSED).
+- **Check 10 - Movement Speed Scaling**: Movement Speed +10% updated EffectiveMoveSpeed from 6.0 to 6.6 m/s (PASSED).
+- **Check 11 - Decoupled UI Logic**: UpgradeSelectionUI contains zero stat calculation or player stats modification logic (PASSED).
+- **Check 12 - Decoupled Button Logic**: UpgradeChoiceButton contains zero stat calculation logic (PASSED).
+- **Check 13 - Duplicate Click Guard**: Rapid / repeated selection guard prevented duplicate upgrade application (PASSED).
+- **Check 14 - Queue Consumption**: One level-up consumed exactly one upgrade choice (`pendingChoicesCount == 0`) (PASSED).
+- **Check 15 - Panel Auto-Close**: UpgradeSelectionPanel closed when pending choices reached 0 (PASSED).
+- **Check 16 - Resume TimeScale**: `Time.timeScale` restored to 1.0 after selection resolved (PASSED).
+- **Check 17 - Multi-Level Queue**: Multi-level gain queued all earned choices (PASSED).
+- **Check 18 - Pause During Multi-Level**: Gameplay remains paused while pending choices exist in queue (PASSED).
+- **Check 19 - Final Queue Resumption**: Gameplay resumed and panel closed strictly after the final pending choice was selected (PASSED).
+- **Check 20 - Zero Discarded Choices**: All earned level-up selections processed without any selections discarded (PASSED).
+- **Check 21 - Sword Pause Suppression**: Player cannot execute sword attacks while upgrade selection is paused (PASSED).
+- **Check 22 - Player Movement Pause Suppression**: Player movement produces zero displacement while paused (PASSED).
+- **Check 23 - Zombie Movement Pause Suppression**: Zombie movement paused during upgrade selection (PASSED).
+- **Check 24 - Zombie Attack Pause Suppression**: Zombie attack cooldown and execution paused during upgrade selection (PASSED).
+- **Check 25 - Wave Timer Pause Suppression**: WaveManager spawn timers paused by `Time.timeScale == 0` (PASSED).
+- **Check 26 - Player Movement Resumption**: PlayerMovement functions cleanly after gameplay resumption (PASSED).
+- **Check 27 - Player Aim Resumption**: PlayerAim camera reference and directional calculations intact after resumption (PASSED).
+- **Check 28 - Player Health Integrity**: PlayerHealth state and properties intact (PASSED).
+- **Check 29 - Melee Hit Detection Geometry**: MeleeWeapon hit detection geometry and range intact (PASSED).
+- **Check 30 & 31 - Zombie & Wave Integrity**: Zombie behavior and WaveManager state integrity intact (PASSED).
+- **Check 32 - Experience System Integrity**: PlayerExperience state intact (PASSED).
+- **Check 33 - Experience HUD Integrity**: PlayerExperienceUI HUD components intact (PASSED).
+- **Check 34 - Scene Cleanliness**: Dedicated verification workflow verified; clean scene setup isolates test runner without leaving verifier in scene (PASSED).
+- **Check 35 - Compilation Diagnostics**: Unity compiled with 0 errors (PASSED).
+- **Check 36 - Runtime Diagnostics**: 0 runtime exceptions occurred in Play Mode (PASSED).
 
 ---
 
@@ -221,7 +243,7 @@ Automated Play Mode verification suite ran and passed all 32 checks in Unity (`p
 
 ```text
 Latest verified commit:
-4a96cb3 feat: implement experience and level system
+Pending verification commit
 ```
 
 ---
@@ -240,72 +262,82 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 5.1 Experience System implementation and verification.
-- Assets/Scripts/Experience/PlayerExperience.cs
-- Assets/Scripts/Experience/ExperiencePickup.cs
-- Assets/Scripts/Experience/ExperienceReward.cs
-- Assets/Scripts/UI/PlayerExperienceUI.cs
-- Assets/Prefabs/Pickups/ExperiencePickup.prefab
-- Assets/Materials/Pickups/M_ExperiencePickup.mat
-- Assets/Prefabs/Characters/Player.prefab (added PlayerExperience)
-- Assets/Prefabs/Enemies/Zombie.prefab (added ExperienceReward)
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Canvas, ExperienceHUD, and Milestone5_1_Verifier)
-- Assets/Tests/Verification/Milestone5_1_Verifier.cs
-- Assets/Editor/Milestone5_1_Setup.cs
+- Milestone 6.1 Temporary Level-Up Upgrade Selection implementation and verification.
+- Assets/Scripts/Player/PlayerStats.cs
+- Assets/Scripts/Upgrades/UpgradeType.cs
+- Assets/Scripts/Upgrades/UpgradeDefinition.cs
+- Assets/Scripts/Upgrades/UpgradeManager.cs
+- Assets/Scripts/UI/UpgradeChoiceButton.cs
+- Assets/Scripts/UI/UpgradeSelectionUI.cs
+- Assets/ScriptableObjects/Upgrades/Upgrade_Damage.asset
+- Assets/ScriptableObjects/Upgrades/Upgrade_AttackSpeed.asset
+- Assets/ScriptableObjects/Upgrades/Upgrade_MovementSpeed.asset
+- Assets/Prefabs/Characters/Player.prefab (added PlayerStats)
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured UpgradeManager, Canvas/UpgradeSelectionPanel)
+- Assets/Scripts/Player/PlayerMovement.cs (applied MovementSpeedMultiplier, added pause guard)
+- Assets/Scripts/Weapons/MeleeWeapon.cs (applied DamageMultiplier and AttackSpeedMultiplier, added pause guard)
+- Assets/Scripts/Player/PlayerAttack.cs (added pause guard)
+- Assets/Scripts/Enemies/EnemyMovement.cs (added pause guard)
+- Assets/Scripts/Enemies/EnemyAttack.cs (added pause guard)
+- Assets/Tests/Verification/Milestone6_1_Verifier.cs
+- Assets/Editor/Milestone6_1_Setup.cs
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Experience/PlayerExperience.cs
-- Assets/Scripts/Experience/PlayerExperience.cs.meta
-- Assets/Scripts/Experience/ExperiencePickup.cs
-- Assets/Scripts/Experience/ExperiencePickup.cs.meta
-- Assets/Scripts/Experience/ExperienceReward.cs
-- Assets/Scripts/Experience/ExperienceReward.cs.meta
-- Assets/Scripts/Experience.meta
-- Assets/Scripts/UI/PlayerExperienceUI.cs
-- Assets/Scripts/UI/PlayerExperienceUI.cs.meta
-- Assets/Scripts/UI.meta
-- Assets/Prefabs/Pickups/ExperiencePickup.prefab
-- Assets/Prefabs/Pickups/ExperiencePickup.prefab.meta
-- Assets/Prefabs/Pickups.meta
-- Assets/Materials/Pickups/M_ExperiencePickup.mat
-- Assets/Materials/Pickups/M_ExperiencePickup.mat.meta
-- Assets/Materials/Pickups.meta
-- Assets/Materials.meta
 - Assets/Prefabs/Characters/Player.prefab
-- Assets/Prefabs/Enemies/Zombie.prefab
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Tests/Verification/Milestone5_1_Verifier.cs
-- Assets/Tests/Verification/Milestone5_1_Verifier.cs.meta
-- Assets/Editor/Milestone5_1_Setup.cs
-- Assets/Editor/Milestone5_1_Setup.cs.meta
-- Assets/TextMesh Pro.meta
-- Assets/TextMesh Pro/
+- Assets/Scripts/Enemies/EnemyAttack.cs
+- Assets/Scripts/Enemies/EnemyMovement.cs
+- Assets/Scripts/Player/PlayerAttack.cs
+- Assets/Scripts/Player/PlayerMovement.cs
+- Assets/Scripts/Weapons/MeleeWeapon.cs
+- Assets/Editor/Milestone6_1_Setup.cs
+- Assets/Editor/Milestone6_1_Setup.cs.meta
+- Assets/ScriptableObjects/Upgrades.meta
+- Assets/ScriptableObjects/Upgrades/Upgrade_AttackSpeed.asset
+- Assets/ScriptableObjects/Upgrades/Upgrade_AttackSpeed.asset.meta
+- Assets/ScriptableObjects/Upgrades/Upgrade_Damage.asset
+- Assets/ScriptableObjects/Upgrades/Upgrade_Damage.asset.meta
+- Assets/ScriptableObjects/Upgrades/Upgrade_MovementSpeed.asset
+- Assets/ScriptableObjects/Upgrades/Upgrade_MovementSpeed.asset.meta
+- Assets/Scripts/Player/PlayerStats.cs
+- Assets/Scripts/Player/PlayerStats.cs.meta
+- Assets/Scripts/UI/UpgradeChoiceButton.cs
+- Assets/Scripts/UI/UpgradeChoiceButton.cs.meta
+- Assets/Scripts/UI/UpgradeSelectionUI.cs
+- Assets/Scripts/UI/UpgradeSelectionUI.cs.meta
+- Assets/Scripts/Upgrades.meta
+- Assets/Scripts/Upgrades/UpgradeDefinition.cs
+- Assets/Scripts/Upgrades/UpgradeDefinition.cs.meta
+- Assets/Scripts/Upgrades/UpgradeManager.cs
+- Assets/Scripts/Upgrades/UpgradeManager.cs.meta
+- Assets/Scripts/Upgrades/UpgradeType.cs
+- Assets/Scripts/Upgrades/UpgradeType.cs.meta
+- Assets/Tests/Verification/Milestone6_1_Verifier.cs
+- Assets/Tests/Verification/Milestone6_1_Verifier.cs.meta
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 32 checks passed)
-- Player starting level (1), initial XP (0), and threshold (100)
-- Progressive threshold formula: RoundToInt(100 * 1.5^(level - 1)) -> 100, 150, 225
-- GainExperience with valid values, 0, and negative values
-- XP carry-over calculations and multi-level jump processing
-- OnExperienceChanged and OnLevelUp event sequencing and parameter validation
-- ExperiencePickup trigger collider and kinematic Rigidbody configuration
-- Physical trigger collection by Player CharacterController awarding XP
-- Double-award prevention guard (isCollected)
-- ExperiencePickup GameObject destruction upon collection
-- Non-player collider collection rejection
-- ExperienceReward on Zombie prefab and death drop instantiation at elevation y = 0.25
-- Duplicate death event drop guard
-- Decoupled architecture between WaveManager/EnemyHealth and XP components
-- WaveManager wave progression independent of uncollected pickups
-- PlayerExperienceUI event-driven updates (Slider fill and TextMeshProUGUI text)
-- Regression testing: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon intact
+- In-engine Play Mode automated verification suite (all 36 checks passed)
+- PlayerStats starting neutral multipliers (1.0, 1.0, 1.0)
+- Additive percentage stacking formula: 1.0 + sum(bonus) -> 1.00 -> 1.20 -> 1.40 for Damage; 1.00 -> 1.15 -> 1.30 for Attack Speed; 1.00 -> 1.10 -> 1.20 for Movement Speed
+- MeleeWeapon damage scaling: 25 -> 30 with Damage +20%
+- MeleeWeapon cooldown scaling: 0.5s -> 0.4348s with Attack Speed +15%
+- PlayerMovement speed scaling: 6.0 m/s -> 6.6 m/s with Movement Speed +10%
+- Level-up event triggers UpgradeManager selection queue
+- Time.timeScale set to 0 during selection
+- Modal UpgradeSelectionPanel appears displaying 3 upgrade choices
+- Pause invariants: Player cannot attack or move while paused; Zombie cannot move or attack; Wave timers paused
+- Duplicate and rapid click prevention guards on UI cards
+- Multi-level queue handling: queued 3 level choices sequentially without dropping or premature unpausing
+- Resumption timing: gameplay resumes (timeScale = 1.0) strictly when pending choices reach 0
+- Non-regression: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon, Zombie, WaveManager, PlayerExperience, and ExperienceHUD all functional after resume
+- Scene cleanliness: normal manual scene verified clean with zero verifiers attached
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
 
@@ -318,11 +350,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)
+Milestone 7.1 — Dungeon Completion (Result Screen & Dungeon Clear State)
 ```
 
 ## Latest Verified Commit
 
 ```text
-4a96cb3 feat: implement experience and level system
+Pending verification commit
 ```

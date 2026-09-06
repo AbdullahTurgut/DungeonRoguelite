@@ -27,12 +27,14 @@ namespace DungeonRoguelite.Player
         private CharacterController characterController;
         private InputAction moveAction;
         private InputActionMap playerActionMap;
+        private PlayerStats playerStats;
         private float verticalVelocity;
         private Vector2 currentInput;
         private bool testInputOverrideActive;
         private Vector2 testInputOverride;
 
         public float MoveSpeed => moveSpeed;
+        public float EffectiveMoveSpeed => moveSpeed * (playerStats != null ? playerStats.MovementSpeedMultiplier : 1f);
         public float Gravity => gravity;
         public bool IsGrounded => characterController != null && characterController.isGrounded;
         public Vector2 CurrentInput => testInputOverrideActive ? testInputOverride : currentInput;
@@ -41,6 +43,7 @@ namespace DungeonRoguelite.Player
         private void Awake()
         {
             characterController = GetComponent<CharacterController>();
+            playerStats = GetComponent<PlayerStats>();
             InitializeInput();
         }
 
@@ -56,7 +59,8 @@ namespace DungeonRoguelite.Player
 
         private void Update()
         {
-            float dt = Time.deltaTime > 0f ? Time.deltaTime : 0.02f;
+            if (Time.timeScale <= 0f) return;
+            float dt = Time.deltaTime;
             StepMovement(dt);
         }
 
@@ -66,6 +70,7 @@ namespace DungeonRoguelite.Player
         /// </summary>
         public void StepMovement(float dt = 0.02f)
         {
+            if (Time.timeScale <= 0f) return;
             ReadInput();
             MoveCharacter(dt);
         }
@@ -174,7 +179,7 @@ namespace DungeonRoguelite.Player
             }
 
             // WASD movement operates strictly on the X/Z horizontal plane
-            Vector3 horizontalMove = new Vector3(input.x, 0f, input.y) * moveSpeed;
+            Vector3 horizontalMove = new Vector3(input.x, 0f, input.y) * EffectiveMoveSpeed;
 
             // Vertical grounding & gravity for CharacterController stability
             if (characterController.isGrounded && verticalVelocity < 0f)
@@ -190,6 +195,14 @@ namespace DungeonRoguelite.Player
             totalMove.y = verticalVelocity;
 
             characterController.Move(totalMove * dt);
+        }
+
+        /// <summary>
+        /// Explicitly binds a PlayerStats component.
+        /// </summary>
+        public void SetPlayerStats(PlayerStats stats)
+        {
+            playerStats = stats;
         }
 
         /// <summary>

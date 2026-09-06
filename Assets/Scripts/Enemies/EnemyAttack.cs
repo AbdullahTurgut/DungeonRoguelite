@@ -95,7 +95,7 @@ namespace DungeonRoguelite.Enemies
 
         private void Update()
         {
-            if (isDead)
+            if (isDead || Time.timeScale <= 0f)
             {
                 return;
             }
@@ -127,7 +127,7 @@ namespace DungeonRoguelite.Enemies
         /// <returns>True if the attack succeeded; false otherwise.</returns>
         public bool TryAttack()
         {
-            if (isDead || Time.time < nextAttackTime)
+            if (isDead || Time.timeScale <= 0f || Time.time < nextAttackTime)
             {
                 return false;
             }

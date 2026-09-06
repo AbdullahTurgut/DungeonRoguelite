@@ -135,6 +135,11 @@ namespace DungeonRoguelite.Player
         /// <returns>True if the attack succeeded; false if blocked by cooldown or missing weapon.</returns>
         public bool TryAttack()
         {
+            if (Time.timeScale <= 0f)
+            {
+                return false;
+            }
+
             if (equippedWeapon == null)
             {
                 ResolveWeapon();

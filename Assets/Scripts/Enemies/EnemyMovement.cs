@@ -84,7 +84,13 @@ namespace DungeonRoguelite.Enemies
 
         private void Update()
         {
-            float dt = Time.deltaTime > 0f ? Time.deltaTime : 0.02f;
+            if (Time.timeScale <= 0f)
+            {
+                isMoving = false;
+                return;
+            }
+
+            float dt = Time.deltaTime;
             StepMovement(dt);
         }
 
@@ -94,7 +100,7 @@ namespace DungeonRoguelite.Enemies
         /// </summary>
         public void StepMovement(float dt)
         {
-            if (isDead || characterController == null || !characterController.enabled)
+            if (Time.timeScale <= 0f || dt <= 0f || isDead || characterController == null || !characterController.enabled)
             {
                 isMoving = false;
                 return;

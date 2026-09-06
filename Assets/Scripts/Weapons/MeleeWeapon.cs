@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using DungeonRoguelite.Combat;
+using DungeonRoguelite.Player;
 
 namespace DungeonRoguelite.Weapons
 {
@@ -31,13 +32,18 @@ namespace DungeonRoguelite.Weapons
         private float nextAttackTime = 0f;
         private IDamageable ownerDamageable;
         private Transform ownerTransform;
+        private PlayerStats playerStats;
 
         public float Damage => damage;
+        public float EffectiveDamage => damage * (playerStats != null ? playerStats.DamageMultiplier : 1f);
         public float AttackCooldown => attackCooldown;
+        public float EffectiveAttackCooldown => (playerStats != null && playerStats.AttackSpeedMultiplier > 0f)
+            ? (attackCooldown / playerStats.AttackSpeedMultiplier)
+            : attackCooldown;
         public float Range => range;
         public float ArcAngle => arcAngle;
         public LayerMask TargetLayers => targetLayers;
-        public bool CanAttack => Time.time >= nextAttackTime;
+        public bool CanAttack => Time.timeScale > 0f && Time.time >= nextAttackTime;
 
         /// <summary>
         /// Fired whenever an attack is successfully performed.
@@ -53,20 +59,38 @@ namespace DungeonRoguelite.Weapons
         {
             ownerTransform = transform.root;
             ownerDamageable = GetComponentInParent<IDamageable>();
+            playerStats = GetComponentInParent<PlayerStats>();
+            if (playerStats == null)
+            {
+                playerStats = GetComponent<PlayerStats>();
+            }
         }
 
         /// <summary>
-        /// Attempts to execute a melee attack. Respects attackCooldown.
+        /// Explicitly binds a PlayerStats component.
         /// </summary>
-        /// <returns>True if the attack was executed; false if blocked by cooldown.</returns>
+        public void SetPlayerStats(PlayerStats stats)
+        {
+            playerStats = stats;
+        }
+
+        /// <summary>
+        /// Attempts to execute a melee attack. Respects attackCooldown and pause state.
+        /// </summary>
+        /// <returns>True if the attack was executed; false if blocked by cooldown or pause.</returns>
         public bool TryAttack()
         {
+            if (Time.timeScale <= 0f)
+            {
+                return false;
+            }
+
             if (Time.time < nextAttackTime)
             {
                 return false;
             }
 
-            nextAttackTime = Time.time + attackCooldown;
+            nextAttackTime = Time.time + EffectiveAttackCooldown;
             ExecuteAttack();
             OnAttack?.Invoke();
             return true;
@@ -146,7 +170,7 @@ namespace DungeonRoguelite.Weapons
                     // De-duplicate targets: each entity damaged only once per swing
                     if (hitDamageables.Add(damageable))
                     {
-                        damageable.TakeDamage(damage);
+                        damageable.TakeDamage(EffectiveDamage);
                     }
                 }
             }
