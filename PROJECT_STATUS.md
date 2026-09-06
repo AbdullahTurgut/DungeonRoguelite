@@ -243,7 +243,7 @@ Automated Play Mode verification suite ran and passed all 36 checks in Unity (`p
 
 ```text
 Latest verified commit:
-Pending verification commit
+5b7c9b3 feat: implement temporary level-up upgrades
 ```
 
 ---
@@ -356,5 +356,5 @@ Milestone 7.1 — Dungeon Completion (Result Screen & Dungeon Clear State)
 ## Latest Verified Commit
 
 ```text
-Pending verification commit
+5b7c9b3 feat: implement temporary level-up upgrades
 ```
