@@ -221,7 +221,7 @@ Automated Play Mode verification suite ran and passed all 32 checks in Unity (`p
 
 ```text
 Latest verified commit:
-PENDING_COMMIT
+4a96cb3 feat: implement experience and level system
 ```
 
 ---
@@ -324,5 +324,5 @@ Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)
 ## Latest Verified Commit
 
 ```text
-PENDING_COMMIT
+4a96cb3 feat: implement experience and level system
 ```
