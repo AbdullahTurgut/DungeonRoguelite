@@ -392,7 +392,7 @@ Automated Play Mode verification suite ran and passed all 45 checks in Unity (`p
 
 ```text
 Latest verified commit:
-Pending verification commit
+3ee9c7c feat: add runtime player spawning and binding
 ```
 
 ---
@@ -490,5 +490,5 @@ Milestone 8.3 — Character System (Archer)
 ## Latest Verified Commit
 
 ```text
-Pending verification commit
+3ee9c7c feat: add runtime player spawning and binding
 ```
