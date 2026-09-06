@@ -568,5 +568,5 @@ Milestone 8.4 — Character System (Gunner)
 ## Latest Verified Commit
 
 ```text
-(pending commit)
+eb8f471 feat: add archer ranged combat prototype
 ```
