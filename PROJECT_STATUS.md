@@ -259,7 +259,7 @@ Automated Play Mode verification suite ran and passed all 28 checks in Unity (`p
 
 ```text
 Latest verified commit:
-Pending verification commit
+6c1646f feat: implement dungeon completion flow
 ```
 
 ---
@@ -352,5 +352,5 @@ Milestone 8.1 — Character System (Character Definition & Architecture)
 ## Latest Verified Commit
 
 ```text
-Pending verification commit
+6c1646f feat: implement dungeon completion flow
 ```
