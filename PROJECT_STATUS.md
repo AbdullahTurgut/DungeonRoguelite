@@ -194,7 +194,7 @@ Automated Play Mode verification suite ran and passed in Unity (`playmode_m4_1.l
  
 ```text
 Latest verified commit:
-<pending commit for Milestone 4.1>
+e94645b feat: implement data-driven wave system
 ```
 
 ---
@@ -282,5 +282,5 @@ Milestone 5.1 — Experience System (XP Reward & Level-Up)
 ## Latest Verified Commit
 
 ```text
-<pending commit for Milestone 4.1>
+e94645b feat: implement data-driven wave system
 ```
