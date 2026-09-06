@@ -401,5 +401,5 @@ Milestone 8.2 — Character System (Character Selection & Spawning)
 ## Latest Verified Commit
 
 ```text
-Pending verification commit
+3c8f0bb feat: establish playable character architecture
 ```
