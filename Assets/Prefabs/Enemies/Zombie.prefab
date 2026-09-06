@@ -103,6 +103,7 @@ GameObject:
   - component: {fileID: 6097575624323866499}
   - component: {fileID: 6404222380311439421}
   - component: {fileID: 5380067204514989007}
+  - component: {fileID: 3245132294952820704}
   m_Layer: 0
   m_Name: Zombie
   m_TagString: Untagged
@@ -199,6 +200,20 @@ MonoBehaviour:
   attackRange: 1.5
   attackCooldown: 1
   target: {fileID: 0}
+--- !u!114 &3245132294952820704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5307975493804608710}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 361a29216c69ad145801ebb2321abf38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Experience.ExperienceReward
+  xpAmount: 10
+  pickupPrefab: {fileID: 899525307405159231, guid: 2a97eae418329514c9e7a29f90fbef49, type: 3}
 --- !u!1 &8831729603294184487
 GameObject:
   m_ObjectHideFlags: 0

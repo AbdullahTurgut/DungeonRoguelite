@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 4.1 completed and verified in Unity Play Mode.
+- Milestone 5.1 completed and verified in Unity Play Mode.
 
 ---
 
@@ -11,18 +11,18 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 4: Wave System (Milestone 4.1: Spawner / Wave Manager)**
-**NEXT UP — Phase 5: Experience (Milestone 5.1: Experience Reward & Level-Up)**
+**COMPLETED — Phase 5: Experience (Milestone 5.1: Experience Reward & Level-Up)**  
+**NEXT UP — Phase 6: Temporary Upgrades (Milestone 6.1: Upgrade Selection & Stat Modifiers)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), and 4.1 (Spawner and Wave System) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), and 5.1 (Experience System) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 4 — Wave System (Completed)
+## PHASE 5 — Experience (Completed)
 
-All milestones in Phase 4 are complete.
+All milestones in Phase 5 are complete.
 
 ---
 
@@ -87,7 +87,7 @@ All milestones in Phase 4 are complete.
   - Implemented `EnemyMovement.cs` with direct pursuit using `CharacterController` on the X/Z plane with configurable `moveSpeed` (3) and `stoppingDistance` (1.3). Subscribes cleanly to `EnemyHealth.OnDied` to disable movement and its `CharacterController`.
   - Implemented `EnemyAttack.cs` executing attacks within `attackRange` (1.5) dealing `damage` (10) with `attackCooldown` (1.0s) via `IDamageable.TakeDamage()`. Subscribes cleanly to `EnemyHealth.OnDied` to halt attacks.
   - Created reusable `Zombie.prefab` at `Assets/Prefabs/Enemies/Zombie.prefab` with placeholder capsule and facing indicator.
-  - **Milestone 4.1 — Spawner and Wave System**:
+- **Milestone 4.1 — Spawner and Wave System**:
   - Implemented data-driven `WaveDefinition.cs` ScriptableObject defining wave composition (`EnemySpawnEntry[]`) and pacing (`spawnInterval = 0.5f`).
   - Created prototype wave assets `Wave_01.asset` (10 Zombies), `Wave_02.asset` (15 Zombies), `Wave_03.asset` (20 Zombies) under `Assets/ScriptableObjects/Waves/`.
   - Implemented `WaveManager.cs` component in `Assets/Scripts/Waves/` maintaining single responsibility over wave sequencing, player targeting, and round-robin spawning.
@@ -98,23 +98,36 @@ All milestones in Phase 4 are complete.
   - Emits clean `OnDungeonCompleted` event exactly once when Wave 3 is cleared.
   - Preserved non-obstructing corpse retention without impeding wave progression.
   - Verified in Unity Play Mode: all 26 automated verification checks passed with 0 compiler errors and 0 runtime exceptions.
+- **Milestone 5.1 — Experience System**:
+  - Implemented `PlayerExperience.cs` component in `Assets/Scripts/Experience/` managing level, current XP, and exponential threshold scaling (`RoundToInt(baseRequiredXP * Pow(xpGrowthMultiplier, level - 1))`).
+  - Configured Level 1 starting values: `currentLevel = 1`, `currentXP = 0`, `baseRequiredXP = 100`, `xpGrowthMultiplier = 1.5f` (Level 1: 100 XP, Level 2: 150 XP, Level 3: 225 XP).
+  - Handled cleanly in `GainExperience(int amount)`: non-positive amounts safely ignored, carry-over XP preserved across levels, multi-level jumps supported in single calls.
+  - Clean decoupled event notifications: `OnExperienceChanged(int currentXP, int xpToNextLevel)` and `OnLevelUp(int newLevel)`. Zero UI or stat modification logic in progression class.
+  - Implemented `ExperiencePickup.cs` physical collectible orb component with `SphereCollider` (`isTrigger = true`), kinematic `Rigidbody`, double-award guard, player trigger detection, and cleanup upon collection.
+  - Implemented `ExperienceReward.cs` decoupled enemy component listening to `EnemyHealth.OnDied`, spawning `ExperiencePickup` at death position with single-fire guard.
+  - Implemented `PlayerExperienceUI.cs` event-driven HUD component in `Assets/Scripts/UI/` updating Slider and `TextMeshProUGUI` with zero polling in `Update()`.
+  - Created `ExperiencePickup.prefab` at `Assets/Prefabs/Pickups/ExperiencePickup.prefab` with cyan visual material.
+  - Updated `Player.prefab` with `PlayerExperience.cs` component.
+  - Updated `Zombie.prefab` with `ExperienceReward.cs` component configured with `xpAmount = 10` and `pickupPrefab`.
+  - Configured `Dungeon_Prototype.unity` with Canvas, EventSystem, ExperienceHUD (XPSlider + LevelText), and `Milestone5_1_Verifier.cs`.
+  - Automated Play Mode verification suite ran and passed all 32 checks with 0 errors and 0 runtime exceptions.
 
 ---
 
 # Next Task
 
-**Milestone 5.1 — Experience System (XP Reward & Level-Up)**
+**Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)**
 
-Tasks for Milestone 5.1:
-1. Implement enemy XP reward logic on death.
-2. Implement XP pickup prefab / collection mechanism.
-3. Implement `PlayerExperience.cs` tracking XP and level thresholds.
-4. Provide clean events for XP gained and level-up triggered.
-5. Create XP bar UI listening to player experience events.
+Tasks for Milestone 6.1:
+1. Define upgrade data structure (`UpgradeDefinition` ScriptableObject).
+2. Implement 3 prototype upgrades (e.g. +Attack Damage, +Move Speed, +Max Health).
+3. Implement upgrade manager / state tracking player stats.
+4. Hook `PlayerExperience.OnLevelUp` to pause/trigger upgrade selection.
+5. Create temporary upgrade selection UI presenting 3 random choices.
 
 Do NOT start:
-- Temporary upgrade selection UI / pause menu (Milestone 6.1)
-- Boss logic (Milestone 6.1 / 12)
+- Permanent meta-progression / skill tree (Milestone 8.1)
+- Boss logic (Milestone 6.1 boss wave / Milestone 12)
 - Dungeon complete UI (Milestone 7.1)
 
 ---
@@ -134,9 +147,14 @@ Do NOT start:
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
 - Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points
 - Enemy Tracking: Authoritative `HashSet<EnemyHealth>` with clean event lifecycle management and zero scene-wide polling
+- Experience Architecture:
+  - `PlayerExperience` owns XP accumulation and level progression without UI or stat modifications
+  - `ExperienceReward` on enemy prefabs listens to `EnemyHealth.OnDied` and drops `ExperiencePickup` without coupling `EnemyHealth` or `WaveManager` to XP logic
+  - `ExperiencePickup` physical collectible with trigger volume and kinematic `Rigidbody`
+  - `PlayerExperienceUI` strictly event-driven; updates Slider and TextMeshProUGUI on `OnExperienceChanged` and `OnLevelUp`
 - Input: Unity Input System (`com.unity.inputsystem` 1.20.0) with `InputSystem_Actions.inputactions`
-- Single Responsibility: Separate components across Player, Combat, Weapons, Enemies, and Waves
-- Visuals: Primitives/placeholders (Capsules with FacingIndicators and SwordVisual)
+- Single Responsibility: Separate components across Player, Combat, Weapons, Enemies, Waves, Experience, and UI
+- Visuals: Primitives/placeholders (Capsules with FacingIndicators, SwordVisual, and Cyan Pickup diamond)
 - Git used as checkpoint and handoff system
 
 ---
@@ -145,6 +163,8 @@ Do NOT start:
 
 None.
 
+*(Resolved: During test suite development, a test-side `MissingReferenceException` occurred when testing the double-award guard on an already destroyed GameObject. This was resolved by testing double collection synchronously in the same frame on a dedicated test instance prior to deferred GameObject destruction.)*
+
 ---
 
 # Future Maintenance & Technical Debt
@@ -152,49 +172,56 @@ None.
 - **DungeonDefinition Deferred**: `DungeonDefinition` remains deferred until Phase 9 / multi-dungeon progression actually requires dungeon-level metadata.
 - **Corpse Cleanup and Object Pooling Deferred**: Defeated enemy corpses remain in scene as non-obstructing entities. Object pooling and corpse cleanup will be introduced in later milestones.
 - **Direct Pursuit vs Pathfinding**: Current `EnemyMovement` uses direct `CharacterController` pursuit. This is sufficient for the prototype but does not provide full pathfinding around complex dungeon geometry. Re-evaluate NavMesh when dungeon layouts require real obstacle navigation.
+- **Pickup Magnetism Deferred**: Physical touch collection via trigger volume is implemented; magnetic pickup attraction radius is deferred to future polish/upgrade milestones.
 - **Verifier Script Reorganization**: Legacy verifier scripts currently located under production script folders (`Assets/Scripts/Player/Milestone1_1_Verifier.cs` and `Assets/Scripts/Player/Milestone1_2_Verifier.cs`) should later be moved into the dedicated test/verification structure (`Assets/Tests/Verification/`).
 
 ---
 
 # Testing Status
 
-## Milestone 4.1 Verification
+## Milestone 5.1 Verification
 
-Automated Play Mode verification suite ran and passed in Unity (`playmode_m4_1.log`):
-- **Check 1 - Production Wave Configuration**: Loaded and validated `Wave_01.asset` (10 Zombies), `Wave_02.asset` (15 Zombies), `Wave_03.asset` (20 Zombies) with valid spawn intervals and Zombie prefab references (PASSED).
-- **Check 2 - Wave 1 Initialization**: Wave 1 starts cleanly, transitions to `Spawning` state, and fires `OnWaveStarted(1, 3)` (PASSED).
-- **Check 3 - Wave 1 Spawn Count**: Exactly 10 Zombies spawned in Wave 1; active count reaches 10 (PASSED).
-- **Check 4 - Spawn Point Utilization**: All spawned enemies instantiated at configured scene spawn points (PASSED).
-- **Check 5 - Round-Robin Selection**: Spawn point cycling strictly alternates NW, NE, SE, SW, NW... without clustering (PASSED).
-- **Check 6 - Spawn Interval Timing**: Pacing interval respected (expected ~0.10s, measured 0.101s) (PASSED).
-- **Check 7 - Wave Progression Gating (Wave 1)**: Wave 2 cannot begin while any Wave 1 enemy remains alive; manager enters `WaveActive` state (PASSED).
-- **Check 8 - Wave 1 Clear & Transition**: Eliminating the 10th Wave 1 Zombie fires `OnWaveCompleted(1, 3)` and cleanly advances to Wave 2 (PASSED).
-- **Check 9 - Wave 2 Spawn Count**: Exactly 15 Zombies spawn in Wave 2; active count reaches 15 (PASSED).
-- **Check 10 - Wave Progression Gating (Wave 2)**: Wave 3 cannot begin while Wave 2 enemies are alive (PASSED).
-- **Check 11 - Wave 3 Spawn Count**: Exactly 20 Zombies spawn in Wave 3; active count reaches 20 (PASSED).
-- **Check 12 - Authoritative Living Enemy Tracking**: `LivingEnemyCount` strictly reflects `activeEnemies.Count` at all times (PASSED).
-- **Check 13 - Single Death Processing**: Individual enemy death decrements living count exactly once (PASSED).
-- **Check 14 - Duplicate Death Idempotency**: Repeated damage or death notifications on an already-dead Zombie cannot decrement count again (PASSED).
-- **Check 15 - Corpse Non-Obstruction**: Retained corpses remain in the scene hierarchy without hindering wave progression (PASSED).
-- **Check 16 - Dungeon Completion Guard**: Early dungeon completion prevented during active waves (PASSED).
-- **Check 17 - Single-Fire Dungeon Completion**: `OnDungeonCompleted` fires exactly once after all 20 Wave 3 Zombies are defeated (PASSED).
-- **Check 18 - Spawned Enemy Pursuit**: Spawned Zombies acquire the Player target and actively close distance (PASSED).
-- **Check 19 - Spawned Enemy Melee Attack**: Spawned Zombies execute attacks inside 1.5m range, dealing 10 damage to player (PASSED).
-- **Check 20 - Player Sword Combat Integration**: Player sword damages (50 $\rightarrow$ 25) and kills spawned Zombie (25 $\rightarrow$ 0) (PASSED).
-- **Check 21 - PlayerMovement Integrity**: WASD movement and CharacterController integration intact (PASSED).
-- **Check 22 - PlayerAim Integrity**: Pointer aiming and Y-axis rotation intact (angle diff 0.00°) (PASSED).
-- **Check 23 - PlayerHealth Integrity**: Health reception, clamping, and reset logic intact (PASSED).
-- **Check 24 - Sword Combat Integrity**: Weapon damage, range, cooldown, and arc filtering intact (PASSED).
-- **Check 25 - Compilation**: 0 compiler errors or warnings (PASSED).
-- **Check 26 - Runtime Diagnostics**: 0 runtime exceptions in Play Mode (PASSED).
+Automated Play Mode verification suite ran and passed all 32 checks in Unity (`playmode_m5_1.log`):
+- **Check 1 - Level 1 Start**: Player starts at Level 1 (PASSED).
+- **Check 2 - Zero XP Start**: Player starts with 0 XP (PASSED).
+- **Check 3 - Level 1 XP Threshold**: Required XP for Level 1 is exactly 100 (PASSED).
+- **Check 4 - GainExperience Logic**: `GainExperience(50)` increases `CurrentXP` to 50 at Level 1 (PASSED).
+- **Check 5 - Non-Positive XP Guards**: XP gains $\le 0$ (0 and -25) are safely ignored without changing XP or firing events (PASSED).
+- **Check 6 - Required XP Formula**: Formula `RoundToInt(100 * 1.5^(level - 1))` confirmed (L1 = 100, L2 = 150, L3 = 225) (PASSED).
+- **Check 7 - Progress Normalization**: `ProgressNormalized` strictly stays in $[0, 1]$ range (50/100 = 0.50) (PASSED).
+- **Check 8 - Exact Threshold Level-Up**: Reaching exact 100 XP triggers level up to Level 2 with 0 remaining XP and 150 next threshold (PASSED).
+- **Check 9 - XP Carry-Over**: Excess XP carries over cleanly across level-ups (90 + 75 XP reaches Level 3 with 15/225 XP) (PASSED).
+- **Check 10 - Multi-Level Jumps**: Large single gain (500 XP) advances Player directly to Level 4 with 25 carry-over XP (PASSED).
+- **Check 11 - OnLevelUp Event Sequencing**: `OnLevelUp` fired exactly once per gained level in sequential order (2, 3, 4) (PASSED).
+- **Check 12 - OnExperienceChanged Event**: Fired accurately with updated `(currentXP, xpToNextLevel)` parameters (PASSED).
+- **Check 13 - ExperiencePickup Initialization**: Initializes with configured XP amount (42 XP) (PASSED).
+- **Check 14 - Pickup Minimum Clamping**: Clamps non-positive initialization values to at least 1 XP (PASSED).
+- **Check 15 - Pickup Trigger Collider**: `ExperiencePickup` has Collider configured with `isTrigger == true` (PASSED).
+- **Check 16 - Pickup Rigidbody**: `ExperiencePickup` has Rigidbody configured with `isKinematic == true` and `useGravity == false` (PASSED).
+- **Check 17 - Premature Award Guard**: Pickup does not award XP or flag collected before collision (PASSED).
+- **Check 18 - Physical Trigger Collection**: Player `CharacterController` entering pickup volume awards configured 10 XP (PASSED).
+- **Check 19 - Double-Award Guard**: Multiple trigger invocations in same frame award XP exactly once (`isCollected` guard) (PASSED).
+- **Check 20 - Pickup Destruction**: `ExperiencePickup` GameObjects successfully destroyed after collection (PASSED).
+- **Check 21 - Non-Player Rejection**: Non-player colliders (obstacles, enemies) do not collect or destroy pickup (PASSED).
+- **Check 22 - Zombie Reward Configuration**: Zombie prefab has `ExperienceReward` with `xpAmount = 10` and valid `pickupPrefab` (PASSED).
+- **Check 23 - Death Drop Instantiation**: Defeating Zombie instantiates `ExperiencePickup` containing 10 XP near death position (PASSED).
+- **Check 24 - Pickup Elevation**: `ExperienceReward` spawns pickup at proper ground elevation ($y = 0.25$) (PASSED).
+- **Check 25 - Duplicate Death Drop Guard**: Dead zombie corpse cannot produce duplicate XP drops upon subsequent damage (PASSED).
+- **Check 26 - Decoupled Architecture**: `WaveManager` and `EnemyHealth` have zero direct dependencies or references to XP components (PASSED).
+- **Check 27 - WaveManager Integration**: Zombie spawned via `WaveManager` drops `ExperiencePickup` upon death (PASSED).
+- **Check 28 - Wave Independence**: Wave progression and dungeon completion proceed cleanly independent of uncollected XP pickups (PASSED).
+- **Check 29 - PlayerExperienceUI Response**: UI Slider (0.50) and TextMeshProUGUI ('Level 1 (50 / 100 XP)') update accurately via events (PASSED).
+- **Check 30 - Core System Non-Regression**: `PlayerMovement`, `PlayerAim`, `PlayerHealth`, and `MeleeWeapon` integrity intact (PASSED).
+- **Check 31 - Compilation Diagnostics**: Unity compiled with 0 errors (PASSED).
+- **Check 32 - Runtime Diagnostics**: 0 runtime exceptions in Play Mode (PASSED).
 
 ---
 
 # Recent Git Checkpoint
- 
+
 ```text
 Latest verified commit:
-e94645b feat: implement data-driven wave system
+PENDING_COMMIT
 ```
 
 ---
@@ -213,57 +240,72 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 4.1 Spawner and Wave System implementation and verification.
-- Assets/Scripts/Waves/WaveDefinition.cs
-- Assets/Scripts/Waves/WaveManager.cs
-- Assets/ScriptableObjects/Waves/Wave_01.asset
-- Assets/ScriptableObjects/Waves/Wave_02.asset
-- Assets/ScriptableObjects/Waves/Wave_03.asset
-- Assets/Tests/Verification/Milestone4_1_Verifier.cs
-- Assets/Editor/Milestone4_1_Setup.cs
-- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured SpawnPoints, WaveManager, and Milestone4_1_Verifier)
+- Milestone 5.1 Experience System implementation and verification.
+- Assets/Scripts/Experience/PlayerExperience.cs
+- Assets/Scripts/Experience/ExperiencePickup.cs
+- Assets/Scripts/Experience/ExperienceReward.cs
+- Assets/Scripts/UI/PlayerExperienceUI.cs
+- Assets/Prefabs/Pickups/ExperiencePickup.prefab
+- Assets/Materials/Pickups/M_ExperiencePickup.mat
+- Assets/Prefabs/Characters/Player.prefab (added PlayerExperience)
+- Assets/Prefabs/Enemies/Zombie.prefab (added ExperienceReward)
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity (configured Canvas, ExperienceHUD, and Milestone5_1_Verifier)
+- Assets/Tests/Verification/Milestone5_1_Verifier.cs
+- Assets/Editor/Milestone5_1_Setup.cs
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Scripts/Waves/WaveDefinition.cs
-- Assets/Scripts/Waves/WaveDefinition.cs.meta
-- Assets/Scripts/Waves/WaveManager.cs
-- Assets/Scripts/Waves/WaveManager.cs.meta
-- Assets/Scripts/Waves.meta
-- Assets/ScriptableObjects/Waves/Wave_01.asset
-- Assets/ScriptableObjects/Waves/Wave_01.asset.meta
-- Assets/ScriptableObjects/Waves/Wave_02.asset
-- Assets/ScriptableObjects/Waves/Wave_02.asset.meta
-- Assets/ScriptableObjects/Waves/Wave_03.asset
-- Assets/ScriptableObjects/Waves/Wave_03.asset.meta
-- Assets/ScriptableObjects/Waves.meta
-- Assets/ScriptableObjects.meta
-- Assets/Tests/Verification/Milestone4_1_Verifier.cs
-- Assets/Tests/Verification/Milestone4_1_Verifier.cs.meta
-- Assets/Editor/Milestone4_1_Setup.cs
-- Assets/Editor/Milestone4_1_Setup.cs.meta
+- Assets/Scripts/Experience/PlayerExperience.cs
+- Assets/Scripts/Experience/PlayerExperience.cs.meta
+- Assets/Scripts/Experience/ExperiencePickup.cs
+- Assets/Scripts/Experience/ExperiencePickup.cs.meta
+- Assets/Scripts/Experience/ExperienceReward.cs
+- Assets/Scripts/Experience/ExperienceReward.cs.meta
+- Assets/Scripts/Experience.meta
+- Assets/Scripts/UI/PlayerExperienceUI.cs
+- Assets/Scripts/UI/PlayerExperienceUI.cs.meta
+- Assets/Scripts/UI.meta
+- Assets/Prefabs/Pickups/ExperiencePickup.prefab
+- Assets/Prefabs/Pickups/ExperiencePickup.prefab.meta
+- Assets/Prefabs/Pickups.meta
+- Assets/Materials/Pickups/M_ExperiencePickup.mat
+- Assets/Materials/Pickups/M_ExperiencePickup.mat.meta
+- Assets/Materials/Pickups.meta
+- Assets/Materials.meta
+- Assets/Prefabs/Characters/Player.prefab
+- Assets/Prefabs/Enemies/Zombie.prefab
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
+- Assets/Tests/Verification/Milestone5_1_Verifier.cs
+- Assets/Tests/Verification/Milestone5_1_Verifier.cs.meta
+- Assets/Editor/Milestone5_1_Setup.cs
+- Assets/Editor/Milestone5_1_Setup.cs.meta
+- Assets/TextMesh Pro.meta
+- Assets/TextMesh Pro/
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- In-engine Play Mode automated verification suite (all 26 checks passed)
-- Data-driven WaveDefinition ScriptableObject loading and validation
-- Sequential 3-wave progression (Wave 1: 10, Wave 2: 15, Wave 3: 20 Zombies)
-- 4 perimeter scene spawn points with deterministic round-robin cycling
-- Configured spawn interval timing validation (~0.10s test measured 0.101s)
-- Wave progression gating (wave cannot advance while current wave has living enemies)
-- Authoritative HashSet<EnemyHealth> living enemy tracking
-- Single-execution death counting and duplicate death idempotency
-- Corpse retention non-obstruction
-- Single-fire OnDungeonCompleted event after final wave
-- Spawned enemy player acquisition, pursuit, and attack
-- Player sword combat dealing damage and killing spawned enemies
-- Regression testing: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon all intact
+- In-engine Play Mode automated verification suite (all 32 checks passed)
+- Player starting level (1), initial XP (0), and threshold (100)
+- Progressive threshold formula: RoundToInt(100 * 1.5^(level - 1)) -> 100, 150, 225
+- GainExperience with valid values, 0, and negative values
+- XP carry-over calculations and multi-level jump processing
+- OnExperienceChanged and OnLevelUp event sequencing and parameter validation
+- ExperiencePickup trigger collider and kinematic Rigidbody configuration
+- Physical trigger collection by Player CharacterController awarding XP
+- Double-award prevention guard (isCollected)
+- ExperiencePickup GameObject destruction upon collection
+- Non-player collider collection rejection
+- ExperienceReward on Zombie prefab and death drop instantiation at elevation y = 0.25
+- Duplicate death event drop guard
+- Decoupled architecture between WaveManager/EnemyHealth and XP components
+- WaveManager wave progression independent of uncollected pickups
+- PlayerExperienceUI event-driven updates (Slider fill and TextMeshProUGUI text)
+- Regression testing: PlayerMovement, PlayerAim, PlayerHealth, MeleeWeapon intact
 - Unity compilation with 0 errors and 0 runtime exceptions
 ```
 
@@ -276,11 +318,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 5.1 — Experience System (XP Reward & Level-Up)
+Milestone 6.1 — Temporary Upgrades (Upgrade Selection & Stat Modifiers)
 ```
 
 ## Latest Verified Commit
 
 ```text
-e94645b feat: implement data-driven wave system
+PENDING_COMMIT
 ```
