@@ -3,8 +3,9 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 8.4 completed and verified in Unity Play Mode.
-- Gunner Combat Prototype (IPrimaryAttack, RifleWeapon, Gunner.prefab, Character_Gunner.asset) established.
+- Milestone 8.5 completed and verified in Unity Play Mode.
+- Character Selection UI, CharacterRoster, CharacterSelectionSession, and PlayerSpawner integration established.
+- Phase 8 (Character System) fully completed.
 
 ---
 
@@ -12,22 +13,28 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 8: Character System (Milestone 8.4: Gunner Combat Prototype)**  
-**NEXT UP — Phase 8: Character System (Milestone 8.5: Character Selection UI & Integration)**
+**COMPLETED — Phase 8: Character System (Milestones 8.1–8.5 Complete)**  
+**NEXT UP — Phase 9: Dungeon Progression (Milestone 9.1: World Map & Multi-Dungeon Progression)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), and 8.4 (Gunner Combat Prototype) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), and 8.5 (Character Selection UI & Integration) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 8 — Character System (In Progress)
+## PHASE 8 — Character System (COMPLETED)
 
 - Milestone 8.1: Character Definition & Architecture (Completed)
 - Milestone 8.2: Runtime Player Spawning & Explicit Binding (Completed)
 - Milestone 8.3: Archer (Completed)
 - Milestone 8.4: Gunner (Completed)
-- Milestone 8.5: Character Selection (Next Up)
+- Milestone 8.5: Character Selection UI & Integration (Completed)
+
+---
+
+## PHASE 9 — Dungeon Progression (Next Up)
+
+- Milestone 9.1: World Map & Multi-Dungeon Progression
 
 ---
 
@@ -296,29 +303,69 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
   - Verification Results:
     - Automated Play Mode verification suite (`Milestone8_4_Verifier.cs`) ran and passed all 44 checks with 0 errors and 0 runtime exceptions.
 
+- **Milestone 8.5 — Character Selection UI & Integration**:
+  - Implemented `CharacterRoster.cs` ScriptableObject catalog under `Assets/Scripts/Characters/` holding an ordered `List<CharacterDefinition>`.
+  - Created `CharacterRoster.asset` populated with `[Warrior, Archer, Gunner]`. Validates against null definitions, duplicate references, and duplicate IDs with zero combat/stat leakage.
+  - Implemented `CharacterSelectionSession.cs` lightweight static runtime carrier under `Assets/Scripts/Characters/`:
+    - Pure runtime transfer mechanism carrying active selection across `SceneManager.LoadScene()`.
+    - Contains zero UI, spawning, or save logic.
+    - Cleared on domain reload via `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]` and upon entering the selection scene.
+    - Survives `Dungeon_Prototype` scene reloads (preserving selected character on dungeon restart).
+  - Implemented `CharacterSelectionCard.cs` UI component under `Assets/Scripts/UI/`:
+    - Binds `CharacterDefinition`, displays name and description, exposes `OnCardSelected` event, and manages active visual selection highlight with strict mutual exclusivity.
+  - Implemented `CharacterSelectionController.cs` under `Assets/Scripts/UI/`:
+    - Reads `CharacterRoster`, initializes cards, and establishes local default selection (Warrior / first valid roster entry).
+    - Local selection vs committed session separation: card clicks mutate local selection only; `CharacterSelectionSession` remains empty until the Start button is pressed.
+    - Mutual exclusivity: exactly one card is visually highlighted at any time.
+    - Start action: validates selection, commits choice to `CharacterSelectionSession.SetSelection()`, guards against double-clicks, and loads `Dungeon_Prototype`. Start works immediately with default Warrior without requiring an extra card click.
+  - Created dedicated selection scene at `Assets/Scenes/CharacterSelect/CharacterSelection.unity`:
+    - Screen Space - Overlay Canvas, single EventSystem with `InputSystemUIInputModule`, and SelectionPanel layout.
+    - Zero gameplay entities, zero player controllers, zero wave managers, zero verifiers.
+  - Configured `EditorBuildSettings.scenes`:
+    - `0`: `Assets/Scenes/CharacterSelect/CharacterSelection.unity` (enabled)
+    - `1`: `Assets/Scenes/Dungeons/Dungeon_Prototype.unity` (enabled)
+    - `2`: `Assets/Scenes/SampleScene.unity` (disabled, preserved)
+  - Integrated `PlayerSpawner.cs`:
+    - Resolves `(CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null) ? CharacterSelectionSession.SelectedCharacter : defaultCharacter`.
+    - Spawns selected character archetype without character-specific branching (`if warrior`, etc.).
+    - Never mutates or overwrites `defaultCharacter` on disk; direct scene launch cleanly defaults to `Character_Warrior`.
+  - Restart Semantics Verified:
+    - Selected Warrior -> Dungeon -> Restart -> Warrior again.
+    - Selected Archer -> Dungeon -> Restart -> Archer again.
+    - Selected Gunner -> Dungeon -> Restart -> Gunner again.
+  - Scene Cleanliness & Asset Integrity:
+    - `Dungeon_Prototype.unity` remains 100% untouched on disk, defaulting to `Character_Warrior`.
+    - Zero permanent verifiers or session test state serialized into scenes or assets.
+  - Verification Results:
+    - Automated Play Mode verification suite (`Milestone8_5_Verifier.cs`): all 41 checks PASSED with 0 errors and 0 runtime exceptions.
+    - Milestone 8.4 regression suite: all 44 checks PASSED.
+    - Milestone 8.3 regression suite: all 68 checks PASSED.
+    - Manual gameplay verification: confirmed GREEN across Warrior, Archer, and Gunner selection, combat, and restart flow.
+
 ---
 
 # Next Task
 
-**Milestone 8.5 — Character System (Character Selection UI & Integration)**
+**Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)**
 
-Tasks for Milestone 8.5:
-1. Implement Character Selection UI / pre-run character picker.
-2. Implement character roster catalog ScriptableObject.
-3. Integrate selected character into PlayerSpawner / dungeon entry flow.
-4. Verify transition between Character Selection and Dungeon_Prototype.
+Tasks for Milestone 9.1:
+1. Design data-driven `DungeonDefinition` ScriptableObject schema (id, displayName, scene, waves, unlock requirements, rewards).
+2. Implement World Map scene and level-select UI (Character Selection -> World Map -> Dungeon).
+3. Implement sequential dungeon unlocking flow (Dungeon 1 clear unlocks Dungeon 2, etc.).
+4. Connect dungeon completion and return button to World Map navigation.
 
-Deferred Work (Post-Milestone 8):
-- Full-auto / held-fire input semantics — evaluate after Gunner manual gameplay test.
-- Generic projectile base class abstraction (evaluated and confirmed unjustified; Gunner uses hitscan, so only 1 projectile weapon exists in project).
-- 3D models, character animations, audio, and particle VFX
-- Corpse cleanup / fading system
-- World Map & multi-dungeon progression (Phase 9)
-- Permanent skill trees & save/load (Phase 10)
+Deferred Work (Post-Milestone 8 / Future Phases):
+- Return to Character Selection button on in-game pause/completion menus (deferred to Phase 9 navigation polish).
+- World Map & multi-dungeon progression (Phase 9).
+- Permanent skill trees, meta progression, and save/load (Phase 10).
+- Enemy expansion (Runner, Brute, Ranged, Elite) (Phase 11).
+- Boss framework and first dungeon boss (Phase 12).
+- Full-auto / held-fire input semantics.
+- 3D models, character animations, audio, and visual polish (Phase 13).
+- Final UI art / portraits / animations / audio / VFX.
 
 Do NOT start:
-- Character Selection UI until instructed
-- World Map / multi-dungeon progression (Phase 9)
+- Phase 9 / World Map until instructed
 - Permanent skill trees (Phase 10)
 
 ---
@@ -336,6 +383,10 @@ Do NOT start:
 - Weapon & Attack Architecture: Polymorphic primary attack via minimal `IPrimaryAttack.cs` (`bool TryAttack()`). `PlayerAttack.cs` coordinates input forwarding with zero weapon management, inventory, or character branching. Concrete implementations: `MeleeWeapon.cs` (Warrior forward arc overlap query), `BowWeapon.cs` (Archer arrow projectile sweep), and `RifleWeapon.cs` (Gunner hitscan distance-sorted query).
 - Projectile Architecture: Single authoritative collision sweep via `ArrowProjectile.cs` using `FixedUpdate()` `Physics.SphereCastAll(..., QueryTriggerInteraction.Ignore)`. Enforces trigger immunity, hierarchy-safe owner self-damage immunity, single-hit guard, solid obstacle destruction, and scaled-time pause freezing. Zero competing `OnTriggerEnter` or `OnCollisionEnter` damage logic.
 - Hitscan Firearm Architecture: Single authoritative hitscan sweep via `RifleWeapon.cs` using `Physics.SphereCastAll(..., castRadius, forward, range, targetLayers, QueryTriggerInteraction.Ignore)`. Hits sorted deterministically by ascending distance (`hit.distance`). First valid solid non-owner hit resolves. Hierarchy-safe owner immunity (`hitTransform == ownerRoot || hitTransform.IsChildOf(ownerRoot)`), trigger volumes ignored. Obstacle occlusion: solid wall stops shot; near target absorbs shot preventing penetration to far target (strictly zero bullet penetration). Single attack event per shot.
+- Character Roster Architecture: Data catalog `CharacterRoster.cs` ScriptableObject holding ordered `List<CharacterDefinition> [Warrior, Archer, Gunner]`. Pure catalog with validation against null entries and duplicate references/IDs. Zero stats, progression, or selection state.
+- Character Selection Session Architecture: Pure static runtime carrier `CharacterSelectionSession.cs` passing active `CharacterDefinition` across scene transitions. Local UI selection in `CharacterSelectionController` remains decoupled until Start button is clicked. Reset on domain reload via `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]` and upon entering `CharacterSelection.unity`. Survives `Dungeon_Prototype` scene reloads on dungeon restart.
+- PlayerSpawner Runtime Selection & Fallback: Authoritative character factory resolves `(CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null) ? CharacterSelectionSession.SelectedCharacter : defaultCharacter` with zero character-type branching. Serialized `defaultCharacter` remains `Character_Warrior` on disk; direct launch safely defaults to Warrior.
+- Scene Flow & Build Settings: Scene 0 = `Assets/Scenes/CharacterSelect/CharacterSelection.unity`, Scene 1 = `Assets/Scenes/Dungeons/Dungeon_Prototype.unity`, with `SampleScene.unity` disabled. Zero gameplay entities or input interference in selection scene.
 - Health Architecture: `PlayerHealth.cs` and `EnemyHealth.cs` both implement `IDamageable` independently with clamped health and single-fire death events
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
 - Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points
@@ -551,13 +602,62 @@ Automated Play Mode verification suite ran and passed all 44 checks in Unity (`p
 
 Milestone 8.3 Archer regression suite re-run: all 68 checks PASSED (`playmode_m8_3_regression.log`).
 
+## Milestone 8.5 Verification
+
+Automated Play Mode verification suite ran and passed all 41 checks in Unity (`playmode_m8_5.log`):
+- **Check 1**: CharacterDefinition schema contains zero combat calculation or stat fields (PASSED).
+- **Check 2**: CharacterRoster.asset exists and loaded successfully (PASSED).
+- **Check 3**: CharacterRoster order verified: [Warrior, Archer, Gunner] (PASSED).
+- **Check 4**: CharacterRoster.ValidateRoster passed with zero errors or duplicates (PASSED).
+- **Check 5**: All roster CharacterDefinitions point to valid prefabs tagged 'Player' (PASSED).
+- **Check 6**: EditorBuildSettings registered: 0 = CharacterSelection, 1 = Dungeon_Prototype, SampleScene disabled (PASSED).
+- **Check 7**: CharacterSelection scene contains zero gameplay PlayableCharacter instances (PASSED).
+- **Check 8**: Exactly one EventSystem exists with InputSystemUIInputModule (PASSED).
+- **Check 9**: Dungeon_Prototype.unity on disk defaults to Character_Warrior (PASSED).
+- **Check 10**: CharacterSelectionSession is strictly empty upon entering CharacterSelection (PASSED).
+- **Check 11**: CharacterSelectionController cards bound to [Warrior, Archer, Gunner] (PASSED).
+- **Check 12**: Default local selection is Warrior upon scene entry (PASSED).
+- **Check 13**: Mutual exclusivity verified on start: only Warrior card is visually selected (PASSED).
+- **Check 14**: Preview text shows: 'Selected: Warrior' (PASSED).
+- **Check 15**: Selecting Archer updated local selection and card highlight (mutual exclusivity preserved) (PASSED).
+- **Check 16**: Local card selection did NOT mutate CharacterSelectionSession (session remains empty) (PASSED).
+- **Check 17**: Selecting Gunner updated local selection and card highlight (PASSED).
+- **Check 18**: Re-selecting Warrior restores Warrior selection and highlight (PASSED).
+- **Check 19**: CharacterSelectionSession.SetSelection committed Archer accurately (PASSED).
+- **Check 20**: CharacterSelectionSession.Clear cleanly resets session (PASSED).
+- **Check 21**: PlayerSpawner contains zero character-specific branching methods (PASSED).
+- **Check 22**: Empty session cleanly falls back to default Character_Warrior (PASSED).
+- **Check 23**: PlayerSpawner.defaultCharacter was NOT overwritten by session selection (PASSED).
+- **Check 24**: PlayerSpawner consumed session selection and spawned Archer with BowWeapon (PASSED).
+- **Check 25**: PlayerSpawner consumed session selection and spawned Gunner with RifleWeapon (PASSED).
+- **Check 26**: PlayerSpawner consumed session selection and spawned Warrior with MeleeWeapon (PASSED).
+- **Check 27**: Warrior selection survives simulated scene reload for dungeon restart (PASSED).
+- **Check 28**: Archer selection survives simulated scene reload for dungeon restart (PASSED).
+- **Check 29**: Gunner selection survives simulated scene reload for dungeon restart (PASSED).
+- **Check 30**: Exactly one player spawned in Dungeon_Prototype: Gunner (PASSED).
+- **Check 31**: CameraFollow explicitly bound to runtime Gunner transform (PASSED).
+- **Check 32**: WaveManager playerTarget explicitly bound to runtime Gunner transform (PASSED).
+- **Check 33**: UpgradeManager explicitly bound to runtime Gunner PlayerExperience and PlayerStats (PASSED).
+- **Check 34**: PlayerExperienceUI explicitly bound to runtime Gunner PlayerExperience (PASSED).
+- **Check 35**: DungeonCompletionController explicitly bound to runtime Gunner PlayerExperience (PASSED).
+- **Check 36**: Gunner hitscan combat executed successfully in dungeon (PASSED).
+- **Check 37**: Archer ranged combat regression verified: bow fired arrow (PASSED).
+- **Check 38**: Warrior melee combat regression verified: sword swing executed (PASSED).
+- **Check 39**: Universal PlayerStats damage bonus scales EffectiveDamage (+20%) (PASSED).
+- **Check 40**: DungeonCompletionController completion flow finalized successfully (PASSED).
+- **Check 41**: CharacterSelectionSession cleanly reset after test execution (PASSED).
+
+Milestone 8.4 Gunner regression suite re-run: all 44 checks PASSED (`playmode_m8_4_regression.log`).
+Milestone 8.3 Archer regression suite re-run: all 68 checks PASSED (`playmode_m8_3_regression.log`).
+Manual player-facing verification: verified GREEN across Warrior, Archer, and Gunner selection, combat, and restart flow.
+
 ---
 
 # Recent Git Checkpoint
 
 ```text
 Latest verified commit:
-9ba9195 feat: add gunner combat prototype and hitscan weapon system
+8f308c1 docs: record verified commit hash in PROJECT_STATUS.md
 ```
 
 ---
@@ -576,64 +676,76 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 8.4 Gunner Combat Prototype implementation and Play Mode verification.
-- Assets/Scripts/Weapons/RifleWeapon.cs: implemented IPrimaryAttack, Physics.SphereCastAll hitscan query (radius 0.1m, range 25m), ascending distance hit ordering, hierarchy-safe owner immunity, trigger volume passthrough, strict obstacle occlusion (solid wall blocks targets behind it, nearest target prevents penetration), 0.18s cooldown, pause blocking, and universal PlayerStats integration.
-- Assets/ScriptableObjects/Characters/Character_Gunner.asset: Gunner character archetype definition (id: "gunner", displayName: "Gunner", referencing Gunner.prefab).
-- Assets/Prefabs/Characters/Gunner.prefab: Gunner playable character prefab configured with RifleWeapon, Visual, FacingIndicator, WeaponAnchor, RifleVisual, and MuzzlePoint child, sharing standard player systems (CharacterController, PlayerMovement, PlayerAim, PlayerHealth, PlayerStats, PlayerExperience, PlayerAttack, PlayableCharacter).
-- Assets/Editor/Milestone8_4_Setup.cs: automated setup utility and batchmode verification runner.
-- Assets/Editor/Milestone8_4_ManualPlayHelper.cs: safe in-memory manual playtest helper with automatic scene revert on exit.
-- Assets/Tests/Verification/Milestone8_4_Verifier.cs: 44-check Play Mode verification suite covering contracts, stats, hitscan mechanics, occlusion ordering, prefab integrity, spawner binding, full combat loop, and non-regression.
+- Milestone 8.5 Character Selection UI & Integration implementation and verification.
+- Assets/Scripts/Characters/CharacterRoster.cs: ScriptableObject data catalog holding ordered List<CharacterDefinition> with validation against null entries and duplicate references/IDs.
+- Assets/ScriptableObjects/Characters/CharacterRoster.asset: catalog asset configured with [Warrior, Archer, Gunner].
+- Assets/Scripts/Characters/CharacterSelectionSession.cs: pure static runtime holder for passing selected CharacterDefinition across scene loads without persistence or disk mutation; cleared on domain reload and scene entry; survives dungeon restart scene reload.
+- Assets/Scripts/Characters/PlayerSpawner.cs: updated to consume CharacterSelectionSession.SelectedCharacter with defaultCharacter fallback without character branching; never mutates defaultCharacter on disk.
+- Assets/Scripts/UI/CharacterSelectionCard.cs: card presentation component managing display name, description, button click, and active visual selection highlight.
+- Assets/Scripts/UI/CharacterSelectionController.cs: screen orchestrator binding cards from roster, managing local selection decoupled from session until Start button is clicked, enforcing mutual exclusivity, and loading Dungeon_Prototype.
+- Assets/Scenes/CharacterSelect/CharacterSelection.unity: dedicated pre-run selection scene with Camera, Canvas, EventSystem (InputSystemUIInputModule), and SelectionPanel; zero gameplay entities.
+- ProjectSettings/EditorBuildSettings.asset: registered Scene 0 = CharacterSelection.unity, Scene 1 = Dungeon_Prototype.unity, SampleScene disabled.
+- Assets/Editor/Milestone8_5_Setup.cs: automated setup utility and batchmode verification runner.
+- Assets/Tests/Verification/Milestone8_5_Verifier.cs: 41-check Play Mode verification suite covering roster integrity, UI state, session transfer, spawner fallback, scene binding, restart semantics, and combat regression.
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Editor/Milestone8_4_ManualPlayHelper.cs
-- Assets/Editor/Milestone8_4_ManualPlayHelper.cs.meta
-- Assets/Editor/Milestone8_4_Setup.cs
-- Assets/Editor/Milestone8_4_Setup.cs.meta
-- Assets/Prefabs/Characters/Gunner.prefab
-- Assets/Prefabs/Characters/Gunner.prefab.meta
-- Assets/ScriptableObjects/Characters/Character_Gunner.asset
-- Assets/ScriptableObjects/Characters/Character_Gunner.asset.meta
-- Assets/Scripts/Weapons/RifleWeapon.cs
-- Assets/Scripts/Weapons/RifleWeapon.cs.meta
-- Assets/Tests/Verification/Milestone8_4_Verifier.cs
-- Assets/Tests/Verification/Milestone8_4_Verifier.cs.meta
+- Assets/Editor/Milestone8_5_Setup.cs
+- Assets/Editor/Milestone8_5_Setup.cs.meta
+- Assets/Scenes/CharacterSelect.meta
+- Assets/Scenes/CharacterSelect/CharacterSelection.unity
+- Assets/Scenes/CharacterSelect/CharacterSelection.unity.meta
+- Assets/ScriptableObjects/Characters/CharacterRoster.asset
+- Assets/ScriptableObjects/Characters/CharacterRoster.asset.meta
+- Assets/Scripts/Characters/CharacterRoster.cs
+- Assets/Scripts/Characters/CharacterRoster.cs.meta
+- Assets/Scripts/Characters/CharacterSelectionSession.cs
+- Assets/Scripts/Characters/CharacterSelectionSession.cs.meta
+- Assets/Scripts/Characters/PlayerSpawner.cs
+- Assets/Scripts/UI/CharacterSelectionCard.cs
+- Assets/Scripts/UI/CharacterSelectionCard.cs.meta
+- Assets/Scripts/UI/CharacterSelectionController.cs
+- Assets/Scripts/UI/CharacterSelectionController.cs.meta
+- Assets/Tests/Verification/Milestone8_5_Verifier.cs
+- Assets/Tests/Verification/Milestone8_5_Verifier.cs.meta
+- ProjectSettings/EditorBuildSettings.asset
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- 44/44 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions (playmode_m8_4.log)
+- 41/41 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions (playmode_m8_5.log)
+- 44/44 automated Play Mode verification checks passed for Milestone 8.4 regression suite (playmode_m8_4_regression.log)
 - 68/68 automated Play Mode verification checks passed for Milestone 8.3 regression suite (playmode_m8_3_regression.log)
-- IPrimaryAttack contract validated on MeleeWeapon, BowWeapon, and RifleWeapon
-- RifleWeapon base damage = 10, cooldown = 0.18s, range = 25m, cast radius = 0.1m
-- Universal stat upgrades on Gunner: damage +20% (10 -> 12), attack speed +15% (cooldown 0.18 -> 0.1565s), move speed +10% (6.0 -> 6.6)
-- Pause guard: firing strictly blocked while Time.timeScale <= 0
-- Cooldown enforcement: rapid firing blocked, shot succeeds after cooldown expires
-- One attack input produces exactly one OnAttack event
-- Aim direction respected: aligned target hit, off-axis target untouched
-- Owner hierarchy safely ignored even when cast begins inside owner collider
-- Trigger volumes strictly ignored (QueryTriggerInteraction.Ignore)
-- Occlusion Case A: Owner ignored, Trigger ignored, Zombie damaged (10), Wall behind irrelevant
-- Occlusion Case B: Wall stops shot, Zombie behind wall receives zero damage
-- Occlusion Case C: Near Zombie damaged exactly once, Far Zombie receives zero damage (strictly no penetration)
-- Range limit: target beyond 25m receives zero damage
-- Gunner.prefab: Tag == "Player", CharacterController, PlayerMovement (6.0), PlayerAim, PlayerHealth (100), PlayerStats, PlayerExperience (100), PlayerAttack, PlayableCharacter, RifleWeapon, no MeleeWeapon or BowWeapon
-- Visual hierarchy: Visual, FacingIndicator, WeaponAnchor, RifleVisual, MuzzlePoint
-- Character_Gunner.asset: metadata valid, references Gunner.prefab, zero leaked combat math fields
-- Runtime PlayerSpawner instantiation of Gunner via PlayerSpawner.Spawn(Character_Gunner)
-- Dynamic explicit binding of CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, and DungeonCompletionController to Gunner
-- Zombie attacks Gunner and Gunner takes damage via IDamageable (100 -> 90 HP)
-- Gunner fires rifle, damages and kills Zombie (5 shots = 50 HP)
-- Zombie death spawns ExperiencePickup, Gunner collects pickup and gains XP
-- Gunner level-up presents 3 upgrade choices, Damage upgrade applied successfully
-- Dungeon completion flow executes with Gunner and generates valid DungeonRunSummary
-- Warrior vertical slice non-regression: spawns and executes MeleeWeapon attack
-- Archer combat non-regression: spawns and fires BowWeapon arrow
-- Production Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers
+- Manual player-facing flow verified: CharacterSelection -> Warrior -> Start -> Warrior dungeon (GREEN)
+- Manual player-facing flow verified: CharacterSelection -> Archer -> Start -> Archer dungeon (GREEN)
+- Manual player-facing flow verified: CharacterSelection -> Gunner -> Start -> Gunner dungeon (GREEN)
+- Restart semantics verified: Restart Dungeon preserves chosen character across all 3 archetypes
+- CharacterRoster catalog validated: ordered [Warrior, Archer, Gunner], zero nulls, zero duplicates
+- CharacterDefinition schema remains decoupled: zero combat/stat math fields
+- CharacterSelectionSession starts empty on fresh Play Mode / domain reload
+- CharacterSelection scene entry clears stale previous-run session selection
+- Local UI default selection is Warrior / first valid roster entry on scene entry
+- START works immediately with default Warrior without requiring an extra card click
+- Card clicks update local selection and visual highlight only; session remains empty before Start
+- Exactly one card visually selected at any time (strict mutual exclusivity)
+- START commits exact selected CharacterDefinition into session and loads Dungeon_Prototype
+- PlayerSpawner consumes session selection: Warrior -> Warrior, Archer -> Archer, Gunner -> Gunner
+- PlayerSpawner with empty session cleanly falls back to serialized Character_Warrior
+- PlayerSpawner.defaultCharacter is NEVER mutated or overwritten by runtime session selection
+- PlayerSpawner contains zero character-specific branching methods (if warrior, etc.)
+- Exactly one PlayableCharacter exists at runtime at PlayerSpawnPoint
+- Explicit dynamic bindings verified: CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, DungeonCompletionController
+- WaveManager.BeginDungeon() fires OnDungeonStarted once
+- Combat non-regression verified: Warrior melee attack, Archer bow arrow, Gunner hitscan rifle
+- Universal upgrade scaling (+20% damage) functional across characters
+- Dungeon completion flow executes and generates valid DungeonRunSummary
+- CharacterSelection scene contains zero gameplay entities, zero PlayerSpawner, zero WaveManager, exactly 1 EventSystem
+- Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers
+- Build Settings order verified: Scene 0 = CharacterSelection, Scene 1 = Dungeon_Prototype
 ```
 
 ## Known Issues
@@ -645,11 +757,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 8.5 — Character System (Character Selection UI & Integration)
+Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)
 ```
 
 ## Latest Verified Commit
 
 ```text
-9ba9195 feat: add gunner combat prototype and hitscan weapon system
+8f308c1 docs: record verified commit hash in PROJECT_STATUS.md
 ```

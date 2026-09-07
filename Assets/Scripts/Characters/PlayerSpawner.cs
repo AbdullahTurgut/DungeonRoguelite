@@ -37,15 +37,19 @@ namespace DungeonRoguelite.Characters
         {
             if (autoSpawn && activeCharacter == null)
             {
-                Spawn(defaultCharacter);
+                CharacterDefinition characterToSpawn = (CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null)
+                    ? CharacterSelectionSession.SelectedCharacter
+                    : defaultCharacter;
+
+                Spawn(characterToSpawn);
             }
         }
 
         /// <summary>
-        /// Instantiates a playable character from the provided or default CharacterDefinition.
+        /// Instantiates a playable character from the provided, session, or default CharacterDefinition.
         /// Strictly validates configuration and guards against duplicate instantiation.
         /// </summary>
-        /// <param name="definition">Optional CharacterDefinition to spawn. Falls back to defaultCharacter if null.</param>
+        /// <param name="definition">Optional CharacterDefinition to spawn. Falls back to session or defaultCharacter if null.</param>
         /// <returns>The spawned PlayableCharacter instance, or null if validation fails.</returns>
         public PlayableCharacter Spawn(CharacterDefinition definition = null)
         {
@@ -55,7 +59,11 @@ namespace DungeonRoguelite.Characters
                 return activeCharacter;
             }
 
-            CharacterDefinition defToSpawn = definition != null ? definition : defaultCharacter;
+            CharacterDefinition defToSpawn = definition != null
+                ? definition
+                : (CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null
+                    ? CharacterSelectionSession.SelectedCharacter
+                    : defaultCharacter);
             if (defToSpawn == null)
             {
                 Debug.LogError("[PlayerSpawner] Cannot spawn: No CharacterDefinition specified or configured.");
