@@ -291,23 +291,58 @@ Crit      Stun
 
 ---
 
-# World Map
+# World Map & Dungeon Flow
 
-The world map is a later milestone.
-
-Initial concept:
+Progression between dungeons follows a sequential map structure:
 
 ```text
-Dungeon 1
+Dungeon 1 (Bölüm 1: Giriş)
    ↓
-Dungeon 2
+Dungeon 2 (Bölüm 2: Karanlık Koridor)
    ↓
-Dungeon 3
+Dungeon 3 (Bölüm 3: Mahzenin Derinlikleri)
    ↓
-Boss Dungeon
+Boss Dungeon (Future Phase)
 ```
 
-Locked dungeons must clearly show progression requirements.
+Locked dungeons clearly display unlocking prerequisites. Completed dungeons can be revisited or continued in sequence.
+
+---
+
+# Campaign Run Progression & Checkpoints
+
+A campaign run spans across connected dungeons with transient progression persistence:
+
+1. **Commit vs. Checkpoint Semantics**:
+   - **Committed Run State**: Progression (Level, current XP, total XP, chosen upgrades) is committed into durable session memory *only* upon achieving Dungeon Victory.
+   - **Dungeon Entry Checkpoint**: Whenever a dungeon loads, an entry checkpoint is created.
+   - **Defeat Retry**: If defeated and the player chooses **YENİDEN DENE** (Retry), progression reverts to the dungeon entry checkpoint. Any XP or upgrades gained during the failed attempt are discarded, preventing death-farming exploits.
+   - **Defeat Return to Map**: If defeated and the player chooses **HARİTAYA DÖN** (Return to Map), the campaign run is terminated. Run progression resets completely (Level 1, 0 XP, 0 upgrades).
+   - **Full Health Reset**: Player health is never stored across scenes or retries. The player always starts every dungeon and every retry at 100% full health.
+
+2. **Session Architecture Decoupling**:
+   - `CharacterSelectionSession`: Exclusively owns the active hero selection (`CharacterDefinition`).
+   - `DungeonRunSession`: Exclusively owns the active dungeon selection (`DungeonDefinition`).
+   - `RunProgressionSession`: Exclusively owns active run progression data. Stores `ownerCharacterId` purely to validate whether the progression matches the selected hero. If mismatched, it resets cleanly.
+
+---
+
+# Dungeon Scaling & Difficulty Curves
+
+Enemy health and damage scale per dungeon via `DungeonDefinition` multipliers without modifying base prefab assets:
+
+| Dungeon | Display Name | Waves | Enemies | Total XP | HP Multiplier | Zombie HP | Damage Multiplier | Zombie Damage |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Dungeon 1** | Bölüm 1: Giriş | 3 | 45 | 450 XP | 1.0x | 50 HP | 1.0x | 10 Dmg |
+| **Dungeon 2** | Bölüm 2: Karanlık Koridor | 4 | 40 | 400 XP | 1.1x | 55 HP | 1.0x | 10 Dmg |
+| **Dungeon 3** | Bölüm 3: Mahzenin Derinlikleri | 4 | 50 | 500 XP | 1.2x | 60 HP | 1.1x | 11 Dmg |
+
+### Combat Breakpoint Philosophy
+- Player power growth via level-up upgrades (+20% damage, +15% attack speed) outpaces the subtle enemy HP scaling (10-20%), creating a sense of increasing mastery rather than a bullet-sponge grind.
+- Weapon breakpoints against 50/55/60 HP zombies remain smooth:
+  - **Warrior** (25 base dmg): 2 hits (D1) -> 3 hits (D2) -> drops back to 2 hits with one Damage upgrade.
+  - **Archer** (20 base dmg): 3 hits (D1/D2/D3) -> drops to 2 hits with upgrades.
+  - **Gunner** (10 base dmg): 5 hits (D1) -> 6 hits (D2/D3) -> sustained DPS melts groups as fire rate increases.
 
 ---
 

@@ -3,9 +3,9 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 9 (Dungeon Progression & Campaign Flow, Milestones 9.1–9.5) implemented and verified across all gates.
-- World Map, multi-dungeon progression, defeat/victory lifecycle, persistence foundation, and Dungeon_02 fully integrated.
-- 100% green automated suites for Gates 9.1, 9.2, 9.3, 9.4, 9.5 and regressions for M8.3, M8.4, M8.5.
+- Phase 10 (Campaign Run Progression & Scaling, Milestones 10.1–10.5) implemented and verified across all gates.
+- RunProgressionSession with commit/checkpoint semantics, data-driven enemy scaling (D1, D2, D3), defeat rollback, playable Dungeon 3, and PlayerStats progression foundations integrated.
+- 100% green automated suites for Gates 10.1 (11/11), 10.2 (7/7), 10.3 (5/5), 10.4 (5/5), 10.5 (10/10), and regressions for Gate 9.4 (13/13) and Phase 9 Polish (17/17).
 
 ---
 
@@ -13,28 +13,28 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 9: Dungeon Progression (Milestones 9.1–9.5 + Manual QA Polish Pass Complete & Approved)**  
-**NEXT UP — Phase 10: Permanent Progression & Skill Trees**
+**COMPLETED — Phase 10: Campaign Run Progression & Scaling (Milestones 10.1–10.5 Complete & Verified)**  
+**NEXT UP — Phase 11: Permanent Progression & Meta Trees**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), 8.5 (Character Selection UI & Integration), 9.1 (Data-Driven Dungeon Architecture), 9.2 (Run Lifecycle & Defeat Flow), 9.3 (Campaign Progression & Persistence), 9.4 (World Map Scene & Selection Flow), 9.5 (Second Dungeon & Campaign Integration), and Phase 9 Polish Pass are completed, verified, and approved.
+Milestones 1.1 through 9.5, Phase 9 Polish Pass, and Phase 10 (10.1: Campaign Run Progression Checkpoints, 10.2: Data-Driven Enemy Scaling, 10.3: Run Lifecycle & End-Run Semantics, 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity, 10.5: Progression Foundations & Architecture Invariants) are completed, verified, and approved.
 
 ---
 
 # Current Phase
 
-## PHASE 9 — Dungeon Progression (COMPLETED)
+## PHASE 10 — Campaign Run Progression & Scaling (COMPLETED)
 
-- Milestone 9.1: Data-Driven Dungeon Architecture & Session Carrier (Completed)
-- Milestone 9.2: Complete Run Lifecycle & Defeat Flow (Completed)
-- Milestone 9.3: Campaign Progression & Persistence Foundation (Completed)
-- Milestone 9.4: World Map Scene & Flow Re-routing (Completed)
-- Milestone 9.5: Second Dungeon, Full Campaign Integration & Regressions (Completed)
+- Milestone 10.1: Campaign Run Progression Checkpoints (Completed)
+- Milestone 10.2: Data-Driven Enemy Scaling (Completed)
+- Milestone 10.3: Run Lifecycle & End-Run Semantics (Completed)
+- Milestone 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity (Completed)
+- Milestone 10.5: Progression Foundations & Architecture Invariants (Completed)
 
 ---
 
-## PHASE 10 — Permanent Progression (Next Up)
+## PHASE 11 — Permanent Progression & Meta Trees (Next Up)
 
-- Milestone 10.1: Skill Points & Character Skill Trees
+- Milestone 11.1: Meta Currency & Character Skill Trees
 
 ---
 
@@ -425,57 +425,82 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
 - Reaching 0 HP triggers Defeat popup (`YENİLDİN`) correctly.
 - Overall Phase 9 campaign flow approved: GREEN.
 
+- **Phase 10 — Campaign Run Progression & Scaling (Milestones 10.1–10.5 Complete & Verified)**:
+  - **Milestone 10.1 — Campaign Run Progression Checkpoints**:
+    - Implemented `RunProgressionSession.cs` pure static runtime session carrier for transient cross-dungeon run progression (`currentLevel`, `currentXP`, `totalXPEarned`, `appliedUpgrades`).
+    - Enforced strict **Commit vs. Checkpoint** semantics:
+      - Progression earned during a dungeon is committed to durable session memory *only* upon achieving Dungeon Victory (`CommitActiveRunState()`).
+      - An entry checkpoint is captured upon entering any dungeon (`SaveEntryCheckpoint()`).
+    - Full health restoration: health is strictly excluded from `RunProgressionSession`; player always starts every dungeon and retry at 100% full health.
+    - Decoupled character ownership validation: `ownerCharacterId` validates that active run progression matches `CharacterSelectionSession.SelectedCharacter.id`. If a different hero is selected, run progression resets cleanly without mutating `CharacterSelectionSession`.
+    - Implemented runtime restoration without side effects:
+      - `PlayerExperience.RestoreState(...)` restores level and carryover XP without triggering false level-up choice prompts or UI modal popups.
+      - `UpgradeManager.ReconstructUpgrades(...)` reapplies upgrade multipliers to `PlayerStats` without opening UI or incrementing pending choice queues.
+      - `PlayerSpawner.Spawn(...)` seamlessly restores the fresh clone upon instantiation.
+    - Automated Play Mode verification suite (`Milestone10_1_Verifier.cs`) ran and passed all 11 checks with 0 errors. Checkpoint commit `f5f7829`.
+  - **Milestone 10.2 — Data-Driven Enemy Scaling**:
+    - Extended `DungeonDefinition.cs` with `EnemyHealthMultiplier` (default 1.0) and `EnemyDamageMultiplier` (default 1.0) ScriptableObject fields.
+    - Implemented runtime scaling in `EnemyHealth.cs` (`InitializeHealth(float)`) and `EnemyAttack.cs` (`InitializeAttack(float)`).
+    - `WaveManager.SpawnEnemy(...)` initializes each spawned enemy clone with the active dungeon's multipliers.
+    - Zero asset corruption: base `Zombie.prefab` and ScriptableObject definitions remain untouched; instances scale dynamically per dungeon.
+    - Tuned campaign difficulty curve:
+      - Dungeon 1: 1.0x HP (50 HP), 1.0x Damage (10 dmg).
+      - Dungeon 2: 1.1x HP (55 HP), 1.0x Damage (10 dmg).
+      - Dungeon 3: 1.2x HP (60 HP), 1.1x Damage (11 dmg).
+    - Preserved weapon kill breakpoints: player upgrade progression outpaces subtle enemy scaling, maintaining player empowerment.
+    - Automated Play Mode verification suite (`Milestone10_2_Verifier.cs`) ran and passed all 7 checks with 0 errors. Checkpoint commit `7f2554b`.
+  - **Milestone 10.3 — Run Lifecycle & End-Run Semantics**:
+    - Defeat Retry Rollback: when the player chooses **YENİDEN DENE** (Retry), `RunProgressionSession` rolls back to the dungeon entry checkpoint (`RestoreEntryCheckpoint()`), discarding all XP and upgrades gained during the failed attempt, completely preventing death-farming exploits.
+    - Defeat Return to Map: when the player chooses **HARİTAYA DÖN** (Return to Map), the active run is terminated (`EndActiveRun()`), resetting temporary progression back to baseline (Level 1, 0 XP, 0 upgrades).
+    - Clear Turkish UI Communication: updated `PlayerDefeatUI.cs` with dynamic subtitle labels under the defeat buttons:
+      - `[YENİDEN DENE]`: *"Zindana girişteki gelişiminle yeniden başla."*
+      - `[HARİTAYA DÖN]`: *"Koşuyu sonlandır ve haritaya dön."*
+    - Automated Play Mode verification suite (`Milestone10_3_Verifier.cs`) ran and passed all 5 checks with 0 errors. Checkpoint commit `729f373`.
+  - **Milestone 10.4 — Playable Dungeon 3 & Multi-Dungeon Continuity**:
+    - Created 4 new wave configurations for Dungeon 3 (`Wave_03_01.asset` through `Wave_03_04.asset`) totaling 50 enemies (500 XP).
+    - Created `Dungeon_03.asset` (`id = "dungeon_3"`, `displayName = "Bölüm 3: Mahzenin Derinlikleri"`, `requiredDungeonId = "dungeon_2"`, 1.2x HP, 1.1x Dmg).
+    - Created playable scene `Assets/Scenes/Dungeons/Dungeon_03.unity` with cold-blue crypt lighting, full gameplay rig, 4 spawn points, and obstacles.
+    - Updated `DungeonCatalog.asset` to include exactly 3 playable dungeons `[dungeon_1, dungeon_2, dungeon_3]`. (No non-playable D4/D5 placeholders).
+    - Configured `EditorBuildSettings` to exactly 5 scenes in sequential order:
+      - `0`: `Assets/Scenes/CharacterSelect/CharacterSelection.unity`
+      - `1`: `Assets/Scenes/WorldMap/WorldMap.unity`
+      - `2`: `Assets/Scenes/Dungeons/Dungeon_Prototype.unity`
+      - `3`: `Assets/Scenes/Dungeons/Dungeon_02.unity`
+      - `4`: `Assets/Scenes/Dungeons/Dungeon_03.unity`
+    - Verified multi-dungeon progression continuity across D1 -> D2 -> D3.
+    - Automated Play Mode verification suite (`Milestone10_4_Verifier.cs`) ran and passed all 5 checks with 0 errors. Checkpoint commit `82bac42`.
+  - **Milestone 10.5 — Progression Foundations & Architecture Invariants**:
+    - Implemented 3-tier multiplier foundation in `PlayerStats.cs`:
+      - Permanent multipliers: `permanentDamageMultiplier`, `permanentAttackSpeedMultiplier`, `permanentMovementSpeedMultiplier` (default 1.0).
+      - Temporary multipliers: `damageMultiplier`, `attackSpeedMultiplier`, `movementSpeedMultiplier` (default 1.0).
+      - Effective multipliers: `DamageMultiplier => damageMultiplier * permanentDamageMultiplier;`, etc.
+    - `ResetModifiers()` clears temporary bonuses while preserving permanent foundations.
+    - Invariant verification: confirmed strict architectural separation between `CharacterSelectionSession` (hero ownership), `DungeonRunSession` (dungeon ownership), and `RunProgressionSession` (campaign progression ownership). Confirmed zero health persistence in session.
+    - Automated Play Mode verification suite (`Milestone10_5_Verifier.cs`) ran and passed all 10 checks with 0 errors. Checkpoint commit `c144210`.
+    - Full regression suites: Gate 9.4 (World Map 13/13 checks) and Phase 9 Polish (17/17 checks) verified GREEN.
+
 ---
 
 # Next Task
 
-**Phase 10: Permanent Progression & Skill Trees**
+**Phase 11: Permanent Progression & Meta Trees**
 
-Deferred Work (Post-Milestone 8 / Future Phases):
-- **Enemy Corpse Cleanup**:
-  - Dead enemies must not remain permanently in the dungeon.
-  - On death, gameplay collision / movement / attack should stop immediately.
-  - When character animations are introduced, play a short death animation.
-  - Target cleanup timing: approximately 1–2 seconds after death.
-  - After the death animation, use a short fade/dissolve if appropriate.
-  - Then remove/destroy the corpse.
-  - Consider object pooling later only if enemy counts/performance justify it.
-  - This is intentionally deferred until the enemy model/animation pipeline is introduced.
-- **Localization & Settings**:
-  - Current player-facing prototype UI is Turkish.
-  - Add proper localization later.
-  - Initial supported languages planned:
-    - Turkish
-    - English
-  - Future Settings menu should allow language selection.
-  - Stable internal IDs such as warrior / archer / gunner must remain language-independent.
-  - Do not implement localization during Milestone 8.5.
-- **Gunner Full-Auto / Held-Fire Evaluation**:
-  - Gunner currently uses semi-auto input with a 0.18s cooldown.
-  - Full-auto / held-fire semantics remain deferred.
-  - Re-evaluate after manual gameplay testing with muzzle flash + tracer feedback.
-  - Do not modify `IPrimaryAttack` or `PlayerAttack` yet.
-- **Final Presentation Polish**:
-  - Deferred until later:
-    - Final character models
-    - Character animations
-    - Weapon animations
-    - Death animations
-    - Final muzzle flash / projectile VFX
-    - Sound effects
-    - Final UI art / portraits
-- **Archer Firing Feedback & Shot Readability Polish**:
-  - Archer firing feedback could be made more visually explicit later (e.g. bow release / arrow launch visual/audio feedback).
-  - Current arrow projectile is fully functional; feedback polish is deferred to future polish phases.
-- Return to Character Selection button on in-game pause/completion menus (deferred to Phase 9 navigation polish).
-- World Map & multi-dungeon progression (Phase 9).
-- Permanent skill trees, meta progression, and save/load (Phase 10).
-- Enemy expansion (Runner, Brute, Ranged, Elite) (Phase 11).
-- Boss framework and first dungeon boss (Phase 12).
+Deferred Work (Post-Milestone 10 / Future Phases):
+- **Permanent Meta Progression & Skill Trees (Phase 11)**:
+  - Meta currency earned across runs.
+  - Character-specific skill trees utilizing `PlayerStats` permanent multiplier foundations.
+  - Disk persistence for skill points and purchased nodes.
+- **Enemy Expansion (Phase 12)**:
+  - Runner, Brute, Ranged, and Elite variants.
+- **Boss Framework & First Boss (Phase 13)**:
+  - Boss health UI, telegraphs, and multi-phase combat.
+- **Enemy Corpse Cleanup (Phase 14)**:
+  - Intentionally deferred until character animation pipeline is introduced.
+- **Localization & Settings (Phase 15)**:
+  - Settings menu, audio sliders, and multi-language support (TR/EN).
 
 Do NOT start:
-- Phase 9 / World Map until instructed
-- Permanent skill trees (Phase 10)
+- Phase 11 until instructed.
 
 ---
 
@@ -807,12 +832,12 @@ Manual player-facing verification: confirmed GREEN across character selection re
 # Recent Git Checkpoint
 
 ```text
-Phase 9 commit chain (on branch main):
-cc2646b feat: add data-driven dungeon architecture (Gate 9.1)
-e8760b5 feat: add complete dungeon run lifecycle and defeat flow (Gate 9.2)
-14acd64 feat: add dungeon progression persistence (Gate 9.3)
-0cc8f3c feat: add world map dungeon selection flow (Gate 9.4)
-da18a04 feat: add second dungeon and full campaign integration (Gate 9.5)
+Phase 10 commit chain (on branch main):
+f5f7829 feat: add campaign run progression checkpoints (Gate 10.1)
+7f2554b feat: add data-driven dungeon difficulty scaling (Gate 10.2)
+729f373 feat: integrate run lifecycle and rollback semantics (Gate 10.3)
+82bac42 feat: add third dungeon and multi-dungeon run continuity (Gate 10.4)
+c144210 feat: add Phase 10 progression foundations (Gate 10.5)
 ```
 
 ---
@@ -831,68 +856,56 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Phase 9 (Dungeon Progression & Campaign Flow, Milestones 9.1–9.5) executed and verified across all 5 gates.
-- Assets/Scripts/Dungeons/DungeonDefinition.cs: ScriptableObject schema for dungeons (id, displayName, description, sceneName, requiredDungeonId, waves).
-- Assets/Scripts/Dungeons/DungeonRunSession.cs: transient cross-scene context carrier (ActiveDungeon, SelectedCharacter) with Dungeon_01 fallback.
-- Assets/Scripts/Dungeons/PlayerDefeatController.cs: run lifecycle controller managing player death, halting waves, showing defeat UI, and mutual victory suppression.
-- Assets/Scripts/UI/PlayerDefeatUI.cs: Turkish defeat UI (YENİLDİN, YENİDEN DENE, HARİTAYA DÖN).
-- Assets/Scripts/Dungeons/DungeonProgression.cs: JSON PlayerPrefs progression persistence, unlocking derivation, and completion tracking.
-- Assets/Scripts/Dungeons/DungeonCatalog.cs: ScriptableObject holding ordered catalog of all playable dungeons.
-- Assets/Scripts/UI/WorldMapCard.cs: card presentation component for dungeons with status badges (AÇIK, KİLİTLİ, TAMAMLANDI) and launch button.
-- Assets/Scripts/UI/WorldMapController.cs: world map orchestrator binding catalog to UI cards and managing dungeon launch.
-- Assets/Scenes/WorldMap/WorldMap.unity: dedicated world map scene with responsive UI layout.
-- Assets/Scenes/Dungeons/Dungeon_02.unity: second playable dungeon with 4 waves, darker lighting, and identical gameplay rig.
-- Assets/ScriptableObjects/Waves/Wave_02_01.asset .. Wave_02_04.asset: 4 wave configurations for Dungeon 2.
-- Assets/ScriptableObjects/Dungeons/: Dungeon_01.asset (3 waves), Dungeon_02.asset (4 waves), DungeonCatalog.asset.
-- Updated CharacterSelectionController & CharacterSelection.unity to launch into WorldMap.
-- Updated DungeonCompletionController & DungeonCompleteUI with Return to Map button and defeat suppression.
-- Updated WaveManager with dynamic wave copying from ActiveDungeon and HaltDungeon().
-- Configured 4-scene EditorBuildSettings: [0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype, 3: Dungeon_02].
-- Assets/Editor/Milestone9_Setup.cs: comprehensive automation tool for setup and verification across all 5 gates.
-- Assets/Tests/Verification/Milestone9_1_Verifier.cs through Milestone9_5_Verifier.cs: automated Play Mode verification suites for all gates.
+- Phase 10 (Campaign Run Progression & Scaling, Milestones 10.1–10.5) executed and verified across all 5 gates.
+- Assets/Scripts/Progression/RunProgressionSession.cs: pure static runtime session carrier for transient campaign progression with commit/checkpoint semantics.
+- Assets/Scripts/Player/PlayerExperience.cs: added RestoreState(level, xp, totalXp) for silent state rehydration without triggering level-up popups.
+- Assets/Scripts/Upgrades/UpgradeManager.cs: added ReconstructUpgrades(appliedUpgrades) to reapply stat bonuses without UI modal queues.
+- Assets/Scripts/Characters/PlayerSpawner.cs: integrated run state restoration into Spawn() factory, decoupling spawner from progression logic.
+- Assets/Scripts/Dungeons/DungeonDefinition.cs: added enemyHealthMultiplier and enemyDamageMultiplier scaling fields.
+- Assets/Scripts/Combat/EnemyHealth.cs: added InitializeHealth(multiplier) for runtime instance scaling.
+- Assets/Scripts/Combat/EnemyAttack.cs: added InitializeAttack(multiplier) for runtime instance scaling.
+- Assets/Scripts/Waves/WaveManager.cs: updated SpawnEnemy to scale instantiated enemies via active dungeon multipliers.
+- Assets/Scripts/Dungeons/PlayerDefeatController.cs: wired defeat retry rollback to entry checkpoint and defeat map return to end active run.
+- Assets/Scripts/UI/PlayerDefeatUI.cs: added dynamic Turkish explanatory subtitle labels under defeat buttons.
+- Assets/Scenes/Dungeons/Dungeon_03.unity: created third playable dungeon scene with cold-blue crypt ambiance, 4 spawn points, and obstacles.
+- Assets/ScriptableObjects/Dungeons/Dungeon_03.asset: created Dungeon 3 definition (1.2x HP, 1.1x Dmg, prereq: dungeon_2).
+- Assets/ScriptableObjects/Waves/Wave_03_01.asset .. Wave_03_04.asset: created 4 wave assets for Dungeon 3 (50 enemies, 500 XP).
+- Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset: updated to include exactly 3 playable dungeons [Dungeon_01, Dungeon_02, Dungeon_03].
+- ProjectSettings/EditorBuildSettings.asset: updated to 5 scenes in sequential order:
+  [0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype, 3: Dungeon_02, 4: Dungeon_03].
+- Assets/Scripts/Player/PlayerStats.cs: implemented 3-tier multiplier foundation (Effective = Base * Permanent * Temporary) with SetPermanentMultipliers().
+- Assets/Editor/Milestone10_Setup.cs: comprehensive automation tool for setup and verification across all 5 Phase 10 gates.
+- Assets/Tests/Verification/Milestone10_1_Verifier.cs through Milestone10_5_Verifier.cs: automated Play Mode verification suites for all gates.
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Editor/Milestone8_5_Setup.cs
-- Assets/Editor/Milestone9_Setup.cs
-- Assets/Scenes/CharacterSelect/CharacterSelection.unity
+- Assets/Editor/Milestone10_Setup.cs (+ .meta)
 - Assets/Scenes/Dungeons/Dungeon_02.unity
-- Assets/Scenes/Dungeons/Dungeon_02.unity.meta
+- Assets/Scenes/Dungeons/Dungeon_03.unity (+ .meta)
 - Assets/Scenes/Dungeons/Dungeon_Prototype.unity
-- Assets/Scenes/WorldMap/WorldMap.unity
-- Assets/Scenes/WorldMap/WorldMap.unity.meta
 - Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset
-- Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset.meta
 - Assets/ScriptableObjects/Dungeons/Dungeon_01.asset
-- Assets/ScriptableObjects/Dungeons/Dungeon_01.asset.meta
 - Assets/ScriptableObjects/Dungeons/Dungeon_02.asset
-- Assets/ScriptableObjects/Dungeons/Dungeon_02.asset.meta
-- Assets/ScriptableObjects/Waves/Wave_02_01.asset .. Wave_02_04.asset (+ .meta)
-- Assets/Scripts/Characters/CharacterSelectionSession.cs
-- Assets/Scripts/Dungeons/DungeonCatalog.cs
-- Assets/Scripts/Dungeons/DungeonCatalog.cs.meta
+- Assets/ScriptableObjects/Dungeons/Dungeon_03.asset (+ .meta)
+- Assets/ScriptableObjects/Waves/Wave_03_01.asset .. Wave_03_04.asset (+ .meta)
+- Assets/Scripts/Characters/PlayerSpawner.cs
+- Assets/Scripts/Combat/EnemyAttack.cs
+- Assets/Scripts/Combat/EnemyHealth.cs
 - Assets/Scripts/Dungeons/DungeonCompletionController.cs
 - Assets/Scripts/Dungeons/DungeonDefinition.cs
-- Assets/Scripts/Dungeons/DungeonDefinition.cs.meta
-- Assets/Scripts/Dungeons/DungeonProgression.cs
-- Assets/Scripts/Dungeons/DungeonProgression.cs.meta
-- Assets/Scripts/Dungeons/DungeonRunSession.cs
-- Assets/Scripts/Dungeons/DungeonRunSession.cs.meta
 - Assets/Scripts/Dungeons/PlayerDefeatController.cs
-- Assets/Scripts/Dungeons/PlayerDefeatController.cs.meta
+- Assets/Scripts/Experience/PlayerExperience.cs
+- Assets/Scripts/Player/PlayerStats.cs
+- Assets/Scripts/Progression/RunProgressionSession.cs (+ .meta)
 - Assets/Scripts/UI/CharacterSelectionController.cs
-- Assets/Scripts/UI/DungeonCompleteUI.cs
 - Assets/Scripts/UI/PlayerDefeatUI.cs
-- Assets/Scripts/UI/PlayerDefeatUI.cs.meta
-- Assets/Scripts/UI/WorldMapCard.cs
-- Assets/Scripts/UI/WorldMapCard.cs.meta
-- Assets/Scripts/UI/WorldMapController.cs
-- Assets/Scripts/UI/WorldMapController.cs.meta
+- Assets/Scripts/Upgrades/UpgradeManager.cs
 - Assets/Scripts/Waves/WaveManager.cs
-- Assets/Tests/Verification/Milestone9_1_Verifier.cs .. Milestone9_5_Verifier.cs (+ .meta)
+- Assets/Tests/Verification/Milestone10_1_Verifier.cs .. Milestone10_5_Verifier.cs (+ .meta)
 - ProjectSettings/EditorBuildSettings.asset
+- GAME_DESIGN.md
 - ROADMAP.md
 - PROJECT_STATUS.md
 ```
@@ -900,13 +913,43 @@ When switching between agents:
 ## Tested
 
 ```text
-- Phase 9 Polish Pass Play Mode verification suite: 17/17 checks PASSED (playmode_polish.log)
-- Milestone 8.3 Archer regression suite: 68/68 checks PASSED (regression_8_3.log)
-- Milestone 8.4 Gunner regression suite: 44/44 checks PASSED (regression_8_4.log)
-- Gate 9.4 World Map verification suite: 13/13 checks PASSED (regression_9_4.log)
-- Gate 9.1 through Gate 9.5 test suites: all PASSED (0 errors)
-- Manual QA: Dungeon 1 victory, Dungeon 2 unlock, Dungeon 2 completion, Player Health HUD, defeat at 0 HP all verified GREEN
-- 0 compile errors, 0 runtime exceptions across all batchmode runs.
+- Gate 10.1 Play Mode Verification: 11/11 checks PASSED (Commit/checkpoint, silent restoration, character change reset).
+- Gate 10.2 Play Mode Verification: 7/7 checks PASSED (Enemy scaling math, instance scaling without asset mutation).
+- Gate 10.3 Play Mode Verification: 5/5 checks PASSED (Defeat retry rollback, map return end run, Turkish UI subtitles).
+- Gate 10.4 Play Mode Verification: 5/5 checks PASSED (Dungeon 3 playable, 4 waves, 5 scenes registered in build settings).
+- Gate 10.5 Play Mode Verification: 10/10 checks PASSED (PlayerStats 3-tier layering, session decoupling invariants, zero HP in session).
+- Gate 9.4 World Map regression: 13/13 checks PASSED.
+- Phase 9 Polish regression: 17/17 checks PASSED.
+- 0 compile errors, 0 runtime exceptions across all batchmode test runs.
+```
+
+## Manual QA Verification Plan (For User)
+
+```text
+1. Full Campaign Run Flow (D1 -> D2 -> D3):
+   - Start from CharacterSelection scene.
+   - Pick any character (e.g. Archer).
+   - Enter Dungeon 1, defeat enemies, level up and pick upgrades (e.g. Damage +20%).
+   - Clear Dungeon 1 -> Click "HARİTAYA DÖN" or proceed to World Map.
+   - Confirm Dungeon 2 is unlocked. Select and enter Dungeon 2.
+   - Verify character enters Dungeon 2 with the Level, XP, and upgrades earned in Dungeon 1.
+   - Verify health starts at 100% full.
+   - Clear Dungeon 2 -> Confirm Dungeon 3 is unlocked.
+   - Enter Dungeon 3 -> Verify character enters at current Level with accumulated upgrades intact.
+
+2. Defeat Retry Rollback (Anti-Farming Test):
+   - In Dungeon 2 or 3, earn some XP/levels, then intentionally let zombies kill the player.
+   - Observe defeat UI subtitles:
+     - [YENİDEN DENE]: "Zindana girişteki gelişiminle yeniden başla."
+     - [HARİTAYA DÖN]: "Koşuyu sonlandır ve haritaya dön."
+   - Click "YENİDEN DENE".
+   - Verify the dungeon restarts with the EXACT stats/level from when you first entered the dungeon (XP gained during failed run is cleanly discarded).
+   - Verify health starts at 100% full.
+
+3. Defeat Map Return (Run Termination Test):
+   - In any dungeon, die and click "HARİTAYA DÖN".
+   - From World Map, re-enter Dungeon 1.
+   - Verify the character starts a fresh run at Level 1 with 0 XP and 0 upgrades.
 ```
 
 ## Known Issues
@@ -918,11 +961,11 @@ None.
 ## Next Task
 
 ```text
-Phase 10: Permanent Progression & Skill Trees
+Phase 11: Permanent Progression & Meta Trees
 ```
 
 ## Latest Verified Commit
 
 ```text
-feat: polish Phase 9 gameplay UI and dungeon arenas
+c144210 feat: add Phase 10 progression foundations
 ```

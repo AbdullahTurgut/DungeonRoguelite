@@ -258,19 +258,49 @@ Implemented:
 
 ---
 
-# PHASE 10 — Permanent Progression
+# PHASE 10 — Campaign Run Progression & Scaling (COMPLETED)
 
-Implement:
+Implemented:
 
-- Skill points
-- Character-specific skill tree
-- 5–8 initial nodes per character
-- Permanent upgrades
-- Save/load
+- Milestone 10.1: Campaign Run Progression Checkpoints
+  - `RunProgressionSession` static state carrier with commit/checkpoint semantics
+  - Transient run progression (currentLevel, currentXP, totalXPEarned, appliedUpgrades)
+  - Progression committed strictly on victory; entry checkpoint restored on defeat retry; run ended on map return
+  - Full health restored on entry/retry (health is never part of run progression)
+  - Character ownership validation (`ownerCharacterId`) decoupling character selection from run session
+- Milestone 10.2: Data-Driven Enemy Scaling
+  - `DungeonDefinition` scaling multipliers (`EnemyHealthMultiplier`, `EnemyDamageMultiplier`)
+  - Runtime enemy scaling in `EnemyHealth`, `EnemyAttack`, and `WaveManager`
+  - Tuned dungeon difficulty: D1 (1.0x HP, 1.0x Dmg), D2 (1.1x HP, 1.0x Dmg), D3 (1.2x HP, 1.1x Dmg)
+- Milestone 10.3: Run Lifecycle & End-Run Semantics
+  - Zero-exploit rollback on defeat retry (discards XP/upgrades earned in failed attempt)
+  - Run termination and reset on defeat return to map
+  - Explicit Turkish explanatory subtitles on defeat UI (`[YENİDEN DENE]`, `[HARİTAYA DÖN]`)
+- Milestone 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity
+  - Created Dungeon 3 (`Dungeon_03.unity`, `Dungeon_03.asset`) with 4 waves (50 enemies, 500 XP)
+  - Deep crypt visual ambiance and enemy scaling (60 HP zombies, 11 damage)
+  - Full 5-scene build sequence: `[0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype, 3: Dungeon_02, 4: Dungeon_03]`
+  - Verified multi-transition run continuity across D1 -> D2 -> D3
+- Milestone 10.5: Progression Foundations & Architecture Invariants
+  - Layered `PlayerStats` architecture: Effective Multiplier = Base * Permanent * Temporary
+  - Architecture boundaries verified: `CharacterSelectionSession` owns hero, `DungeonRunSession` owns dungeon, `RunProgressionSession` owns campaign progression
+  - Comprehensive automated Play Mode test suite (10/10 checks) and full regressions passed
 
 ---
 
-# PHASE 11 — Enemy Expansion
+# PHASE 11 — Permanent Progression & Meta Trees
+
+Implement:
+
+- Meta currency / Skill points earned from runs
+- Character-specific permanent skill tree
+- 5–8 initial nodes per character
+- Permanent upgrades save/load
+- Hooking permanent multipliers into `PlayerStats` foundations
+
+---
+
+# PHASE 12 — Enemy Expansion
 
 Add:
 
@@ -283,7 +313,7 @@ Then balance spawn compositions.
 
 ---
 
-# PHASE 12 — Bosses
+# PHASE 13 — Bosses
 
 Implement:
 
@@ -294,7 +324,7 @@ Implement:
 
 ---
 
-# PHASE 13 — Content and Polish
+# PHASE 14 — Content and Polish
 
 Add:
 
@@ -311,7 +341,7 @@ Add:
 
 ---
 
-# PHASE 14 — Production
+# PHASE 15 — Production
 
 Implement:
 
@@ -330,14 +360,16 @@ Implement:
 Unless `PROJECT_STATUS.md` says otherwise:
 
 ```text
-Phase 0–7 (Core Vertical Slice) -> COMPLETED
+Phase 0–7 (Core Vertical Slice)              -> COMPLETED
     ↓
-Phase 8 (Character System)       -> COMPLETED
+Phase 8 (Character System)                    -> COMPLETED
     ↓
-Phase 9 (Dungeon Progression)    -> COMPLETED (Manual QA Pending)
+Phase 9 (Dungeon Progression)                 -> COMPLETED
     ↓
-Phase 10 (Permanent Progression) -> NEXT UP
+Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA Pending)
+    ↓
+Phase 11 (Permanent Progression & Meta Trees) -> NEXT UP
 ```
 
-Milestones 0 through 9 are fully implemented and verified.
-Current focus is Phase 9 Manual QA verification, followed by Phase 10 (Permanent Progression & Skill Trees).
+Milestones 0 through 10 are fully implemented and verified.
+Current focus is Phase 10 Manual QA verification, followed by Phase 11 (Permanent Progression & Meta Trees).
