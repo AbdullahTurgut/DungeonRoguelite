@@ -3,9 +3,9 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 8.5 completed and verified in Unity Play Mode.
-- Character Selection UI, CharacterRoster, CharacterSelectionSession, and PlayerSpawner integration established.
-- Phase 8 (Character System) fully completed.
+- Phase 9 (Dungeon Progression & Campaign Flow, Milestones 9.1–9.5) implemented and verified across all gates.
+- World Map, multi-dungeon progression, defeat/victory lifecycle, persistence foundation, and Dungeon_02 fully integrated.
+- 100% green automated suites for Gates 9.1, 9.2, 9.3, 9.4, 9.5 and regressions for M8.3, M8.4, M8.5.
 
 ---
 
@@ -13,28 +13,28 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 8: Character System (Milestones 8.1–8.5 Complete)**  
-**NEXT UP — Phase 9: Dungeon Progression (Milestone 9.1: World Map & Multi-Dungeon Progression)**
+**COMPLETED — Phase 9: Dungeon Progression (Milestones 9.1–9.5 Complete)**  
+**NEXT UP — Phase 9 Manual QA / Player-Facing Campaign Verification (then Phase 10: Permanent Progression)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), and 8.5 (Character Selection UI & Integration) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), 8.5 (Character Selection UI & Integration), 9.1 (Data-Driven Dungeon Architecture), 9.2 (Run Lifecycle & Defeat Flow), 9.3 (Campaign Progression & Persistence), 9.4 (World Map Scene & Selection Flow), and 9.5 (Second Dungeon & Campaign Integration) are completed and verified.
 
 ---
 
 # Current Phase
 
-## PHASE 8 — Character System (COMPLETED)
+## PHASE 9 — Dungeon Progression (COMPLETED)
 
-- Milestone 8.1: Character Definition & Architecture (Completed)
-- Milestone 8.2: Runtime Player Spawning & Explicit Binding (Completed)
-- Milestone 8.3: Archer (Completed)
-- Milestone 8.4: Gunner (Completed)
-- Milestone 8.5: Character Selection UI & Integration (Completed)
+- Milestone 9.1: Data-Driven Dungeon Architecture & Session Carrier (Completed)
+- Milestone 9.2: Complete Run Lifecycle & Defeat Flow (Completed)
+- Milestone 9.3: Campaign Progression & Persistence Foundation (Completed)
+- Milestone 9.4: World Map Scene & Flow Re-routing (Completed)
+- Milestone 9.5: Second Dungeon, Full Campaign Integration & Regressions (Completed)
 
 ---
 
-## PHASE 9 — Dungeon Progression (Next Up)
+## PHASE 10 — Permanent Progression (Next Up)
 
-- Milestone 9.1: World Map & Multi-Dungeon Progression
+- Milestone 10.1: Skill Points & Character Skill Trees
 
 ---
 
@@ -349,15 +349,62 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
 
 ---
 
+# Phase 9 Implementation & Verification Summary
+
+Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an integrated 5-gate pipeline:
+
+- **Milestone 9.1 — Data-Driven Dungeon Architecture & Session Carrier (Gate 9.1)**:
+  - `DungeonDefinition.cs`: ScriptableObject schema holding `id`, `displayName`, `description`, `sceneName`, `requiredDungeonId`, and `waves` (`WaveDefinition[]`).
+  - `DungeonRunSession.cs`: In-memory runtime carrier for active dungeon context across scene loads (`ActiveDungeon`), with fallback resolution to `Dungeon_01.asset`.
+  - Created `Dungeon_01.asset` (Dungeon 1: 3 waves) and `Dungeon_02.asset` (Dungeon 2: 4 waves) under `Assets/ScriptableObjects/Dungeons/`.
+  - Updated `WaveManager.cs` to copy waves dynamically from `ActiveDungeon`, eliminating hardcoded wave counts.
+  - Automated Play Mode verification passed all 19 checks (`cc2646b`).
+
+- **Milestone 9.2 — Complete Run Lifecycle & Defeat Flow (Gate 9.2)**:
+  - `PlayerDefeatController.cs`: Subscribes to `PlayerHealth.OnDied`, stops player input, halts wave manager, notifies UI, and enforces mutual exclusion against victory.
+  - `PlayerDefeatUI.cs`: Turkish defeat screen (`YENİLDİN`) with `YENİDEN DENE` (restarts scene) and `HARİTAYA DÖN` (loads `WorldMap`).
+  - Updated `WaveManager.cs` with `HaltDungeon()` to stop active spawning and set state to `WaveState.Inactive`.
+  - Updated `DungeonCompletionController.cs` to strictly suppress defeat once victory occurs and added `ReturnToWorldMap()`.
+  - Updated `DungeonCompleteUI.cs` with `ReturnToMapButton` wired to `DungeonCompletionController.ReturnToWorldMap()`.
+  - Automated Play Mode verification passed all 16 checks (`e8760b5`).
+
+- **Milestone 9.3 — Campaign Progression & Persistence Foundation (Gate 9.3)**:
+  - `DungeonProgression.cs`: Persistent progression manager using JSON serialization via `PlayerPrefs` (`DungeonProgression_SaveData`).
+  - Supports `IsDungeonCompleted(id)`, `RecordDungeonCompleted(id)`, and prerequisite derivation `IsDungeonUnlocked(dungeon)`.
+  - Hooked into `DungeonCompletionController.FinalizeCompletion()`, recording completion upon dungeon clear.
+  - Automated Play Mode verification passed all 11 checks (`14acd64`).
+
+- **Milestone 9.4 — World Map Scene & Flow Re-routing (Gate 9.4)**:
+  - `DungeonCatalog.cs`: ScriptableObject holding ordered list of all playable dungeons.
+  - `WorldMapCard.cs`: Card UI component displaying dungeon name, description, wave count, status badge (`AÇIK`, `KİLİTLİ`, `TAMAMLANDI`), and launch button.
+  - `WorldMapController.cs`: Orchestrator querying `DungeonProgression`, binding cards, updating session `ActiveDungeon`, and loading selected dungeon scene.
+  - `WorldMap.unity`: Dedicated map scene at `Assets/Scenes/WorldMap/WorldMap.unity`.
+  - Re-routed `CharacterSelectionController.cs` and `CharacterSelection.unity` to launch into `"WorldMap"` instead of directly into the dungeon.
+  - Registered 3-scene Build Settings: `[0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype]`.
+  - Automated Play Mode verification passed all 13 checks (`0cc8f3c`).
+
+- **Milestone 9.5 — Second Dungeon, Full Campaign Integration & Regressions (Gate 9.5)**:
+  - Created 4 dedicated wave assets for Dungeon 2 (`Wave_02_01.asset` to `Wave_02_04.asset`).
+  - Configured `Dungeon_02.asset` with 4 waves and prerequisite `dungeon_1`.
+  - Created `Dungeon_02.unity` scene cloned from prototype rig, with 4-wave `WaveManager`, complete defeat/completion UI, and atmospheric lighting.
+  - Registered 4-scene Build Settings: `[0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype, 3: Dungeon_02]`.
+  - Automated Play Mode verification passed all 12 checks (`da18a04`).
+  - Regression suites confirmed 100% green: M8.3 (68/68), M8.4 (44/44), M8.5 (30/30).
+
+---
+
 # Next Task
 
-**Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)**
+**Phase 9 Manual QA / Player-Facing Campaign Verification**
 
-Tasks for Milestone 9.1:
-1. Design data-driven `DungeonDefinition` ScriptableObject schema (id, displayName, scene, waves, unlock requirements, rewards).
-2. Implement World Map scene and level-select UI (Character Selection -> World Map -> Dungeon).
-3. Implement sequential dungeon unlocking flow (Dungeon 1 clear unlocks Dungeon 2, etc.).
-4. Connect dungeon completion and return button to World Map navigation.
+1. Run manual playtest of full campaign flow:
+   - Character Selection (Warrior / Archer / Gunner) -> START
+   - World Map (Dungeon 1 unlocked, Dungeon 2 locked) -> Enter Dungeon 1
+   - Dungeon 1 Defeat flow -> YENİDEN DENE & HARİTAYA DÖN
+   - Dungeon 1 Victory flow -> HARİTAYA DÖN
+   - World Map (Dungeon 1 completed, Dungeon 2 unlocked) -> Enter Dungeon 2
+   - Dungeon 2 (4 waves, darker atmosphere) -> Defeat & Victory flows
+2. Once manual playtest is approved, proceed to Phase 10 (Permanent Progression & Skill Trees).
 
 Deferred Work (Post-Milestone 8 / Future Phases):
 - **Enemy Corpse Cleanup**:
@@ -735,8 +782,12 @@ Manual player-facing verification: confirmed GREEN across character selection re
 # Recent Git Checkpoint
 
 ```text
-Latest verified commit:
-15ef55f feat: add character selection flow and gameplay QA improvements
+Phase 9 commit chain (on branch main):
+cc2646b feat: add data-driven dungeon architecture (Gate 9.1)
+e8760b5 feat: add complete dungeon run lifecycle and defeat flow (Gate 9.2)
+14acd64 feat: add dungeon progression persistence (Gate 9.3)
+0cc8f3c feat: add world map dungeon selection flow (Gate 9.4)
+da18a04 feat: add second dungeon and full campaign integration (Gate 9.5)
 ```
 
 ---
@@ -755,89 +806,84 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 8.5 Character Selection UI & Integration implementation, manual QA improvements, and verification.
-- Assets/Scripts/Characters/CharacterRoster.cs: ScriptableObject data catalog holding ordered List<CharacterDefinition> with validation against null entries and duplicate references/IDs.
-- Assets/ScriptableObjects/Characters/CharacterRoster.asset: catalog asset configured with [Warrior, Archer, Gunner].
-- Assets/Scripts/Characters/CharacterSelectionSession.cs: pure static runtime holder for passing selected CharacterDefinition across scene loads without persistence or disk mutation; cleared on domain reload and scene entry; survives dungeon restart scene reload.
-- Assets/Scripts/Characters/PlayerSpawner.cs: updated to consume CharacterSelectionSession.SelectedCharacter with defaultCharacter fallback without character branching; never mutates defaultCharacter on disk.
-- Assets/Scripts/UI/CharacterSelectionCard.cs: card presentation component managing display name, description, button click, and active visual selection highlight (dark background #161B22 with 4-side cyan outline border #00FFFF).
-- Assets/Scripts/UI/CharacterSelectionController.cs: screen orchestrator binding cards from roster, managing local selection decoupled from session until Start button is clicked, enforcing mutual exclusivity, and loading Dungeon_Prototype.
-- Assets/Scenes/CharacterSelect/CharacterSelection.unity: dedicated pre-run selection scene with Camera, Canvas, EventSystem (InputSystemUIInputModule), and SelectionPanel; 1280x720 layout, Turkish labels, large fonts; zero gameplay entities.
-- Assets/Scripts/Experience/ExperiencePickup.cs: auto-homing physical collectible orb (0.2s delay, 25 m/s² acceleration, 12 m/s max speed, 0.75m collection radius, pause freeze, single-award guard).
-- Assets/Scripts/Experience/PlayerExperience.cs: O(1) ActiveInstance accessor with SubsystemRegistration domain-reload cleanup and dynamic fallback.
-- Assets/Scripts/Experience/ExperienceReward.cs: target forwarding from enemy death position to pickup.
-- Assets/Scripts/Weapons/RifleWeapon.cs: prototype visual firing feedback (0.04s muzzle flash at MuzzlePoint and 0.05s hitscan tracer LineRenderer consuming authoritative query endpoint; clean cooldown click rejection).
-- Assets/Materials/Weapons/: created M_MuzzleFlash and M_RifleTracer materials.
-- Localized character assets (Character_Warrior, Character_Archer, Character_Gunner) to Turkish while strictly preserving internal IDs (warrior, archer, gunner).
-- ProjectSettings/EditorBuildSettings.asset: registered Scene 0 = CharacterSelection.unity, Scene 1 = Dungeon_Prototype.unity, SampleScene disabled.
-- Assets/Editor/Milestone8_5_Setup.cs: automated setup utility and batchmode verification runner for scene generation and feedback baking.
-- Assets/Tests/Verification/Milestone8_5_Verifier.cs: automated Play Mode verification suite covering roster integrity, UI state, session transfer, spawner fallback, scene binding, restart semantics, auto-homing XP, Gunner feedback, and combat regression.
+- Phase 9 (Dungeon Progression & Campaign Flow, Milestones 9.1–9.5) executed and verified across all 5 gates.
+- Assets/Scripts/Dungeons/DungeonDefinition.cs: ScriptableObject schema for dungeons (id, displayName, description, sceneName, requiredDungeonId, waves).
+- Assets/Scripts/Dungeons/DungeonRunSession.cs: transient cross-scene context carrier (ActiveDungeon, SelectedCharacter) with Dungeon_01 fallback.
+- Assets/Scripts/Dungeons/PlayerDefeatController.cs: run lifecycle controller managing player death, halting waves, showing defeat UI, and mutual victory suppression.
+- Assets/Scripts/UI/PlayerDefeatUI.cs: Turkish defeat UI (YENİLDİN, YENİDEN DENE, HARİTAYA DÖN).
+- Assets/Scripts/Dungeons/DungeonProgression.cs: JSON PlayerPrefs progression persistence, unlocking derivation, and completion tracking.
+- Assets/Scripts/Dungeons/DungeonCatalog.cs: ScriptableObject holding ordered catalog of all playable dungeons.
+- Assets/Scripts/UI/WorldMapCard.cs: card presentation component for dungeons with status badges (AÇIK, KİLİTLİ, TAMAMLANDI) and launch button.
+- Assets/Scripts/UI/WorldMapController.cs: world map orchestrator binding catalog to UI cards and managing dungeon launch.
+- Assets/Scenes/WorldMap/WorldMap.unity: dedicated world map scene with responsive UI layout.
+- Assets/Scenes/Dungeons/Dungeon_02.unity: second playable dungeon with 4 waves, darker lighting, and identical gameplay rig.
+- Assets/ScriptableObjects/Waves/Wave_02_01.asset .. Wave_02_04.asset: 4 wave configurations for Dungeon 2.
+- Assets/ScriptableObjects/Dungeons/: Dungeon_01.asset (3 waves), Dungeon_02.asset (4 waves), DungeonCatalog.asset.
+- Updated CharacterSelectionController & CharacterSelection.unity to launch into WorldMap.
+- Updated DungeonCompletionController & DungeonCompleteUI with Return to Map button and defeat suppression.
+- Updated WaveManager with dynamic wave copying from ActiveDungeon and HaltDungeon().
+- Configured 4-scene EditorBuildSettings: [0: CharacterSelection, 1: WorldMap, 2: Dungeon_Prototype, 3: Dungeon_02].
+- Assets/Editor/Milestone9_Setup.cs: comprehensive automation tool for setup and verification across all 5 gates.
+- Assets/Tests/Verification/Milestone9_1_Verifier.cs through Milestone9_5_Verifier.cs: automated Play Mode verification suites for all gates.
 ```
 
 ## Changed Files
 
 ```text
 - Assets/Editor/Milestone8_5_Setup.cs
-- Assets/Materials/Weapons.meta
-- Assets/Materials/Weapons/M_MuzzleFlash.mat
-- Assets/Materials/Weapons/M_MuzzleFlash.mat.meta
-- Assets/Materials/Weapons/M_RifleTracer.mat
-- Assets/Materials/Weapons/M_RifleTracer.mat.meta
-- Assets/Prefabs/Characters/Gunner.prefab
+- Assets/Editor/Milestone9_Setup.cs
 - Assets/Scenes/CharacterSelect/CharacterSelection.unity
-- Assets/ScriptableObjects/Characters/Character_Archer.asset
-- Assets/ScriptableObjects/Characters/Character_Gunner.asset
-- Assets/ScriptableObjects/Characters/Character_Warrior.asset
-- Assets/Scripts/Experience/ExperiencePickup.cs
-- Assets/Scripts/Experience/ExperienceReward.cs
-- Assets/Scripts/Experience/PlayerExperience.cs
-- Assets/Scripts/UI/CharacterSelectionCard.cs
+- Assets/Scenes/Dungeons/Dungeon_02.unity
+- Assets/Scenes/Dungeons/Dungeon_02.unity.meta
+- Assets/Scenes/Dungeons/Dungeon_Prototype.unity
+- Assets/Scenes/WorldMap/WorldMap.unity
+- Assets/Scenes/WorldMap/WorldMap.unity.meta
+- Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset
+- Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset.meta
+- Assets/ScriptableObjects/Dungeons/Dungeon_01.asset
+- Assets/ScriptableObjects/Dungeons/Dungeon_01.asset.meta
+- Assets/ScriptableObjects/Dungeons/Dungeon_02.asset
+- Assets/ScriptableObjects/Dungeons/Dungeon_02.asset.meta
+- Assets/ScriptableObjects/Waves/Wave_02_01.asset .. Wave_02_04.asset (+ .meta)
+- Assets/Scripts/Characters/CharacterSelectionSession.cs
+- Assets/Scripts/Dungeons/DungeonCatalog.cs
+- Assets/Scripts/Dungeons/DungeonCatalog.cs.meta
+- Assets/Scripts/Dungeons/DungeonCompletionController.cs
+- Assets/Scripts/Dungeons/DungeonDefinition.cs
+- Assets/Scripts/Dungeons/DungeonDefinition.cs.meta
+- Assets/Scripts/Dungeons/DungeonProgression.cs
+- Assets/Scripts/Dungeons/DungeonProgression.cs.meta
+- Assets/Scripts/Dungeons/DungeonRunSession.cs
+- Assets/Scripts/Dungeons/DungeonRunSession.cs.meta
+- Assets/Scripts/Dungeons/PlayerDefeatController.cs
+- Assets/Scripts/Dungeons/PlayerDefeatController.cs.meta
 - Assets/Scripts/UI/CharacterSelectionController.cs
-- Assets/Scripts/Weapons/RifleWeapon.cs
-- Assets/Tests/Verification/Milestone8_1_Verifier.cs
-- Assets/Tests/Verification/Milestone8_3_Verifier.cs
-- Assets/Tests/Verification/Milestone8_4_Verifier.cs
-- Assets/Tests/Verification/Milestone8_5_Verifier.cs
-- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+- Assets/Scripts/UI/DungeonCompleteUI.cs
+- Assets/Scripts/UI/PlayerDefeatUI.cs
+- Assets/Scripts/UI/PlayerDefeatUI.cs.meta
+- Assets/Scripts/UI/WorldMapCard.cs
+- Assets/Scripts/UI/WorldMapCard.cs.meta
+- Assets/Scripts/UI/WorldMapController.cs
+- Assets/Scripts/UI/WorldMapController.cs.meta
+- Assets/Scripts/Waves/WaveManager.cs
+- Assets/Tests/Verification/Milestone9_1_Verifier.cs .. Milestone9_5_Verifier.cs (+ .meta)
+- ProjectSettings/EditorBuildSettings.asset
+- ROADMAP.md
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- 30/30 automated Play Mode verification checks passed for Milestone 8.5 QA pass (playmode_m8_5_qa_pass.log)
-- 41/41 initial automated Play Mode verification checks passed with 0 errors (playmode_m8_5.log)
-- 44/44 automated Play Mode verification checks passed for Milestone 8.4 regression suite (playmode_m8_4_regression.log)
-- 68/68 automated Play Mode verification checks passed for Milestone 8.3 regression suite (playmode_m8_3_regression.log)
-- Manual player-facing QA confirmed GREEN:
-  - Character Selection UI is readable with dark cards (#161B22) and 4-side cyan outline border.
-  - Turkish labels (KARAKTERİNİ SEÇ, Seçilen: ..., ZİNDANA BAŞLA, Savaşçı, Okçu, Nişancı) and role descriptions verified.
-  - Auto-homing XP collection works correctly on ranged kills (no running onto dead enemies).
-  - Gunner muzzle flash and tracer feedback clearly communicate accepted shots with zero duplicate queries.
-  - Warrior, Archer, and Gunner selection, combat, and restart flows verified.
-- Restart semantics verified: Restart Dungeon preserves chosen character across all 3 archetypes
-- CharacterRoster catalog validated: ordered [Warrior, Archer, Gunner], zero nulls, zero duplicates
-- CharacterDefinition schema remains decoupled: zero combat/stat math fields
-- CharacterSelectionSession starts empty on fresh Play Mode / domain reload
-- CharacterSelection scene entry clears stale previous-run session selection
-- Local UI default selection is Warrior / first valid roster entry on scene entry
-- START works immediately with default Warrior without requiring an extra card click
-- Card clicks update local selection and visual highlight only; session remains empty before Start
-- Exactly one card visually selected at any time (strict mutual exclusivity)
-- START commits exact selected CharacterDefinition into session and loads Dungeon_Prototype
-- PlayerSpawner consumes session selection: Warrior -> Warrior, Archer -> Archer, Gunner -> Gunner
-- PlayerSpawner with empty session cleanly falls back to serialized Character_Warrior
-- PlayerSpawner.defaultCharacter is NEVER mutated or overwritten by runtime session selection
-- PlayerSpawner contains zero character-specific branching methods (if warrior, etc.)
-- Exactly one PlayableCharacter exists at runtime at PlayerSpawnPoint
-- Explicit dynamic bindings verified: CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, DungeonCompletionController
-- WaveManager.BeginDungeon() fires OnDungeonStarted once
-- Combat non-regression verified: Warrior melee attack, Archer bow arrow, Gunner hitscan rifle
-- Universal upgrade scaling (+20% damage) functional across characters
-- Dungeon completion flow executes and generates valid DungeonRunSummary
-- CharacterSelection scene contains zero gameplay entities, zero PlayerSpawner, zero WaveManager, exactly 1 EventSystem
-- Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers
-- Build Settings order verified: Scene 0 = CharacterSelection, Scene 1 = Dungeon_Prototype
+- Gate 9.1: 19/19 checks PASSED (playmode_gate_9_1.log)
+- Gate 9.2: 16/16 checks PASSED (playmode_gate_9_2.log)
+- Gate 9.3: 11/11 checks PASSED (playmode_gate_9_3.log)
+- Gate 9.4: 13/13 checks PASSED (playmode_gate_9_4.log)
+- Gate 9.5: 12/12 checks PASSED (playmode_gate_9_5.log & playmode_gate_9_5_post.log)
+- Milestone 8.3 Archer regression suite: 68/68 checks PASSED (regression_m8_3.log)
+- Milestone 8.4 Gunner regression suite: 44/44 checks PASSED (regression_m8_4.log)
+- Milestone 8.5 Character Selection regression suite: 30/30 checks PASSED (regression_m8_5.log)
+- 0 compile errors, 0 runtime exceptions across all batchmode runs.
 ```
 
 ## Known Issues
@@ -849,11 +895,11 @@ None.
 ## Next Task
 
 ```text
-Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)
+Phase 9 Manual QA / Player-Facing Campaign Verification (Do NOT push)
 ```
 
 ## Latest Verified Commit
 
 ```text
-15ef55f feat: add character selection flow and gameplay QA improvements
+da18a04 feat: add second dungeon and full campaign integration
 ```

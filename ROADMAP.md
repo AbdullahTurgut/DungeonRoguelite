@@ -246,15 +246,15 @@ Implement:
 
 ---
 
-# PHASE 9 — Dungeon Progression
+# PHASE 9 — Dungeon Progression (COMPLETED)
 
-Implement:
+Implemented:
 
-- World map
-- DungeonDefinition
-- Dungeon locking
-- Dungeon completion tracking
-- Dungeon 1 -> Dungeon 2 -> Dungeon 3 progression
+- World Map scene & dungeon selection UI
+- Data-driven `DungeonDefinition` & `DungeonCatalog`
+- Progression persistence & prerequisite unlocking (`DungeonProgression`)
+- Dungeon completion & player defeat lifecycle flows
+- Campaign flow: Dungeon 1 (`Dungeon_Prototype`) -> Unlock Dungeon 2 -> Dungeon 2 (`Dungeon_02`)
 
 ---
 
@@ -330,21 +330,14 @@ Implement:
 Unless `PROJECT_STATUS.md` says otherwise:
 
 ```text
-Phase 0
+Phase 0–7 (Core Vertical Slice) -> COMPLETED
     ↓
-Phase 1
+Phase 8 (Character System)       -> COMPLETED
     ↓
-Phase 2
+Phase 9 (Dungeon Progression)    -> COMPLETED (Manual QA Pending)
     ↓
-Phase 3
-    ↓
-Phase 4
-    ↓
-Phase 5
-    ↓
-Phase 6
-    ↓
-Phase 7
+Phase 10 (Permanent Progression) -> NEXT UP
 ```
 
-Do not prioritize art, character selection, the world map, or permanent skill trees before the core vertical slice works.
+Milestones 0 through 9 are fully implemented and verified.
+Current focus is Phase 9 Manual QA verification, followed by Phase 10 (Permanent Progression & Skill Trees).
