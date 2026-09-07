@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_02
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_2
+  displayName: "B\xF6l\xFCm 2: Karanl\u0131k Mahzen"
+  description: "Daha dar ve yo\u011Fun d\xFC\u015Fman ak\u0131nlar\u0131. 4 dalga
+    hayatta kal."
+  sceneName: Dungeon_02
+  requiredDungeonId: dungeon_1
+  waves:
+  - {fileID: 11400000, guid: 0b8c402a13594ee419d50ee2db9fff49, type: 2}
+  - {fileID: 11400000, guid: 09aab19325398064b98b64cea8237d94, type: 2}
+  - {fileID: 11400000, guid: a0e9452d7feba0041a6a4c5af5fc754a, type: 2}

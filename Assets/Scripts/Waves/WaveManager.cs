@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Characters;
+using DungeonRoguelite.Dungeons;
 
 namespace DungeonRoguelite.Waves
 {
@@ -59,6 +60,7 @@ namespace DungeonRoguelite.Waves
         private bool isSpawning = false;
         private bool hasCompletedDungeon = false;
         private bool hasDungeonStarted = false;
+        private DungeonDefinition activeDungeon;
 
         private Coroutine activeWaveCoroutine;
         private Coroutine transitionCoroutine;
@@ -74,6 +76,7 @@ namespace DungeonRoguelite.Waves
         public Transform PlayerTarget => playerTarget;
         public PlayerSpawner PlayerSpawner => playerSpawner;
         public bool HasDungeonStarted => hasDungeonStarted;
+        public DungeonDefinition ActiveDungeon => activeDungeon;
         public IReadOnlyCollection<EnemyHealth> ActiveEnemies => activeEnemies;
         public IReadOnlyList<EnemyHealth> CurrentWaveSpawned => currentWaveSpawned;
 
@@ -110,6 +113,8 @@ namespace DungeonRoguelite.Waves
 
         private void Awake()
         {
+            InitializeDungeonConfiguration();
+
             if (playerSpawner == null)
             {
                 ResolvePlayerTarget();
@@ -486,6 +491,39 @@ namespace DungeonRoguelite.Waves
             hasCompletedDungeon = true;
             currentState = WaveState.DungeonCompleted;
             OnDungeonCompleted?.Invoke();
+        }
+
+        /// <summary>
+        /// Configures waves dynamically from a DungeonDefinition.
+        /// Creates a runtime array copy to prevent asset mutation.
+        /// Must be called before BeginDungeon().
+        /// <summary>
+        /// Configures wave definitions dynamically from a data-driven DungeonDefinition.
+        /// Performs a shallow copy of the waves array to protect the source ScriptableObject from runtime mutation.
+        /// </summary>
+        /// <param name="dungeon">The DungeonDefinition to load waves from.</param>
+        public void ConfigureFromDungeon(DungeonDefinition dungeon)
+        {
+            if (dungeon == null)
+            {
+                return;
+            }
+
+            activeDungeon = dungeon;
+            if (dungeon.Waves != null && dungeon.Waves.Length > 0)
+            {
+                WaveDefinition[] runtimeWaves = new WaveDefinition[dungeon.Waves.Length];
+                Array.Copy(dungeon.Waves, runtimeWaves, dungeon.Waves.Length);
+                waves = runtimeWaves;
+            }
+        }
+
+        private void InitializeDungeonConfiguration()
+        {
+            if (DungeonRunSession.HasSelection && DungeonRunSession.SelectedDungeon != null)
+            {
+                ConfigureFromDungeon(DungeonRunSession.SelectedDungeon);
+            }
         }
 
         private void CleanupSubscriptionsAndRoutines()
