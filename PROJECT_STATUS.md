@@ -557,7 +557,7 @@ Milestone 8.3 Archer regression suite re-run: all 68 checks PASSED (`playmode_m8
 
 ```text
 Latest verified commit:
-eb8f471 feat: add archer ranged combat prototype
+9ba9195 feat: add gunner combat prototype and hitscan weapon system
 ```
 
 ---
@@ -651,5 +651,5 @@ Milestone 8.5 — Character System (Character Selection UI & Integration)
 ## Latest Verified Commit
 
 ```text
-eb8f471 feat: add archer ranged combat prototype
+9ba9195 feat: add gunner combat prototype and hitscan weapon system
 ```
