@@ -88,7 +88,9 @@ namespace DungeonRoguelite.Editor
                     "Zombilerin kol gezdiği kadim mezarlık. 3 dalga hayatta kal.",
                     "Dungeon_Prototype",
                     "",
-                    wavesD1
+                    wavesD1,
+                    1f,
+                    1f
                 );
                 AssetDatabase.CreateAsset(d1, Dungeon01Path);
                 Debug.Log($"[Milestone 9.1 Setup] Created {Dungeon01Path}");
@@ -101,7 +103,9 @@ namespace DungeonRoguelite.Editor
                     "Zombilerin kol gezdiği kadim mezarlık. 3 dalga hayatta kal.",
                     "Dungeon_Prototype",
                     "",
-                    wavesD1
+                    wavesD1,
+                    1f,
+                    1f
                 );
                 EditorUtility.SetDirty(d1);
             }
@@ -117,7 +121,9 @@ namespace DungeonRoguelite.Editor
                     "Daha dar ve yoğun düşman akınları. 4 dalga hayatta kal.",
                     "Dungeon_02",
                     "dungeon_1",
-                    wavesD1
+                    wavesD1,
+                    1.1f,
+                    1f
                 );
                 AssetDatabase.CreateAsset(d2, Dungeon02Path);
                 Debug.Log($"[Milestone 9.1 Setup] Created {Dungeon02Path}");
@@ -130,7 +136,9 @@ namespace DungeonRoguelite.Editor
                     "Daha dar ve yoğun düşman akınları. 4 dalga hayatta kal.",
                     "Dungeon_02",
                     "dungeon_1",
-                    wavesD1
+                    wavesD1,
+                    1.1f,
+                    1f
                 );
                 EditorUtility.SetDirty(d2);
             }
@@ -659,12 +667,12 @@ namespace DungeonRoguelite.Editor
             if (d2 == null)
             {
                 d2 = ScriptableObject.CreateInstance<DungeonDefinition>();
-                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2);
+                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2, 1.1f, 1f);
                 AssetDatabase.CreateAsset(d2, Dungeon02Path);
             }
             else
             {
-                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2);
+                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2, 1.1f, 1f);
                 EditorUtility.SetDirty(d2);
             }
 

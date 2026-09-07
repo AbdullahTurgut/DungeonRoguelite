@@ -178,5 +178,24 @@ namespace DungeonRoguelite.Enemies
             targetDamageable = null;
             ResolveTarget();
         }
+
+        /// <summary>
+        /// Scales the enemy instance's attack damage by a dungeon difficulty multiplier.
+        /// Strictly affects this runtime instance; does not modify prefab assets.
+        /// </summary>
+        /// <param name="damageMultiplier">Multiplier to scale damage (e.g. 1.1 for +10%).</param>
+        public void InitializeAttack(float damageMultiplier)
+        {
+            if (damageMultiplier <= 0f)
+            {
+                damageMultiplier = 1f;
+            }
+
+            damage = Mathf.Round(damage * damageMultiplier);
+            if (damage < 1f)
+            {
+                damage = 1f;
+            }
+        }
     }
 }

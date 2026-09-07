@@ -378,6 +378,30 @@ namespace DungeonRoguelite.Waves
 
             GameObject enemyInstance = Instantiate(enemyPrefab, spawnPos, spawnRot);
 
+            // Apply active dungeon scaling if configured
+            float healthMult = 1f;
+            float damageMult = 1f;
+            if (activeDungeon != null)
+            {
+                healthMult = activeDungeon.EnemyHealthMultiplier;
+                damageMult = activeDungeon.EnemyDamageMultiplier;
+            }
+            else if (DungeonRunSession.HasSelection && DungeonRunSession.SelectedDungeon != null)
+            {
+                healthMult = DungeonRunSession.SelectedDungeon.EnemyHealthMultiplier;
+                damageMult = DungeonRunSession.SelectedDungeon.EnemyDamageMultiplier;
+            }
+
+            if (healthMult != 1f && enemyInstance.TryGetComponent<EnemyHealth>(out var enemyHealthComp))
+            {
+                enemyHealthComp.InitializeHealth(healthMult);
+            }
+
+            if (damageMult != 1f && enemyInstance.TryGetComponent<EnemyAttack>(out var enemyAttackComp))
+            {
+                enemyAttackComp.InitializeAttack(damageMult);
+            }
+
             // Assign target explicitly to prevent per-frame scene searching
             if (playerTarget != null)
             {

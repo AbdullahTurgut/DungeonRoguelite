@@ -43,5 +43,20 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[GATE 10.1] Entering Play Mode for automated verification...");
             EditorApplication.EnterPlaymode();
         }
+
+        [MenuItem("DungeonRoguelite/Phase 10/Run Gate 10.2 Verification")]
+        public static void RunGate10_2Verification()
+        {
+            Debug.Log("[GATE 10.2] Preparing Gate 10.2 Play Mode verification...");
+
+            var scene = EditorSceneManager.OpenScene(DungeonPrototypeScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Gate10_2_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone10_2_Verifier>();
+
+            Debug.Log("[GATE 10.2] Entering Play Mode for automated verification...");
+            EditorApplication.EnterPlaymode();
+        }
     }
 }

@@ -17,6 +17,8 @@ MonoBehaviour:
   description: "Daha yo\u011Fun zombi ak\u0131nlar\u0131. 4 dalga hayatta kal."
   sceneName: Dungeon_02
   requiredDungeonId: dungeon_1
+  enemyHealthMultiplier: 1.1
+  enemyDamageMultiplier: 1
   waves:
   - {fileID: 11400000, guid: 6160cc905e566ed4a98a5f6a2bcc8f7a, type: 2}
   - {fileID: 11400000, guid: aa64ddec7060e084899d8a71ac7c9974, type: 2}

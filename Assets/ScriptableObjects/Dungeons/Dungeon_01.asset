@@ -18,6 +18,8 @@ MonoBehaviour:
     kal."
   sceneName: Dungeon_Prototype
   requiredDungeonId: 
+  enemyHealthMultiplier: 1
+  enemyDamageMultiplier: 1
   waves:
   - {fileID: 11400000, guid: 0b8c402a13594ee419d50ee2db9fff49, type: 2}
   - {fileID: 11400000, guid: 09aab19325398064b98b64cea8237d94, type: 2}

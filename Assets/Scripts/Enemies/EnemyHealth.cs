@@ -77,6 +77,25 @@ namespace DungeonRoguelite.Enemies
             }
         }
 
+        /// <summary>
+        /// Scales the enemy instance's maximum and current health by a dungeon difficulty multiplier.
+        /// Strictly affects this runtime instance; does not modify prefab assets.
+        /// </summary>
+        /// <param name="healthMultiplier">Multiplier to scale health (e.g. 1.1 for +10%).</param>
+        public void InitializeHealth(float healthMultiplier)
+        {
+            if (healthMultiplier <= 0f)
+            {
+                healthMultiplier = 1f;
+            }
+
+            maxHealth = Mathf.Round(maxHealth * healthMultiplier);
+            ValidateMaxHealth();
+            currentHealth = maxHealth;
+            isDead = false;
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+        }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         /// <summary>
         /// Test-oriented reset method used exclusively by automated verification suites.
