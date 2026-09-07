@@ -33,6 +33,12 @@ namespace DungeonRoguelite.Editor
         public const string Wave02Path = "Assets/ScriptableObjects/Waves/Wave_02.asset";
         public const string Wave03Path = "Assets/ScriptableObjects/Waves/Wave_03.asset";
 
+        public const string Wave02_01Path = "Assets/ScriptableObjects/Waves/Wave_02_01.asset";
+        public const string Wave02_02Path = "Assets/ScriptableObjects/Waves/Wave_02_02.asset";
+        public const string Wave02_03Path = "Assets/ScriptableObjects/Waves/Wave_02_03.asset";
+        public const string Wave02_04Path = "Assets/ScriptableObjects/Waves/Wave_02_04.asset";
+        public const string ZombiePrefabPath = "Assets/Prefabs/Enemies/Zombie.prefab";
+
         [MenuItem("DungeonRoguelite/Phase 9/Setup Gate 9.1 Assets")]
         public static void SetupGate9_1()
         {
@@ -592,6 +598,134 @@ namespace DungeonRoguelite.Editor
             sCard.ApplyModifiedProperties();
 
             return card;
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Setup Gate 9.5 (Second Dungeon)")]
+        public static void SetupGate9_5()
+        {
+            Debug.Log("[Milestone 9.5 Setup] Setting up Dungeon 2 waves, Dungeon_02.unity scene, and 4-scene Build Settings...");
+            EnsureDirectories();
+
+            // 1. Create or update Dungeon 2 wave assets
+            var zombiePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ZombiePrefabPath);
+            var w1 = CreateOrUpdateWave(Wave02_01Path, zombiePrefab, 5, 0.8f);
+            var w2 = CreateOrUpdateWave(Wave02_02Path, zombiePrefab, 8, 0.7f);
+            var w3 = CreateOrUpdateWave(Wave02_03Path, zombiePrefab, 12, 0.6f);
+            var w4 = CreateOrUpdateWave(Wave02_04Path, zombiePrefab, 15, 0.5f);
+
+            var wavesD2 = new WaveDefinition[] { w1, w2, w3, w4 };
+
+            // 2. Update Dungeon_02.asset
+            var d2 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon02Path);
+            if (d2 == null)
+            {
+                d2 = ScriptableObject.CreateInstance<DungeonDefinition>();
+                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2);
+                AssetDatabase.CreateAsset(d2, Dungeon02Path);
+            }
+            else
+            {
+                d2.SetConfiguration("dungeon_2", "Bölüm 2: Karanlık Mahzen", "Daha yoğun zombi akınları. 4 dalga hayatta kal.", "Dungeon_02", "dungeon_1", wavesD2);
+                EditorUtility.SetDirty(d2);
+            }
+
+            // 3. Ensure DungeonCatalog has [D1, D2]
+            var d1 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon01Path);
+            var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>(DungeonCatalogPath);
+            if (catalog != null)
+            {
+                catalog.SetDungeons(new DungeonDefinition[] { d1, d2 });
+                EditorUtility.SetDirty(catalog);
+            }
+            AssetDatabase.SaveAssets();
+
+            // 4. Create or update Dungeon_02.unity scene
+            // Clone Dungeon_Prototype.unity to ensure 100% shared gameplay rig
+            if (!File.Exists(Dungeon02ScenePath))
+            {
+                AssetDatabase.CopyAsset(DungeonPrototypeScenePath, Dungeon02ScenePath);
+                AssetDatabase.Refresh();
+            }
+
+            var d2Scene = EditorSceneManager.OpenScene(Dungeon02ScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            // Configure WaveManager in Dungeon_02
+            var waveManager = UnityEngine.Object.FindFirstObjectByType<WaveManager>();
+            if (waveManager != null)
+            {
+                waveManager.SetWaves(wavesD2);
+                var sWave = new SerializedObject(waveManager);
+                var wavesProp = sWave.FindProperty("waves");
+                wavesProp.arraySize = 4;
+                for (int i = 0; i < 4; i++)
+                {
+                    wavesProp.GetArrayElementAtIndex(i).objectReferenceValue = wavesD2[i];
+                }
+                sWave.ApplyModifiedProperties();
+                EditorUtility.SetDirty(waveManager);
+            }
+
+            // Darken directional light for "Karanlık Mahzen" ambient atmosphere
+            var dirLightGo = GameObject.Find("Directional Light");
+            if (dirLightGo != null)
+            {
+                var light = dirLightGo.GetComponent<Light>();
+                if (light != null)
+                {
+                    light.color = new Color(0.65f, 0.70f, 0.85f, 1f);
+                    light.intensity = 0.75f;
+                    EditorUtility.SetDirty(light);
+                }
+            }
+
+            EditorSceneManager.SaveScene(d2Scene, Dungeon02ScenePath);
+
+            // 5. Update Build Settings: 4 scenes in exact order
+            var buildScenes = new EditorBuildSettingsScene[]
+            {
+                new EditorBuildSettingsScene(CharacterSelectionScenePath, true),
+                new EditorBuildSettingsScene(WorldMapScenePath, true),
+                new EditorBuildSettingsScene(DungeonPrototypeScenePath, true),
+                new EditorBuildSettingsScene(Dungeon02ScenePath, true)
+            };
+            EditorBuildSettings.scenes = buildScenes;
+
+            Debug.Log("[Milestone 9.5 Setup] Gate 9.5 setup completed successfully.");
+        }
+
+        private static WaveDefinition CreateOrUpdateWave(string path, GameObject enemyPrefab, int count, float interval)
+        {
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            var entries = new EnemySpawnEntry[] { new EnemySpawnEntry(enemyPrefab, count) };
+            if (wave == null)
+            {
+                wave = ScriptableObject.CreateInstance<WaveDefinition>();
+                wave.Initialize(entries, interval);
+                AssetDatabase.CreateAsset(wave, path);
+            }
+            else
+            {
+                wave.Initialize(entries, interval);
+                EditorUtility.SetDirty(wave);
+            }
+            return wave;
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Run Gate 9.5 Verification")]
+        public static void RunGate9_5Verification()
+        {
+            Debug.Log("[GATE 9.5] Running setup before verification...");
+            SetupGate9_5();
+
+            var scene = EditorSceneManager.OpenScene(Dungeon02ScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Gate9_5_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone9_5_Verifier>();
+
+            Debug.Log("[GATE 9.5] Entering Play Mode for automated verification...");
+            EditorApplication.EnterPlaymode();
         }
     }
 }

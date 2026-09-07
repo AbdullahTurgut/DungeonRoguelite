@@ -492,8 +492,22 @@ namespace DungeonRoguelite.Editor
             // Scene 0: CharacterSelection.unity
             scenes.Add(new EditorBuildSettingsScene(CharacterSelectionScenePath, true));
 
-            // Scene 1: Dungeon_Prototype.unity
+            // Scene 1: WorldMap.unity (if exists)
+            const string worldMapScenePath = "Assets/Scenes/WorldMap/WorldMap.unity";
+            if (File.Exists(worldMapScenePath))
+            {
+                scenes.Add(new EditorBuildSettingsScene(worldMapScenePath, true));
+            }
+
+            // Dungeon_Prototype.unity
             scenes.Add(new EditorBuildSettingsScene(DungeonScenePath, true));
+
+            // Dungeon_02.unity (if exists)
+            const string dungeon02ScenePath = "Assets/Scenes/Dungeons/Dungeon_02.unity";
+            if (File.Exists(dungeon02ScenePath))
+            {
+                scenes.Add(new EditorBuildSettingsScene(dungeon02ScenePath, true));
+            }
 
             // Retain SampleScene as disabled if it exists
             const string sampleScenePath = "Assets/Scenes/SampleScene.unity";
@@ -503,7 +517,7 @@ namespace DungeonRoguelite.Editor
             }
 
             EditorBuildSettings.scenes = scenes.ToArray();
-            Debug.Log("[Milestone 8.5] Configured EditorBuildSettings: Scene 0 = CharacterSelection, Scene 1 = Dungeon_Prototype.");
+            Debug.Log($"[Milestone 8.5] Configured EditorBuildSettings: {scenes.Count} scenes registered.");
         }
 
         public static void VerifyDungeonPrototypeIntegrity()

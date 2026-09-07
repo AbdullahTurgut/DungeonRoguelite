@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
   id: dungeon_2
   displayName: "B\xF6l\xFCm 2: Karanl\u0131k Mahzen"
-  description: "Daha dar ve yo\u011Fun d\xFC\u015Fman ak\u0131nlar\u0131. 4 dalga
-    hayatta kal."
+  description: "Daha yo\u011Fun zombi ak\u0131nlar\u0131. 4 dalga hayatta kal."
   sceneName: Dungeon_02
   requiredDungeonId: dungeon_1
   waves:
-  - {fileID: 11400000, guid: 0b8c402a13594ee419d50ee2db9fff49, type: 2}
-  - {fileID: 11400000, guid: 09aab19325398064b98b64cea8237d94, type: 2}
-  - {fileID: 11400000, guid: a0e9452d7feba0041a6a4c5af5fc754a, type: 2}
+  - {fileID: 11400000, guid: 6160cc905e566ed4a98a5f6a2bcc8f7a, type: 2}
+  - {fileID: 11400000, guid: aa64ddec7060e084899d8a71ac7c9974, type: 2}
+  - {fileID: 11400000, guid: 95810068cb9ccfb4a8d282390a065214, type: 2}
+  - {fileID: 11400000, guid: 8e873b72da3f8184f9ec005aac710c38, type: 2}
