@@ -18,11 +18,13 @@ namespace DungeonRoguelite.Experience
         [SerializeField] private GameObject pickupPrefab;
 
         private EnemyHealth health;
+        private Transform playerTarget;
         private bool hasRewarded = false;
 
         public int XPAmount => xpAmount;
         public GameObject PickupPrefab => pickupPrefab;
         public bool HasRewarded => hasRewarded;
+        public Transform PlayerTarget => playerTarget;
 
         private void Awake()
         {
@@ -69,12 +71,24 @@ namespace DungeonRoguelite.Experience
                 if (pickup != null)
                 {
                     pickup.Initialize(xpAmount);
+                    if (playerTarget != null)
+                    {
+                        pickup.SetTarget(playerTarget);
+                    }
                 }
             }
             else
             {
                 Debug.LogWarning($"[ExperienceReward] Pickup prefab unassigned on '{name}'. No pickup spawned.");
             }
+        }
+
+        /// <summary>
+        /// Explicitly binds the player target transform for auto-homing pickups.
+        /// </summary>
+        public void SetTarget(Transform target)
+        {
+            playerTarget = target;
         }
 
         /// <summary>

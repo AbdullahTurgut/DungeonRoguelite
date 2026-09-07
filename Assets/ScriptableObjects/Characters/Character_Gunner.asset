@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Character_Gunner
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: gunner
-  displayName: Gunner
-  description: A rapid-fire marksman utilizing a high-precision rifle for fast, instant-impact
-    ranged engagements.
+  displayName: Nişancı
+  description: "Hızlı menzilli saldırılar yapar. Tüfek atışları hedefe anında ulaşır."
   characterPrefab: {fileID: 6062601603027749612, guid: 45783dbdbf6b32349bc69daaf73343e8, type: 3}

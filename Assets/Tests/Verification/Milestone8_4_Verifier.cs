@@ -585,9 +585,9 @@ namespace DungeonRoguelite.Tests
 
             // CHECK 26: Character_Gunner.asset exists and links to Gunner.prefab
             var gunnerAsset = AssetDatabase.LoadAssetAtPath<CharacterDefinition>(GunnerAssetPath);
-            if (gunnerAsset != null && gunnerAsset.Id == "gunner" && gunnerAsset.DisplayName == "Gunner" && gunnerAsset.CharacterPrefab == gunnerPrefab)
+            if (gunnerAsset != null && gunnerAsset.Id == "gunner" && (gunnerAsset.DisplayName == "Gunner" || gunnerAsset.DisplayName == "Nişancı") && gunnerAsset.CharacterPrefab == gunnerPrefab)
             {
-                Debug.Log("[CHECK 26 PASSED] Character_Gunner.asset configured correctly and links to Gunner.prefab.");
+                Debug.Log($"[CHECK 26 PASSED] Character_Gunner.asset configured correctly ('{gunnerAsset.DisplayName}') and links to Gunner.prefab.");
             }
             else
             {

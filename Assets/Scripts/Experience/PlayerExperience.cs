@@ -38,8 +38,39 @@ namespace DungeonRoguelite.Experience
         /// </summary>
         public event Action<int> OnLevelUp;
 
+        /// <summary>
+        /// Global active instance reference for fast, decoupled query without scene-wide searching.
+        /// </summary>
+        public static PlayerExperience ActiveInstance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticState()
+        {
+            ActiveInstance = null;
+        }
+
+        private void OnEnable()
+        {
+            if (ActiveInstance == null)
+            {
+                ActiveInstance = this;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (ActiveInstance == this)
+            {
+                ActiveInstance = null;
+            }
+        }
+
         private void Awake()
         {
+            if (ActiveInstance == null)
+            {
+                ActiveInstance = this;
+            }
             ValidateSettings();
             currentLevel = Mathf.Max(1, currentLevel);
             currentXP = Mathf.Max(0, currentXP);

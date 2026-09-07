@@ -125,7 +125,7 @@ namespace DungeonRoguelite.Tests
             // =============================================================
             // CHECK 3: Warrior definition has valid id, displayName, description
             // =============================================================
-            if (warriorDef != null && warriorDef.Id == "warrior" && warriorDef.DisplayName == "Warrior" && !string.IsNullOrEmpty(warriorDef.Description))
+            if (warriorDef != null && warriorDef.Id == "warrior" && (warriorDef.DisplayName == "Warrior" || warriorDef.DisplayName == "Savaşçı") && !string.IsNullOrEmpty(warriorDef.Description))
             {
                 Debug.Log($"[CHECK 3 PASSED] Warrior definition valid: ID='{warriorDef.Id}', DisplayName='{warriorDef.DisplayName}'.");
             }

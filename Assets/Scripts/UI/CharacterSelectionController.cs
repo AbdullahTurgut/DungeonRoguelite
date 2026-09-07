@@ -186,7 +186,7 @@ namespace DungeonRoguelite.UI
             // Update preview label
             if (selectedPreviewText != null)
             {
-                selectedPreviewText.text = $"Selected: {currentSelection.DisplayName}";
+                selectedPreviewText.text = $"Seçilen: {currentSelection.DisplayName}";
             }
 
             if (startButton != null && !isTransitioning)

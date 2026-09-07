@@ -736,10 +736,10 @@ namespace DungeonRoguelite.Tests
                 allPassed = false;
             }
 
-            // CHECK 41: Character_Archer.asset DisplayName == "Archer"
-            if (archerAsset != null && archerAsset.DisplayName == "Archer")
+            // CHECK 41: Character_Archer.asset DisplayName == "Archer" or "Okçu"
+            if (archerAsset != null && (archerAsset.DisplayName == "Archer" || archerAsset.DisplayName == "Okçu"))
             {
-                Debug.Log("[CHECK 41 PASSED] Character_Archer.asset has DisplayName == 'Archer'.");
+                Debug.Log($"[CHECK 41 PASSED] Character_Archer.asset has valid DisplayName: '{archerAsset.DisplayName}'.");
             }
             else
             {

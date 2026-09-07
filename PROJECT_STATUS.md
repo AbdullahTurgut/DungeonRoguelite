@@ -336,11 +336,16 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
   - Scene Cleanliness & Asset Integrity:
     - `Dungeon_Prototype.unity` remains 100% untouched on disk, defaulting to `Character_Warrior`.
     - Zero permanent verifiers or session test state serialized into scenes or assets.
+  - Milestone 8.5 Manual QA Improvements:
+    - Auto-Homing Experience Collection: `ExperiencePickup` automatically acquires active player (`PlayerExperience.ActiveInstance` or dynamic fallback), hovers for 0.2s, accelerates at 25 m/s² to 12 m/s max speed, and collects on proximity (0.75m), eliminating the need for ranged characters to run onto corpses. Respects pause (`Time.timeScale <= 0f`).
+    - Gunner Combat Visual Feedback: `RifleWeapon` exposes `OnShotFired(origin, endPoint)` and triggers lightweight prototype feedback: 0.04s muzzle flash at `MuzzlePoint` and 0.05s hitscan tracer line (`LineRenderer`) consuming the single authoritative hitscan endpoint. Rejected cooldown clicks produce zero visual feedback. Zero duplicate raycasts, zero ammo/reload logic.
+    - Character Selection UI Visuals & Localization: Dark card background (`#161B22`) with 4-side cyan outline border on selected card for clear contrast and readability at 1280×720; large legible font sizes (Header: 50, Names: 34, Descriptions: 22, Preview: 30, Start: 26); Turkish UI text (`KARAKTERİNİ SEÇ`, `Seçilen: ...`, `ZİNDANA BAŞLA`, `Savaşçı`, `Okçu`, `Nişancı`); internal IDs strictly preserved as `warrior`, `archer`, `gunner`.
   - Verification Results:
-    - Automated Play Mode verification suite (`Milestone8_5_Verifier.cs`): all 41 checks PASSED with 0 errors and 0 runtime exceptions.
+    - Initial Automated Play Mode verification suite: 41 checks PASSED with 0 errors.
+    - Milestone 8.5 QA Pass Automated Play Mode suite: all 30 checks PASSED with 0 errors and 0 runtime exceptions (`playmode_m8_5_qa_pass.log`).
     - Milestone 8.4 regression suite: all 44 checks PASSED.
     - Milestone 8.3 regression suite: all 68 checks PASSED.
-    - Manual gameplay verification: confirmed GREEN across Warrior, Archer, and Gunner selection, combat, and restart flow.
+    - Final Manual QA verification: confirmed GREEN across character selection readability, Turkish labels, auto-homing XP, Gunner firing feedback, and Warrior / Archer / Gunner combat.
 
 ---
 
@@ -355,14 +360,46 @@ Tasks for Milestone 9.1:
 4. Connect dungeon completion and return button to World Map navigation.
 
 Deferred Work (Post-Milestone 8 / Future Phases):
+- **Enemy Corpse Cleanup**:
+  - Dead enemies must not remain permanently in the dungeon.
+  - On death, gameplay collision / movement / attack should stop immediately.
+  - When character animations are introduced, play a short death animation.
+  - Target cleanup timing: approximately 1–2 seconds after death.
+  - After the death animation, use a short fade/dissolve if appropriate.
+  - Then remove/destroy the corpse.
+  - Consider object pooling later only if enemy counts/performance justify it.
+  - This is intentionally deferred until the enemy model/animation pipeline is introduced.
+- **Localization & Settings**:
+  - Current player-facing prototype UI is Turkish.
+  - Add proper localization later.
+  - Initial supported languages planned:
+    - Turkish
+    - English
+  - Future Settings menu should allow language selection.
+  - Stable internal IDs such as warrior / archer / gunner must remain language-independent.
+  - Do not implement localization during Milestone 8.5.
+- **Gunner Full-Auto / Held-Fire Evaluation**:
+  - Gunner currently uses semi-auto input with a 0.18s cooldown.
+  - Full-auto / held-fire semantics remain deferred.
+  - Re-evaluate after manual gameplay testing with muzzle flash + tracer feedback.
+  - Do not modify `IPrimaryAttack` or `PlayerAttack` yet.
+- **Final Presentation Polish**:
+  - Deferred until later:
+    - Final character models
+    - Character animations
+    - Weapon animations
+    - Death animations
+    - Final muzzle flash / projectile VFX
+    - Sound effects
+    - Final UI art / portraits
+- **Archer Firing Feedback & Shot Readability Polish**:
+  - Archer firing feedback could be made more visually explicit later (e.g. bow release / arrow launch visual/audio feedback).
+  - Current arrow projectile is fully functional; feedback polish is deferred to future polish phases.
 - Return to Character Selection button on in-game pause/completion menus (deferred to Phase 9 navigation polish).
 - World Map & multi-dungeon progression (Phase 9).
 - Permanent skill trees, meta progression, and save/load (Phase 10).
 - Enemy expansion (Runner, Brute, Ranged, Elite) (Phase 11).
 - Boss framework and first dungeon boss (Phase 12).
-- Full-auto / held-fire input semantics.
-- 3D models, character animations, audio, and visual polish (Phase 13).
-- Final UI art / portraits / animations / audio / VFX.
 
 Do NOT start:
 - Phase 9 / World Map until instructed
@@ -437,9 +474,13 @@ None.
 - **Randomized Upgrade Pool & Rarity Deferred**: The prototype presents a fixed pool of 3 upgrades (Damage, Attack Speed, Movement Speed). Weighted random rolling, upgrade rarity, rerolls, and bans are deferred to future upgrade polish milestones.
 - **Permanent Meta-Progression Deferred**: Skill tree and permanent stat upgrades are deferred to Phase 10.
 - **DungeonDefinition Deferred**: `DungeonDefinition` remains deferred until Phase 9 / multi-dungeon progression actually requires dungeon-level metadata.
-- **Corpse Cleanup and Object Pooling Deferred**: Defeated enemy corpses remain in scene as non-obstructing entities. Object pooling and corpse cleanup will be introduced in later milestones.
+- **Corpse Cleanup and Object Pooling Deferred**: Dead enemies must not remain permanently in the dungeon. On death, gameplay collision, movement, and attack stop immediately; when character animations are introduced, play a short death animation, followed by a short fade/dissolve after ~1–2 seconds, then remove/destroy the corpse. Object pooling will be considered later only if enemy counts/performance justify it. Intentionally deferred until enemy model/animation pipeline is introduced.
+- **Localization & Settings Deferred**: Current player-facing prototype UI is in Turkish. Proper localization (Turkish, English) selectable via a future Settings menu is planned. Stable internal IDs (`warrior`, `archer`, `gunner`) remain language-independent.
+- **Gunner Full-Auto / Held-Fire Input Semantics Deferred**: Gunner prototype uses semi-auto input with a 0.18s cooldown. Full-auto / held-fire input semantics remain deferred and will be re-evaluated after manual gameplay testing with muzzle flash and tracer feedback.
+- **Final Presentation Polish Deferred**: Final 3D character models, character animations, weapon animations, death animations, final muzzle flash / projectile VFX, sound effects, and final UI art / portraits are deferred until dedicated visual/audio polish phases.
+- **Archer Firing Feedback Polish Deferred**: Bow attack could be made more visually explicit later (e.g. bow release / arrow launch feedback). Fully functional currently; polish is deferred.
+- **Auto-Homing Experience Collection (Implemented in M8.5 QA Pass)**: Previously deferred pickup magnetism was resolved by implementing physical auto-homing pickups in Milestone 8.5 QA pass (0.2s hover, 25 m/s² acceleration, 12 m/s max speed toward player).
 - **Direct Pursuit vs Pathfinding**: Current `EnemyMovement` uses direct `CharacterController` pursuit. This is sufficient for the prototype but does not provide full pathfinding around complex dungeon geometry. Re-evaluate NavMesh when dungeon layouts require real obstacle navigation.
-- **Pickup Magnetism Deferred**: Physical touch collection via trigger volume is implemented; magnetic pickup attraction radius is deferred to future polish/upgrade milestones.
 - **Verifier Script Reorganization**: Legacy verifier scripts currently located under production script folders (`Assets/Scripts/Player/Milestone1_1_Verifier.cs` and `Assets/Scripts/Player/Milestone1_2_Verifier.cs`) should later be moved into the dedicated test/verification structure (`Assets/Tests/Verification/`).
 
 ---
@@ -647,9 +688,47 @@ Automated Play Mode verification suite ran and passed all 41 checks in Unity (`p
 - **Check 40**: DungeonCompletionController completion flow finalized successfully (PASSED).
 - **Check 41**: CharacterSelectionSession cleanly reset after test execution (PASSED).
 
+### Milestone 8.5 Manual QA Fix Pass Verification
+
+Automated Play Mode verification suite ran and passed all 30 checks in Unity (`playmode_m8_5_qa_pass.log`):
+- **Checks 1–9 (Auto-Homing Experience Collection)**:
+  - Check 1: ActiveInstance resolved in O(1) on PlayerExperience start (PASSED).
+  - Check 2: Dynamic fallback resolution functions correctly when static instance unassigned (PASSED).
+  - Check 3: ActiveInstance cleanly resets on domain reload/scene unmount (PASSED).
+  - Check 4: ExperiencePickup delay period (0.2s) strictly enforced; zero premature movement (PASSED).
+  - Check 5: ExperiencePickup moves continuously toward player after delay expires (PASSED).
+  - Check 6: ExperiencePickup speed accelerates cleanly (PASSED).
+  - Check 7: ExperiencePickup collects at collection distance (0.75m) and awards XP (PASSED).
+  - Check 8: Single collection guaranteed; zero duplicate XP awards or double trigger events (PASSED).
+  - Check 9: Time.timeScale = 0 freezes pickup movement completely (PASSED).
+- **Checks 10–15 (Gunner Firing Feedback)**:
+  - Check 10: Successful RifleWeapon shot triggers OnShotFired event with exact hitscan origin and endPoint (PASSED).
+  - Check 11: Cooldown-rejected shot does NOT trigger OnShotFired or visual feedback (PASSED).
+  - Check 12: Muzzle flash visual active on shot and disables after 0.04s (PASSED).
+  - Check 13: Tracer LineRenderer points accurately from muzzle to endpoint and disables after 0.05s (PASSED).
+  - Check 14: Single authoritative query; zero duplicate raycasts or physics queries (PASSED).
+  - Check 15: Zero ammo, reload, or magazine state logic present in weapon component (PASSED).
+- **Checks 16–24 (Character Selection UI Visuals & Localization)**:
+  - Check 16: Header title displays 'KARAKTERİNİ SEÇ' (PASSED).
+  - Check 17: Warrior card displays 'Savaşçı' and Turkish description (PASSED).
+  - Check 18: Archer card displays 'Okçu' and Turkish description (PASSED).
+  - Check 19: Gunner card displays 'Nişancı' and Turkish description (PASSED).
+  - Check 20: Card dimensions are 340x480 with dark background (#161B22) (PASSED).
+  - Check 21: Selected card displays 4-sided cyan outline border with zero full cyan fill (PASSED).
+  - Check 22: Unselected cards hide selection outline border (PASSED).
+  - Check 23: Start button displays 'ZİNDANA BAŞLA' (PASSED).
+  - Check 24: Preview label displays 'Seçilen: Savaşçı' dynamically (PASSED).
+- **Checks 25–30 (Scene Integrity & Multi-Character Integration Regression)**:
+  - Check 25: CharacterSelectionSession transfers selected character cleanly to spawner (PASSED).
+  - Check 26: PlayerSpawner cleanly falls back to default Character_Warrior without mutation (PASSED).
+  - Check 27: PlayerSpawner contains zero character-specific branching methods (PASSED).
+  - Check 28: Character selection survives simulated scene reload for restart across all 3 characters (PASSED).
+  - Check 29: Full scene transition into Dungeon_Prototype instantiated Gunner and explicitly bound all scene systems (PASSED).
+  - Check 30: Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers (PASSED).
+
 Milestone 8.4 Gunner regression suite re-run: all 44 checks PASSED (`playmode_m8_4_regression.log`).
 Milestone 8.3 Archer regression suite re-run: all 68 checks PASSED (`playmode_m8_3_regression.log`).
-Manual player-facing verification: verified GREEN across Warrior, Archer, and Gunner selection, combat, and restart flow.
+Manual player-facing verification: confirmed GREEN across character selection readability, Turkish labels, auto-homing XP, Gunner firing feedback, and Warrior / Archer / Gunner combat.
 
 ---
 
@@ -676,53 +755,66 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 8.5 Character Selection UI & Integration implementation and verification.
+- Milestone 8.5 Character Selection UI & Integration implementation, manual QA improvements, and verification.
 - Assets/Scripts/Characters/CharacterRoster.cs: ScriptableObject data catalog holding ordered List<CharacterDefinition> with validation against null entries and duplicate references/IDs.
 - Assets/ScriptableObjects/Characters/CharacterRoster.asset: catalog asset configured with [Warrior, Archer, Gunner].
 - Assets/Scripts/Characters/CharacterSelectionSession.cs: pure static runtime holder for passing selected CharacterDefinition across scene loads without persistence or disk mutation; cleared on domain reload and scene entry; survives dungeon restart scene reload.
 - Assets/Scripts/Characters/PlayerSpawner.cs: updated to consume CharacterSelectionSession.SelectedCharacter with defaultCharacter fallback without character branching; never mutates defaultCharacter on disk.
-- Assets/Scripts/UI/CharacterSelectionCard.cs: card presentation component managing display name, description, button click, and active visual selection highlight.
+- Assets/Scripts/UI/CharacterSelectionCard.cs: card presentation component managing display name, description, button click, and active visual selection highlight (dark background #161B22 with 4-side cyan outline border #00FFFF).
 - Assets/Scripts/UI/CharacterSelectionController.cs: screen orchestrator binding cards from roster, managing local selection decoupled from session until Start button is clicked, enforcing mutual exclusivity, and loading Dungeon_Prototype.
-- Assets/Scenes/CharacterSelect/CharacterSelection.unity: dedicated pre-run selection scene with Camera, Canvas, EventSystem (InputSystemUIInputModule), and SelectionPanel; zero gameplay entities.
+- Assets/Scenes/CharacterSelect/CharacterSelection.unity: dedicated pre-run selection scene with Camera, Canvas, EventSystem (InputSystemUIInputModule), and SelectionPanel; 1280x720 layout, Turkish labels, large fonts; zero gameplay entities.
+- Assets/Scripts/Experience/ExperiencePickup.cs: auto-homing physical collectible orb (0.2s delay, 25 m/s² acceleration, 12 m/s max speed, 0.75m collection radius, pause freeze, single-award guard).
+- Assets/Scripts/Experience/PlayerExperience.cs: O(1) ActiveInstance accessor with SubsystemRegistration domain-reload cleanup and dynamic fallback.
+- Assets/Scripts/Experience/ExperienceReward.cs: target forwarding from enemy death position to pickup.
+- Assets/Scripts/Weapons/RifleWeapon.cs: prototype visual firing feedback (0.04s muzzle flash at MuzzlePoint and 0.05s hitscan tracer LineRenderer consuming authoritative query endpoint; clean cooldown click rejection).
+- Assets/Materials/Weapons/: created M_MuzzleFlash and M_RifleTracer materials.
+- Localized character assets (Character_Warrior, Character_Archer, Character_Gunner) to Turkish while strictly preserving internal IDs (warrior, archer, gunner).
 - ProjectSettings/EditorBuildSettings.asset: registered Scene 0 = CharacterSelection.unity, Scene 1 = Dungeon_Prototype.unity, SampleScene disabled.
-- Assets/Editor/Milestone8_5_Setup.cs: automated setup utility and batchmode verification runner.
-- Assets/Tests/Verification/Milestone8_5_Verifier.cs: 41-check Play Mode verification suite covering roster integrity, UI state, session transfer, spawner fallback, scene binding, restart semantics, and combat regression.
+- Assets/Editor/Milestone8_5_Setup.cs: automated setup utility and batchmode verification runner for scene generation and feedback baking.
+- Assets/Tests/Verification/Milestone8_5_Verifier.cs: automated Play Mode verification suite covering roster integrity, UI state, session transfer, spawner fallback, scene binding, restart semantics, auto-homing XP, Gunner feedback, and combat regression.
 ```
 
 ## Changed Files
 
 ```text
 - Assets/Editor/Milestone8_5_Setup.cs
-- Assets/Editor/Milestone8_5_Setup.cs.meta
-- Assets/Scenes/CharacterSelect.meta
+- Assets/Materials/Weapons.meta
+- Assets/Materials/Weapons/M_MuzzleFlash.mat
+- Assets/Materials/Weapons/M_MuzzleFlash.mat.meta
+- Assets/Materials/Weapons/M_RifleTracer.mat
+- Assets/Materials/Weapons/M_RifleTracer.mat.meta
+- Assets/Prefabs/Characters/Gunner.prefab
 - Assets/Scenes/CharacterSelect/CharacterSelection.unity
-- Assets/Scenes/CharacterSelect/CharacterSelection.unity.meta
-- Assets/ScriptableObjects/Characters/CharacterRoster.asset
-- Assets/ScriptableObjects/Characters/CharacterRoster.asset.meta
-- Assets/Scripts/Characters/CharacterRoster.cs
-- Assets/Scripts/Characters/CharacterRoster.cs.meta
-- Assets/Scripts/Characters/CharacterSelectionSession.cs
-- Assets/Scripts/Characters/CharacterSelectionSession.cs.meta
-- Assets/Scripts/Characters/PlayerSpawner.cs
+- Assets/ScriptableObjects/Characters/Character_Archer.asset
+- Assets/ScriptableObjects/Characters/Character_Gunner.asset
+- Assets/ScriptableObjects/Characters/Character_Warrior.asset
+- Assets/Scripts/Experience/ExperiencePickup.cs
+- Assets/Scripts/Experience/ExperienceReward.cs
+- Assets/Scripts/Experience/PlayerExperience.cs
 - Assets/Scripts/UI/CharacterSelectionCard.cs
-- Assets/Scripts/UI/CharacterSelectionCard.cs.meta
 - Assets/Scripts/UI/CharacterSelectionController.cs
-- Assets/Scripts/UI/CharacterSelectionController.cs.meta
+- Assets/Scripts/Weapons/RifleWeapon.cs
+- Assets/Tests/Verification/Milestone8_1_Verifier.cs
+- Assets/Tests/Verification/Milestone8_3_Verifier.cs
+- Assets/Tests/Verification/Milestone8_4_Verifier.cs
 - Assets/Tests/Verification/Milestone8_5_Verifier.cs
-- Assets/Tests/Verification/Milestone8_5_Verifier.cs.meta
-- ProjectSettings/EditorBuildSettings.asset
+- Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- 41/41 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions (playmode_m8_5.log)
+- 30/30 automated Play Mode verification checks passed for Milestone 8.5 QA pass (playmode_m8_5_qa_pass.log)
+- 41/41 initial automated Play Mode verification checks passed with 0 errors (playmode_m8_5.log)
 - 44/44 automated Play Mode verification checks passed for Milestone 8.4 regression suite (playmode_m8_4_regression.log)
 - 68/68 automated Play Mode verification checks passed for Milestone 8.3 regression suite (playmode_m8_3_regression.log)
-- Manual player-facing flow verified: CharacterSelection -> Warrior -> Start -> Warrior dungeon (GREEN)
-- Manual player-facing flow verified: CharacterSelection -> Archer -> Start -> Archer dungeon (GREEN)
-- Manual player-facing flow verified: CharacterSelection -> Gunner -> Start -> Gunner dungeon (GREEN)
+- Manual player-facing QA confirmed GREEN:
+  - Character Selection UI is readable with dark cards (#161B22) and 4-side cyan outline border.
+  - Turkish labels (KARAKTERİNİ SEÇ, Seçilen: ..., ZİNDANA BAŞLA, Savaşçı, Okçu, Nişancı) and role descriptions verified.
+  - Auto-homing XP collection works correctly on ranged kills (no running onto dead enemies).
+  - Gunner muzzle flash and tracer feedback clearly communicate accepted shots with zero duplicate queries.
+  - Warrior, Archer, and Gunner selection, combat, and restart flows verified.
 - Restart semantics verified: Restart Dungeon preserves chosen character across all 3 archetypes
 - CharacterRoster catalog validated: ordered [Warrior, Archer, Gunner], zero nulls, zero duplicates
 - CharacterDefinition schema remains decoupled: zero combat/stat math fields

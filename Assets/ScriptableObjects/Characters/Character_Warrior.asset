@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Character_Warrior
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: warrior
-  displayName: Warrior
-  description: A sturdy melee fighter with high survivability and sweeping sword
-    attacks.
+  displayName: Savaşçı
+  description: "Yakın dövüşte güçlüdür. Kılıcıyla güçlü ve dayanıklı saldırılar yapar."
   characterPrefab: {fileID: 3441253740286043302, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}

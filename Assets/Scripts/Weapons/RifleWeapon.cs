@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using DungeonRoguelite.Combat;
 using DungeonRoguelite.Player;
@@ -9,7 +10,8 @@ namespace DungeonRoguelite.Weapons
     /// Executes instantaneous ranged firearm attacks via hitscan query along the character facing direction.
     /// Implements IPrimaryAttack for polymorphic integration with PlayerAttack.
     /// Operates on a single authoritative collision sweep path sorted by ascending distance.
-    /// Strictly decoupled from XP, enemies, UI, and progression.
+    /// Provides lightweight muzzle flash and hitscan tracer feedback for successful shots.
+    /// Strictly decoupled from XP, enemies, UI, and progression. Zero ammo/reload mechanics.
     /// </summary>
     public class RifleWeapon : MonoBehaviour, IPrimaryAttack
     {
@@ -33,10 +35,24 @@ namespace DungeonRoguelite.Weapons
         [Tooltip("Transform determining the firearm muzzle location and aim orientation.")]
         [SerializeField] private Transform muzzlePoint;
 
+        [Header("Visual Feedback")]
+        [Tooltip("Duration in seconds that the bullet tracer remains visible.")]
+        [SerializeField] private float tracerDuration = 0.05f;
+
+        [Tooltip("Duration in seconds that the muzzle flash remains visible.")]
+        [SerializeField] private float flashDuration = 0.04f;
+
+        [Tooltip("Optional LineRenderer used for drawing the bullet tracer.")]
+        [SerializeField] private LineRenderer tracerLine;
+
+        [Tooltip("Optional GameObject toggled for muzzle flash visual.")]
+        [SerializeField] private GameObject muzzleFlashVisual;
+
         private float nextAttackTime = 0f;
         private Transform ownerTransform;
         private IDamageable ownerDamageable;
         private PlayerStats playerStats;
+        private Coroutine feedbackCoroutine;
 
         public float Damage => damage;
         public float BaseDamage => damage;
@@ -49,6 +65,10 @@ namespace DungeonRoguelite.Weapons
         public float CastRadius => castRadius;
         public LayerMask TargetLayers => targetLayers;
         public Transform MuzzlePoint => muzzlePoint;
+        public float TracerDuration => tracerDuration;
+        public float FlashDuration => flashDuration;
+        public LineRenderer TracerLine => tracerLine;
+        public GameObject MuzzleFlashVisual => muzzleFlashVisual;
         public bool CanAttack => Time.timeScale > 0f && Time.time >= nextAttackTime;
 
         /// <summary>
@@ -56,9 +76,34 @@ namespace DungeonRoguelite.Weapons
         /// </summary>
         public event Action OnAttack;
 
+        /// <summary>
+        /// Fired whenever a rifle shot is successfully executed, passing the shot origin and resolved hit/end point.
+        /// </summary>
+        public event Action<Vector3, Vector3> OnShotFired;
+
         private void Awake()
         {
             ResolveOwner();
+            EnsureFeedbackComponents();
+        }
+
+        private void OnDisable()
+        {
+            if (feedbackCoroutine != null)
+            {
+                StopCoroutine(feedbackCoroutine);
+                feedbackCoroutine = null;
+            }
+
+            if (muzzleFlashVisual != null)
+            {
+                muzzleFlashVisual.SetActive(false);
+            }
+
+            if (tracerLine != null)
+            {
+                tracerLine.enabled = false;
+            }
         }
 
         private void ResolveOwner()
@@ -88,6 +133,37 @@ namespace DungeonRoguelite.Weapons
                 }
                 muzzlePoint = foundMuzzle;
             }
+        }
+
+        /// <summary>
+        /// Ensures fallback tracer LineRenderer and muzzle flash objects exist if not pre-configured on prefab.
+        /// </summary>
+        public void EnsureFeedbackComponents()
+        {
+            Transform anchor = muzzlePoint != null ? muzzlePoint : transform;
+
+            if (tracerLine == null)
+            {
+                tracerLine = anchor.GetComponentInChildren<LineRenderer>();
+            }
+
+            if (muzzleFlashVisual == null)
+            {
+                Transform flashChild = anchor.Find("MuzzleFlash");
+                if (flashChild != null)
+                {
+                    muzzleFlashVisual = flashChild.gameObject;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets visual feedback components explicitly.
+        /// </summary>
+        public void SetFeedbackReferences(LineRenderer line, GameObject flash)
+        {
+            tracerLine = line;
+            muzzleFlashVisual = flash;
         }
 
         /// <summary>
@@ -152,54 +228,125 @@ namespace DungeonRoguelite.Weapons
                 forward.Normalize();
             }
 
+            Vector3 endPoint = origin + forward * range;
+
             // Single authoritative collision query
             RaycastHit[] hits = castRadius > 0.001f
                 ? Physics.SphereCastAll(origin, castRadius, forward, range, targetLayers, QueryTriggerInteraction.Ignore)
                 : Physics.RaycastAll(origin, forward, range, targetLayers, QueryTriggerInteraction.Ignore);
 
-            if (hits == null || hits.Length == 0)
+            if (hits != null && hits.Length > 0)
             {
-                return;
+                // Deterministically resolve hits by ascending hit.distance
+                System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+
+                for (int i = 0; i < hits.Length; i++)
+                {
+                    Collider col = hits[i].collider;
+                    if (col == null) continue;
+
+                    Transform hitTransform = col.transform;
+
+                    // Ignore weapon self
+                    if (hitTransform == transform || hitTransform.IsChildOf(transform))
+                    {
+                        continue;
+                    }
+
+                    // Ignore owner root and owner descendants
+                    if (ownerTransform != null && (hitTransform == ownerTransform || hitTransform.IsChildOf(ownerTransform)))
+                    {
+                        continue;
+                    }
+
+                    // Solid hit determined: calculate authoritative endpoint
+                    Vector3 hitPt = hits[i].point;
+                    if (hitPt == Vector3.zero)
+                    {
+                        hitPt = origin + forward * hits[i].distance;
+                    }
+                    endPoint = hitPt;
+
+                    // The FIRST remaining valid solid hit is authoritative
+                    IDamageable damageable = col.GetComponentInParent<IDamageable>();
+                    if (damageable == null)
+                    {
+                        damageable = col.GetComponent<IDamageable>();
+                    }
+
+                    if (damageable != null)
+                    {
+                        damageable.TakeDamage(EffectiveDamage);
+                    }
+
+                    // Stop at the first solid impact: whether damageable or environment obstacle.
+                    // Nothing behind this hit may be damaged (no penetration).
+                    break;
+                }
             }
 
-            // Deterministically resolve hits by ascending hit.distance
-            System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+            // Fire shot event with resolved endpoint
+            OnShotFired?.Invoke(origin, endPoint);
 
-            for (int i = 0; i < hits.Length; i++)
+            // Trigger lightweight visual feedback
+            TriggerVisualFeedback(origin, endPoint);
+        }
+
+        private void TriggerVisualFeedback(Vector3 origin, Vector3 endPoint)
+        {
+            EnsureFeedbackComponents();
+
+            if (tracerLine != null)
             {
-                Collider col = hits[i].collider;
-                if (col == null) continue;
-
-                Transform hitTransform = col.transform;
-
-                // Ignore weapon self
-                if (hitTransform == transform || hitTransform.IsChildOf(transform))
-                {
-                    continue;
-                }
-
-                // Ignore owner root and owner descendants
-                if (ownerTransform != null && (hitTransform == ownerTransform || hitTransform.IsChildOf(ownerTransform)))
-                {
-                    continue;
-                }
-
-                // The FIRST remaining valid solid hit is authoritative
-                IDamageable damageable = col.GetComponentInParent<IDamageable>();
-                if (damageable == null)
-                {
-                    damageable = col.GetComponent<IDamageable>();
-                }
-
-                if (damageable != null)
-                {
-                    damageable.TakeDamage(EffectiveDamage);
-                }
-
-                // Stop at the first solid impact: whether damageable or environment obstacle.
-                // Nothing behind this hit may be damaged (no penetration).
-                break;
+                tracerLine.positionCount = 2;
+                tracerLine.SetPosition(0, origin);
+                tracerLine.SetPosition(1, endPoint);
+                tracerLine.enabled = true;
             }
+
+            if (muzzleFlashVisual != null)
+            {
+                muzzleFlashVisual.SetActive(true);
+            }
+
+            if (gameObject.activeInHierarchy)
+            {
+                if (feedbackCoroutine != null)
+                {
+                    StopCoroutine(feedbackCoroutine);
+                }
+                feedbackCoroutine = StartCoroutine(HideFeedbackRoutine());
+            }
+        }
+
+        private IEnumerator HideFeedbackRoutine()
+        {
+            float elapsed = 0f;
+            float maxDuration = Mathf.Max(tracerDuration, flashDuration);
+
+            while (elapsed < maxDuration)
+            {
+                if (Time.timeScale > 0f)
+                {
+                    elapsed += Time.deltaTime;
+                }
+
+                if (muzzleFlashVisual != null && elapsed >= flashDuration)
+                {
+                    muzzleFlashVisual.SetActive(false);
+                }
+
+                if (tracerLine != null && elapsed >= tracerDuration)
+                {
+                    tracerLine.enabled = false;
+                }
+
+                yield return null;
+            }
+
+            if (muzzleFlashVisual != null) muzzleFlashVisual.SetActive(false);
+            if (tracerLine != null) tracerLine.enabled = false;
+            feedbackCoroutine = null;
         }
 
         private void OnDrawGizmosSelected()
@@ -210,7 +357,7 @@ namespace DungeonRoguelite.Weapons
             if (forward.sqrMagnitude < 0.001f) forward = Vector3.forward;
             else forward.Normalize();
 
-            Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.5f);
+            Gizmos.color = new Color(0.2f, 0.85f, 1f, 0.5f);
             if (castRadius > 0.001f)
             {
                 Gizmos.DrawWireSphere(origin, castRadius);

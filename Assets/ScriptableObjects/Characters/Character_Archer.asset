@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: Character_Archer
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: archer
-  displayName: Archer
-  description: A nimble marksman equipped with a bow for long-range precision attacks
-    and agile kiting.
+  displayName: Okçu
+  description: "Uzaktan savaşır. Okları hedefe ulaşana kadar fiziksel olarak yol alır."
   characterPrefab: {fileID: 7248876810619821317, guid: 2d90432d89b9f2f4384d57ff02bf3257, type: 3}

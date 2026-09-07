@@ -92,6 +92,11 @@ namespace DungeonRoguelite.UI
             {
                 selectionHighlight.SetActive(selected);
             }
+
+            if (nameText != null)
+            {
+                nameText.color = selected ? Color.white : new Color(0.75f, 0.78f, 0.85f, 1f);
+            }
         }
 
         /// <summary>
