@@ -31,7 +31,7 @@ namespace DungeonRoguelite.UI
 
         [Header("Scene Transition")]
         [Tooltip("Name of the gameplay dungeon scene to load upon starting.")]
-        [SerializeField] private string targetSceneName = "Dungeon_Prototype";
+        [SerializeField] private string targetSceneName = "WorldMap";
 
         private CharacterDefinition currentSelection;
         private bool isTransitioning = false;
@@ -225,7 +225,7 @@ namespace DungeonRoguelite.UI
         /// <summary>
         /// Programmatic configuration helper used by setup and verification scripts.
         /// </summary>
-        public void SetReferences(CharacterRoster newRoster, CharacterSelectionCard[] newCards, TextMeshProUGUI preview, Button startBtn, string sceneName = "Dungeon_Prototype")
+        public void SetReferences(CharacterRoster newRoster, CharacterSelectionCard[] newCards, TextMeshProUGUI preview, Button startBtn, string sceneName = "WorldMap")
         {
             UnbindCardEvents();
             roster = newRoster;

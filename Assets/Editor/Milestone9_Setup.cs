@@ -393,5 +393,205 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[GATE 9.3] Entering Play Mode for automated verification...");
             EditorApplication.EnterPlaymode();
         }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Setup Gate 9.4 (World Map)")]
+        public static void SetupGate9_4()
+        {
+            Debug.Log("[Milestone 9.4 Setup] Configuring DungeonCatalog, WorldMap scene, and Build Settings...");
+            EnsureDirectories();
+
+            // 1. Create or update DungeonCatalog.asset
+            var d1 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon01Path);
+            var d2 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon02Path);
+            var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>(DungeonCatalogPath);
+            if (catalog == null)
+            {
+                catalog = ScriptableObject.CreateInstance<DungeonCatalog>();
+                catalog.SetDungeons(new DungeonDefinition[] { d1, d2 });
+                AssetDatabase.CreateAsset(catalog, DungeonCatalogPath);
+                Debug.Log($"[Milestone 9.4 Setup] Created {DungeonCatalogPath}");
+            }
+            else
+            {
+                catalog.SetDungeons(new DungeonDefinition[] { d1, d2 });
+                EditorUtility.SetDirty(catalog);
+            }
+            AssetDatabase.SaveAssets();
+
+            // 2. Update CharacterSelection.unity targetSceneName to WorldMap
+            if (File.Exists(CharacterSelectionScenePath))
+            {
+                var csScene = EditorSceneManager.OpenScene(CharacterSelectionScenePath, OpenSceneMode.Single);
+                CleanAllVerifiers();
+                var csController = UnityEngine.Object.FindFirstObjectByType<CharacterSelectionController>();
+                if (csController != null)
+                {
+                    var so = new SerializedObject(csController);
+                    so.FindProperty("targetSceneName").stringValue = "WorldMap";
+                    so.ApplyModifiedProperties();
+                    EditorUtility.SetDirty(csController);
+                }
+                EditorSceneManager.SaveScene(csScene, CharacterSelectionScenePath);
+            }
+
+            // 3. Create WorldMap.unity scene
+            var mapScene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            CleanAllVerifiers();
+
+            // Camera
+            var camGo = new GameObject("Main Camera");
+            camGo.tag = "MainCamera";
+            var cam = camGo.AddComponent<Camera>();
+            cam.clearFlags = CameraClearFlags.SolidColor;
+            cam.backgroundColor = new Color(0.06f, 0.07f, 0.10f, 1f);
+            cam.orthographic = true;
+            cam.orthographicSize = 5f;
+            camGo.transform.position = new Vector3(0f, 0f, -10f);
+
+            // EventSystem
+            var esGo = new GameObject("EventSystem");
+            esGo.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGo.AddComponent<UnityEngine.InputSystem.UI.InputSystemUIInputModule>();
+
+            // Canvas
+            var canvasGo = new GameObject("Canvas");
+            var canvas = canvasGo.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            var scaler = canvasGo.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            canvasGo.AddComponent<GraphicRaycaster>();
+
+            // Header Title
+            var titleTMP = CreateOrGetText(canvasGo, "TitleText", "DÜNYA HARİTASI", new Vector2(0f, 420f), new Vector2(800f, 80f), 48f, Color.white);
+
+            // Active Hero Label
+            var heroTMP = CreateOrGetText(canvasGo, "ActiveHeroText", "Kahraman: Savaşçı", new Vector2(0f, 350f), new Vector2(600f, 45f), 24f, new Color(0.95f, 0.85f, 0.35f, 1f));
+
+            // Dungeon Cards
+            var cardComponents = new WorldMapCard[2];
+            cardComponents[0] = CreateWorldMapCard(canvasGo, "Card_Dungeon01", new Vector2(-280f, 30f));
+            cardComponents[1] = CreateWorldMapCard(canvasGo, "Card_Dungeon02", new Vector2(280f, 30f));
+
+            // Enter Button
+            var enterBtn = CreateButton(canvasGo, "EnterButton", "ZİNDANA GİR", new Vector2(0f, -280f), new Vector2(340f, 65f));
+
+            // Back Button
+            var backBtn = CreateButton(canvasGo, "BackButton", "GERİ", new Vector2(-700f, -420f), new Vector2(200f, 50f));
+
+            // WorldMapController
+            var catalogAsset = AssetDatabase.LoadAssetAtPath<DungeonCatalog>(DungeonCatalogPath);
+            var mapController = canvasGo.AddComponent<WorldMapController>();
+            mapController.SetReferences(catalogAsset, cardComponents, enterBtn, backBtn, heroTMP, titleTMP);
+
+            var sMap = new SerializedObject(mapController);
+            sMap.FindProperty("dungeonCatalog").objectReferenceValue = catalogAsset;
+            var cardsProp = sMap.FindProperty("cards");
+            cardsProp.arraySize = 2;
+            cardsProp.GetArrayElementAtIndex(0).objectReferenceValue = cardComponents[0];
+            cardsProp.GetArrayElementAtIndex(1).objectReferenceValue = cardComponents[1];
+            sMap.FindProperty("enterDungeonButton").objectReferenceValue = enterBtn;
+            sMap.FindProperty("backButton").objectReferenceValue = backBtn;
+            sMap.FindProperty("activeHeroText").objectReferenceValue = heroTMP;
+            sMap.FindProperty("titleText").objectReferenceValue = titleTMP;
+            sMap.ApplyModifiedProperties();
+
+            EditorSceneManager.SaveScene(mapScene, WorldMapScenePath);
+
+            // 4. Update Build Settings registration & order
+            var buildScenes = new EditorBuildSettingsScene[]
+            {
+                new EditorBuildSettingsScene(CharacterSelectionScenePath, true),
+                new EditorBuildSettingsScene(WorldMapScenePath, true),
+                new EditorBuildSettingsScene(DungeonPrototypeScenePath, true)
+            };
+            EditorBuildSettings.scenes = buildScenes;
+
+            Debug.Log("[Milestone 9.4 Setup] Gate 9.4 setup completed successfully.");
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Run Gate 9.4 Verification")]
+        public static void RunGate9_4Verification()
+        {
+            Debug.Log("[GATE 9.4] Running setup before verification...");
+            SetupGate9_4();
+
+            var scene = EditorSceneManager.OpenScene(WorldMapScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Gate9_4_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone9_4_Verifier>();
+
+            Debug.Log("[GATE 9.4] Entering Play Mode for automated verification...");
+            EditorApplication.EnterPlaymode();
+        }
+
+        private static WorldMapCard CreateWorldMapCard(GameObject parent, string name, Vector2 pos)
+        {
+            var cardGo = new GameObject(name);
+            cardGo.transform.SetParent(parent.transform, false);
+
+            var rect = cardGo.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = pos;
+            rect.sizeDelta = new Vector2(460f, 450f);
+
+            var img = cardGo.AddComponent<Image>();
+            img.color = new Color(0.12f, 0.14f, 0.18f, 0.95f);
+
+            var btn = cardGo.AddComponent<Button>();
+
+            // Selection border
+            var borderGo = new GameObject("SelectionBorder");
+            borderGo.transform.SetParent(cardGo.transform, false);
+            var bRect = borderGo.AddComponent<RectTransform>();
+            bRect.anchorMin = Vector2.zero;
+            bRect.anchorMax = Vector2.one;
+            bRect.sizeDelta = new Vector2(8f, 8f);
+            bRect.anchoredPosition = Vector2.zero;
+            var bImg = borderGo.AddComponent<Image>();
+            bImg.color = new Color(0.95f, 0.85f, 0.3f, 1f);
+            borderGo.transform.SetAsFirstSibling();
+            borderGo.SetActive(false);
+
+            // Title text
+            var titleTMP = CreateOrGetText(cardGo, "Title", "Bölüm", new Vector2(0f, 150f), new Vector2(420f, 60f), 28f, Color.white);
+
+            // Description text
+            var descTMP = CreateOrGetText(cardGo, "Description", "Açıklama", new Vector2(0f, 50f), new Vector2(400f, 100f), 20f, new Color(0.8f, 0.85f, 0.9f, 1f));
+            descTMP.enableWordWrapping = true;
+
+            // Status text
+            var statusTMP = CreateOrGetText(cardGo, "Status", "AÇIK", new Vector2(0f, -70f), new Vector2(300f, 40f), 24f, new Color(0.4f, 0.8f, 1f, 1f));
+
+            // Lock overlay
+            var lockGo = new GameObject("LockOverlay");
+            lockGo.transform.SetParent(cardGo.transform, false);
+            var lRect = lockGo.AddComponent<RectTransform>();
+            lRect.anchorMin = Vector2.zero;
+            lRect.anchorMax = Vector2.one;
+            lRect.sizeDelta = Vector2.zero;
+            lRect.anchoredPosition = Vector2.zero;
+            var lImg = lockGo.AddComponent<Image>();
+            lImg.color = new Color(0.04f, 0.04f, 0.06f, 0.75f);
+            var lockTMP = CreateOrGetText(lockGo, "LockText", "KİLİTLİ", Vector2.zero, new Vector2(250f, 50f), 32f, new Color(0.85f, 0.3f, 0.3f, 1f));
+            lockGo.SetActive(false);
+
+            var card = cardGo.AddComponent<WorldMapCard>();
+            card.SetReferences(titleTMP, descTMP, statusTMP, lockGo, borderGo, btn);
+
+            var sCard = new SerializedObject(card);
+            sCard.FindProperty("titleText").objectReferenceValue = titleTMP;
+            sCard.FindProperty("descriptionText").objectReferenceValue = descTMP;
+            sCard.FindProperty("statusText").objectReferenceValue = statusTMP;
+            sCard.FindProperty("lockOverlay").objectReferenceValue = lockGo;
+            sCard.FindProperty("selectionBorder").objectReferenceValue = borderGo;
+            sCard.FindProperty("cardButton").objectReferenceValue = btn;
+            sCard.ApplyModifiedProperties();
+
+            return card;
+        }
     }
 }

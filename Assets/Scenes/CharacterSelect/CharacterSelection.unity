@@ -1944,7 +1944,7 @@ MonoBehaviour:
   - {fileID: 1451765096}
   selectedPreviewText: {fileID: 468898967}
   startButton: {fileID: 573180895}
-  targetSceneName: Dungeon_Prototype
+  targetSceneName: WorldMap
 --- !u!114 &956436503
 MonoBehaviour:
   m_ObjectHideFlags: 0

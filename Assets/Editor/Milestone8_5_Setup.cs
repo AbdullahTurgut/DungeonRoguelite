@@ -428,7 +428,7 @@ namespace DungeonRoguelite.Editor
 
             // 10. CharacterSelectionController on Canvas
             var controller = canvasGo.AddComponent<CharacterSelectionController>();
-            controller.SetReferences(roster, cardComponents, previewTMP, startBtn, "Dungeon_Prototype");
+            controller.SetReferences(roster, cardComponents, previewTMP, startBtn, "WorldMap");
 
             var sController = new SerializedObject(controller);
             sController.FindProperty("roster").objectReferenceValue = roster;
@@ -440,7 +440,7 @@ namespace DungeonRoguelite.Editor
             }
             sController.FindProperty("selectedPreviewText").objectReferenceValue = previewTMP;
             sController.FindProperty("startButton").objectReferenceValue = startBtn;
-            sController.FindProperty("targetSceneName").stringValue = "Dungeon_Prototype";
+            sController.FindProperty("targetSceneName").stringValue = "WorldMap";
             sController.ApplyModifiedPropertiesWithoutUndo();
 
             // Save Scene

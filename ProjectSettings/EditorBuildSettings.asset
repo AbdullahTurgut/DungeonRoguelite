@@ -9,11 +9,11 @@ EditorBuildSettings:
     path: Assets/Scenes/CharacterSelect/CharacterSelection.unity
     guid: ee2e8f6bf7caaab46ba3bb5691cef0b9
   - enabled: 1
+    path: Assets/Scenes/WorldMap/WorldMap.unity
+    guid: 22f0b1b73243ecf4ab44fa29c663b2d2
+  - enabled: 1
     path: Assets/Scenes/Dungeons/Dungeon_Prototype.unity
     guid: 57c257a4ed005324ab82d19d35a14435
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
