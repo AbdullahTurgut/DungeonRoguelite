@@ -3,8 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Milestone 8.3 completed and verified in Unity Play Mode.
-- Archer Combat Prototype (IPrimaryAttack, BowWeapon, ArrowProjectile, Archer.prefab) established.
+- Milestone 8.4 completed and verified in Unity Play Mode.
+- Gunner Combat Prototype (IPrimaryAttack, RifleWeapon, Gunner.prefab, Character_Gunner.asset) established.
 
 ---
 
@@ -12,10 +12,10 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 8: Character System (Milestone 8.3: Archer Combat Prototype)**  
-**NEXT UP — Phase 8: Character System (Milestone 8.4: Gunner)**
+**COMPLETED — Phase 8: Character System (Milestone 8.4: Gunner Combat Prototype)**  
+**NEXT UP — Phase 8: Character System (Milestone 8.5: Character Selection UI & Integration)**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), and 8.3 (Archer Combat Prototype) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), and 8.4 (Gunner Combat Prototype) are completed and verified.
 
 ---
 
@@ -26,7 +26,8 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
 - Milestone 8.1: Character Definition & Architecture (Completed)
 - Milestone 8.2: Runtime Player Spawning & Explicit Binding (Completed)
 - Milestone 8.3: Archer (Completed)
-- Milestone 8.4: Gunner (Next Up)
+- Milestone 8.4: Gunner (Completed)
+- Milestone 8.5: Character Selection (Next Up)
 
 ---
 
@@ -258,30 +259,65 @@ Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damag
   - Safe Manual Playtesting Helper:
     - Created editor-only `Milestone8_3_ManualPlayHelper.cs` under `Assets/Editor/` with menu items to playtest Archer or Warrior in-memory, automatically restoring `Character_Warrior` default upon exiting Play Mode without dirtying the scene on disk.
 
+- **Milestone 8.4 — Gunner Combat Prototype (Hitscan Firearm & Occlusion Ordering)**:
+  - RifleWeapon Implementation:
+    - Implemented `RifleWeapon.cs` component in `Assets/Scripts/Weapons/` implementing `IPrimaryAttack`.
+    - Single authoritative hitscan sweep path using `Physics.SphereCastAll` (radius `0.1m`, range `25m`, `QueryTriggerInteraction.Ignore`).
+    - Deterministic ascending distance ordering: hits sorted via `System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance))`.
+    - Strict occlusion ordering: owner root and descendants safely ignored, trigger volumes ignored, first valid solid impact resolves.
+    - Solid wall blocks shot; targets behind wall receive zero damage; near target absorbs shot preventing penetration to far target (strictly zero bullet penetration).
+    - Prototype weapon baseline: `damage = 10f`, `attackCooldown = 0.18f`, `range = 25f`, `castRadius = 0.1f`.
+    - Integrated with `PlayerStats` multipliers (`EffectiveDamage = damage * DamageMultiplier`, `EffectiveAttackCooldown = attackCooldown / AttackSpeedMultiplier`).
+    - Enforced cooldown timing and pause guards (`Time.timeScale <= 0f`).
+    - Emits clean `OnAttack` event.
+  - Gunner Assets & Prefab:
+    - Created `Character_Gunner.asset` under `Assets/ScriptableObjects/Characters/` (`id = "gunner"`, `displayName = "Gunner"`, description, referencing `Gunner.prefab`).
+    - Created `Gunner.prefab` at `Assets/Prefabs/Characters/Gunner.prefab`:
+      - Shares identical player systems: `Tag = "Player"`, `CharacterController` (height 2.0, radius 0.5), `PlayerMovement` (moveSpeed = 6.0), `PlayerAim`, `PlayerHealth` (maxHealth = 100), `PlayerStats`, `PlayerExperience` (baseRequiredXP = 100), `PlayerAttack`, and `PlayableCharacter` referencing `Character_Gunner.asset`.
+      - Configured with `RifleWeapon` (`damage = 10`, `attackCooldown = 0.18s`, `range = 25m`, `castRadius = 0.1m`, `targetLayers = ~0`).
+      - Visual hierarchy: placeholder capsule body, `FacingIndicator`, `WeaponAnchor`, `RifleVisual` placeholder, and `MuzzlePoint` child at `(0, 0, 0.45)`.
+      - Does NOT contain `MeleeWeapon` or `BowWeapon`.
+  - Universal Stat Scaling:
+    - Universal `PlayerStats` compatibility verified on Gunner:
+      - Damage +20%: Rifle effective damage scales 10 -> 12.
+      - Attack Speed +15%: Rifle effective cooldown scales 0.18s -> 0.1565s.
+      - Movement Speed +10%: Gunner movement speed scales 6.0 -> 6.6.
+  - Spawner & Explicit Scene Binding:
+    - `PlayerSpawner.Spawn(Character_Gunner)` cleanly instantiates Gunner at `PlayerSpawnPoint`.
+    - All scene systems (`CameraFollow`, `WaveManager`, `UpgradeManager`, `PlayerExperienceUI`, `DungeonCompletionController`) bind explicitly and dynamically without modification.
+    - Zombie pursues and damages Gunner via `IDamageable.TakeDamage()`.
+    - Gunner fires rifle shots, damages Zombie (`50 -> 40 -> 30 -> 20 -> 10 -> 0 HP`), and kills drop XP.
+  - Safe Manual Playtesting Helper:
+    - Created dedicated editor-only `Milestone8_4_ManualPlayHelper.cs` under `Assets/Editor/` with menu item to playtest Gunner in-memory, automatically restoring `Character_Warrior` default upon exiting Play Mode without dirtying the scene on disk.
+  - Production Scene Cleanliness & Non-Regression:
+    - `Dungeon_Prototype.unity` on disk remains 100% untouched and defaulted to `Character_Warrior.asset`, with zero pre-placed players and zero attached verifiers.
+    - Warrior vertical slice remains regression-free: spawns and attacks with `MeleeWeapon` (Check 41 passed).
+    - Archer ranged combat remains regression-free: spawns and fires arrows with `BowWeapon` (Check 42 passed; full 68-check regression suite passed).
+  - Verification Results:
+    - Automated Play Mode verification suite (`Milestone8_4_Verifier.cs`) ran and passed all 44 checks with 0 errors and 0 runtime exceptions.
+
 ---
 
 # Next Task
 
-**Milestone 8.4 — Character System (Gunner)**
+**Milestone 8.5 — Character System (Character Selection UI & Integration)**
 
-Tasks for Milestone 8.4:
-1. Implement Gunner character definition and archetype assets.
-2. Implement Gunner weapon system (hitscan or high-speed projectile rifle).
-3. Evaluate projectile architecture reuse vs. hitscan approach.
-4. Verify universal stat scaling and explicit runtime binding for Gunner.
+Tasks for Milestone 8.5:
+1. Implement Character Selection UI / pre-run character picker.
+2. Implement character roster catalog ScriptableObject.
+3. Integrate selected character into PlayerSpawner / dungeon entry flow.
+4. Verify transition between Character Selection and Dungeon_Prototype.
 
 Deferred Work (Post-Milestone 8):
-- Character Selection UI / pre-run menu
-- `CharacterRoster` catalog ScriptableObject
-- Generic projectile base class abstraction (deferred pending Gunner weapon design)
+- Full-auto / held-fire input semantics — evaluate after Gunner manual gameplay test.
+- Generic projectile base class abstraction (evaluated and confirmed unjustified; Gunner uses hitscan, so only 1 projectile weapon exists in project).
 - 3D models, character animations, audio, and particle VFX
 - Corpse cleanup / fading system
 - World Map & multi-dungeon progression (Phase 9)
 - Permanent skill trees & save/load (Phase 10)
 
 Do NOT start:
-- Gunner / rifle system (Milestone 8.4) until instructed
-- Character Selection UI
+- Character Selection UI until instructed
 - World Map / multi-dungeon progression (Phase 9)
 - Permanent skill trees (Phase 10)
 
@@ -297,8 +333,9 @@ Do NOT start:
 - Aiming: Screen-to-world raycast against horizontal mathematical `Plane` at player height; Y-axis only rotation (`PlayerAim.cs`)
 - Camera: Custom lightweight `CameraFollow.cs` in `LateUpdate` with `Vector3.SmoothDamp` and fixed top-down pitch
 - Combat Abstraction: Minimal `IDamageable` interface (`TakeDamage(float amount)`) in `Assets/Scripts/Combat/`
-- Weapon & Attack Architecture: Polymorphic primary attack via minimal `IPrimaryAttack.cs` (`bool TryAttack()`). `PlayerAttack.cs` coordinates input forwarding with zero weapon management, inventory, or character branching. Concrete implementations: `MeleeWeapon.cs` (Warrior forward arc overlap query) and `BowWeapon.cs` (Archer arrow projectile instantiation).
+- Weapon & Attack Architecture: Polymorphic primary attack via minimal `IPrimaryAttack.cs` (`bool TryAttack()`). `PlayerAttack.cs` coordinates input forwarding with zero weapon management, inventory, or character branching. Concrete implementations: `MeleeWeapon.cs` (Warrior forward arc overlap query), `BowWeapon.cs` (Archer arrow projectile sweep), and `RifleWeapon.cs` (Gunner hitscan distance-sorted query).
 - Projectile Architecture: Single authoritative collision sweep via `ArrowProjectile.cs` using `FixedUpdate()` `Physics.SphereCastAll(..., QueryTriggerInteraction.Ignore)`. Enforces trigger immunity, hierarchy-safe owner self-damage immunity, single-hit guard, solid obstacle destruction, and scaled-time pause freezing. Zero competing `OnTriggerEnter` or `OnCollisionEnter` damage logic.
+- Hitscan Firearm Architecture: Single authoritative hitscan sweep via `RifleWeapon.cs` using `Physics.SphereCastAll(..., castRadius, forward, range, targetLayers, QueryTriggerInteraction.Ignore)`. Hits sorted deterministically by ascending distance (`hit.distance`). First valid solid non-owner hit resolves. Hierarchy-safe owner immunity (`hitTransform == ownerRoot || hitTransform.IsChildOf(ownerRoot)`), trigger volumes ignored. Obstacle occlusion: solid wall stops shot; near target absorbs shot preventing penetration to far target (strictly zero bullet penetration). Single attack event per shot.
 - Health Architecture: `PlayerHealth.cs` and `EnemyHealth.cs` both implement `IDamageable` independently with clamped health and single-fire death events
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
 - Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points
@@ -452,13 +489,75 @@ Automated Play Mode verification suite ran and passed all 45 checks in Unity (`p
 - **Check 44**: Unity compiled with 0 errors (PASSED).
 - **Check 45**: Play Mode produced 0 runtime exceptions (PASSED).
 
+## Milestone 8.3 Verification
+
+Automated Play Mode verification suite ran and passed all 68 checks in Unity (`playmode_m8_3.log`):
+- IPrimaryAttack interface contract validated.
+- MeleeWeapon and BowWeapon polymorphic implementations verified.
+- PlayerAttack input-forwarding architecture verified.
+- BowWeapon cooldown (0.6s), pause blocking, arrow instantiation, and event emission verified.
+- ArrowProjectile travel, pause freeze, lifetime auto-destruction, owner immunity, trigger passthrough, IDamageable hit detection, wall destruction, and single-hit guard verified.
+- Character_Archer.asset and Archer.prefab hierarchy, stats, and components verified.
+- Spawner instantiation, explicit dynamic binding of all scene systems, universal stat upgrades (+20% dmg, +15% atk spd, +10% move speed), zombie combat, XP drops, and dungeon completion verified.
+- Warrior vertical slice non-regression verified (68/68 passed).
+
+## Milestone 8.4 Verification
+
+Automated Play Mode verification suite ran and passed all 44 checks in Unity (`playmode_m8_4.log`):
+- **Check 1**: IPrimaryAttack interface exists with bool TryAttack() contract (PASSED).
+- **Check 2**: Warrior prefab uses MeleeWeapon implementing IPrimaryAttack (PASSED).
+- **Check 3**: Archer prefab uses BowWeapon implementing IPrimaryAttack (PASSED).
+- **Check 4**: RifleWeapon implements IPrimaryAttack (PASSED).
+- **Check 5**: RifleWeapon.BaseDamage returns 10 (PASSED).
+- **Check 6**: RifleWeapon.AttackCooldown returns 0.18s (PASSED).
+- **Check 7**: RifleWeapon.Range returns 25m (PASSED).
+- **Check 8**: Rifle EffectiveDamage correctly scaled +20% (10 -> 12) (PASSED).
+- **Check 9**: Rifle EffectiveAttackCooldown correctly scaled +15% (0.18 / 1.15 ≈ 0.1565s) (PASSED).
+- **Check 10**: PlayerMovement EffectiveMoveSpeed correctly scaled +10% (6.0 -> 6.6) (PASSED).
+- **Check 11**: Pause strictly blocks Rifle firing (Time.timeScale <= 0f) (PASSED).
+- **Check 12**: Attack cooldown strictly enforced (rapid shot blocked, shot after 0.18s succeeds) (PASSED).
+- **Check 13**: Exactly one OnAttack event fired per valid attack (PASSED).
+- **Check 14**: Aim direction respected: aligned target hit, off-axis target untouched (PASSED).
+- **Check 15**: Owner hierarchy safely ignored even with overlapping collider; target ahead receives damage (PASSED).
+- **Check 16**: Trigger volumes strictly ignored; target beyond trigger receives hit (PASSED).
+- **Check 17**: Occlusion Case A verified: Owner ignored, Trigger ignored, Zombie damaged (10), Wall behind irrelevant (PASSED).
+- **Check 18**: Occlusion Case B verified: Wall stops shot, Zombie behind wall receives ZERO damage (PASSED).
+- **Check 19**: Occlusion Case C verified: Near Zombie damaged exactly once (10), Far Zombie receives ZERO damage (strictly no penetration) (PASSED).
+- **Check 20**: Range limit enforced: target beyond 25m receives ZERO damage (PASSED).
+- **Check 21**: Gunner.prefab exists at Assets/Prefabs/Characters/Gunner.prefab (PASSED).
+- **Check 22**: Gunner.prefab Tag is 'Player' (PASSED).
+- **Check 23**: Gunner.prefab contains all required components with baseline values (moveSpeed=6.0, hp=100, dmg=10, cd=0.18s) (PASSED).
+- **Check 24**: Gunner.prefab does NOT contain MeleeWeapon or BowWeapon (PASSED).
+- **Check 25**: Gunner.prefab hierarchy complete: Visual, FacingIndicator, WeaponAnchor, RifleVisual, MuzzlePoint (PASSED).
+- **Check 26**: Character_Gunner.asset configured correctly and links to Gunner.prefab (PASSED).
+- **Check 27**: CharacterDefinition schema contains zero combat calculation or stat modifier fields (PASSED).
+- **Check 28**: PlayerSpawner.Spawn(Character_Gunner) successfully instantiated Gunner (PASSED).
+- **Check 29**: CameraFollow target explicitly bound to runtime Gunner transform (PASSED).
+- **Check 30**: WaveManager playerTarget explicitly bound to runtime Gunner transform (PASSED).
+- **Check 31**: UpgradeManager explicitly bound to runtime Gunner PlayerExperience and PlayerStats (PASSED).
+- **Check 32**: PlayerExperienceUI explicitly bound to runtime Gunner PlayerExperience (PASSED).
+- **Check 33**: DungeonCompletionController explicitly bound to runtime Gunner PlayerExperience (PASSED).
+- **Check 34**: Gunner took damage via IDamageable (100 -> 90) (PASSED).
+- **Check 35**: Gunner rifle attacks damaged and killed Zombie (HP reduced to 0) (PASSED).
+- **Check 36**: Zombie death spawned ExperiencePickup (PASSED).
+- **Check 37**: Gunner collected ExperiencePickup and gained XP (PASSED).
+- **Check 38**: Level-up triggered (Level 1 -> 2) and UpgradeManager presented 3 choices (PASSED).
+- **Check 39**: Damage upgrade applied to runtime Gunner: EffectiveDamage scaled from 10 to 12 (PASSED).
+- **Check 40**: Dungeon completion flow executed and generated valid DungeonRunSummary with Gunner (PASSED).
+- **Check 41**: Warrior vertical slice non-regression verified: spawned and executed MeleeWeapon attack (PASSED).
+- **Check 42**: Archer combat non-regression verified: spawned and fired BowWeapon arrow (PASSED).
+- **Check 43**: Dungeon_Prototype.unity defaultCharacter is Character_Warrior on disk (PASSED).
+- **Check 44**: Zero permanent verifier objects saved on disk (PASSED).
+
+Milestone 8.3 Archer regression suite re-run: all 68 checks PASSED (`playmode_m8_3_regression.log`).
+
 ---
 
 # Recent Git Checkpoint
 
 ```text
 Latest verified commit:
-3ee9c7c feat: add runtime player spawning and binding
+eb8f471 feat: add archer ranged combat prototype
 ```
 
 ---
@@ -477,92 +576,76 @@ When switching between agents:
 ## Completed This Session
 
 ```text
-- Milestone 8.3 Archer Combat Prototype implementation and Play Mode verification.
-- Assets/Scripts/Weapons/IPrimaryAttack.cs: minimal polymorphic primary attack contract bool TryAttack().
-- Assets/Scripts/Player/PlayerAttack.cs: refactored to forward attack input polymorphically via IPrimaryAttack; preserved Warrior prefab serialization via [FormerlySerializedAs("equippedWeapon")].
-- Assets/Scripts/Weapons/MeleeWeapon.cs: implemented IPrimaryAttack, exposed BaseDamage, preserved backward compatibility.
-- Assets/Scripts/Weapons/BowWeapon.cs: implemented IPrimaryAttack, cooldown enforcement (0.6s), PlayerStats scaling, and ArrowProjectile instantiation.
-- Assets/Scripts/Weapons/ArrowProjectile.cs: single authoritative FixedUpdate collision sweep using Physics.SphereCastAll(..., QueryTriggerInteraction.Ignore), trigger immunity, owner self-damage immunity, single-hit guard, solid obstacle destruction, pause freezing.
-- Assets/ScriptableObjects/Characters/Character_Archer.asset: character archetype definition.
-- Assets/Prefabs/Weapons/Arrow.prefab: projectile prefab with ArrowProjectile, kinematic Rigidbody, trigger CapsuleCollider.
-- Assets/Prefabs/Characters/Archer.prefab: Archer playable character prefab with BowWeapon, BowVisual, ProjectileSpawnPoint, sharing standard player systems.
-- Assets/Editor/Milestone8_3_Setup.cs: automated setup and batchmode verification runner.
-- Assets/Editor/Milestone8_3_ManualPlayHelper.cs: safe in-memory manual playtest helper with automatic scene revert on exit.
-- Assets/Tests/Verification/Milestone8_3_Verifier.cs: 68-check Play Mode verification suite.
+- Milestone 8.4 Gunner Combat Prototype implementation and Play Mode verification.
+- Assets/Scripts/Weapons/RifleWeapon.cs: implemented IPrimaryAttack, Physics.SphereCastAll hitscan query (radius 0.1m, range 25m), ascending distance hit ordering, hierarchy-safe owner immunity, trigger volume passthrough, strict obstacle occlusion (solid wall blocks targets behind it, nearest target prevents penetration), 0.18s cooldown, pause blocking, and universal PlayerStats integration.
+- Assets/ScriptableObjects/Characters/Character_Gunner.asset: Gunner character archetype definition (id: "gunner", displayName: "Gunner", referencing Gunner.prefab).
+- Assets/Prefabs/Characters/Gunner.prefab: Gunner playable character prefab configured with RifleWeapon, Visual, FacingIndicator, WeaponAnchor, RifleVisual, and MuzzlePoint child, sharing standard player systems (CharacterController, PlayerMovement, PlayerAim, PlayerHealth, PlayerStats, PlayerExperience, PlayerAttack, PlayableCharacter).
+- Assets/Editor/Milestone8_4_Setup.cs: automated setup utility and batchmode verification runner.
+- Assets/Editor/Milestone8_4_ManualPlayHelper.cs: safe in-memory manual playtest helper with automatic scene revert on exit.
+- Assets/Tests/Verification/Milestone8_4_Verifier.cs: 44-check Play Mode verification suite covering contracts, stats, hitscan mechanics, occlusion ordering, prefab integrity, spawner binding, full combat loop, and non-regression.
 ```
 
 ## Changed Files
 
 ```text
-- Assets/Editor/Milestone8_3_ManualPlayHelper.cs
-- Assets/Editor/Milestone8_3_ManualPlayHelper.cs.meta
-- Assets/Editor/Milestone8_3_Setup.cs
-- Assets/Editor/Milestone8_3_Setup.cs.meta
-- Assets/Prefabs/Characters/Archer.prefab
-- Assets/Prefabs/Characters/Archer.prefab.meta
-- Assets/Prefabs/Weapons.meta
-- Assets/Prefabs/Weapons/Arrow.prefab
-- Assets/Prefabs/Weapons/Arrow.prefab.meta
-- Assets/ScriptableObjects/Characters/Character_Archer.asset
-- Assets/ScriptableObjects/Characters/Character_Archer.asset.meta
-- Assets/Scripts/Player/PlayerAttack.cs
-- Assets/Scripts/Weapons/ArrowProjectile.cs
-- Assets/Scripts/Weapons/ArrowProjectile.cs.meta
-- Assets/Scripts/Weapons/BowWeapon.cs
-- Assets/Scripts/Weapons/BowWeapon.cs.meta
-- Assets/Scripts/Weapons/IPrimaryAttack.cs
-- Assets/Scripts/Weapons/IPrimaryAttack.cs.meta
-- Assets/Scripts/Weapons/MeleeWeapon.cs
-- Assets/Tests/Verification/Milestone8_3_Verifier.cs
-- Assets/Tests/Verification/Milestone8_3_Verifier.cs.meta
+- Assets/Editor/Milestone8_4_ManualPlayHelper.cs
+- Assets/Editor/Milestone8_4_ManualPlayHelper.cs.meta
+- Assets/Editor/Milestone8_4_Setup.cs
+- Assets/Editor/Milestone8_4_Setup.cs.meta
+- Assets/Prefabs/Characters/Gunner.prefab
+- Assets/Prefabs/Characters/Gunner.prefab.meta
+- Assets/ScriptableObjects/Characters/Character_Gunner.asset
+- Assets/ScriptableObjects/Characters/Character_Gunner.asset.meta
+- Assets/Scripts/Weapons/RifleWeapon.cs
+- Assets/Scripts/Weapons/RifleWeapon.cs.meta
+- Assets/Tests/Verification/Milestone8_4_Verifier.cs
+- Assets/Tests/Verification/Milestone8_4_Verifier.cs.meta
 - PROJECT_STATUS.md
 ```
 
 ## Tested
 
 ```text
-- 68/68 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions
-- Targeted Check 33 verified: trigger volume passthrough, zero damage to trigger, and subsequent solid wall destruction
-- Check 33 issue isolated and documented as resolved verifier timing, not a production bug
-- IPrimaryAttack contract and MeleeWeapon / BowWeapon implementation
-- PlayerAttack input forwarding with zero weapon management or character branching
-- Warrior.prefab serialization migration via [FormerlySerializedAs("equippedWeapon")]
-- Backward compatibility of PlayerAttack.EquippedWeapon getter and SetEquippedWeapon setter
-- BowWeapon cooldown enforcement (0.6s) and pause blocking (Time.timeScale == 0)
-- BowWeapon single arrow instantiation at ProjectileSpawnPoint
-- BowWeapon event emission (OnAttack)
-- ArrowProjectile travel along assigned horizontal direction
-- ArrowProjectile freeze during pause (position and lifetime do not advance)
-- ArrowProjectile self-destruction upon lifetime expiration
-- ArrowProjectile owner hierarchy immunity (zero self-damage)
-- ArrowProjectile trigger-ignore behavior (passes through triggers without impact or damage)
-- ArrowProjectile IDamageable hit detection and exact 20 damage application
-- ArrowProjectile solid obstacle impact and destruction
-- ArrowProjectile single-hit guard preventing multi-hit penetrations
-- Character_Archer.asset metadata integrity and link to Archer.prefab
-- Archer.prefab Tag == "Player", CharacterController dimensions, moveSpeed == 6.5, maxHealth == 100, baseRequiredXP == 100
-- Archer.prefab BowWeapon configuration and absence of MeleeWeapon
-- Archer.prefab FacingIndicator, BowVisual, and ProjectileSpawnPoint transforms
-- Arrow.prefab ArrowProjectile, trigger collider, and kinematic Rigidbody
-- Runtime PlayerSpawner instantiation of Archer via PlayerSpawner.Spawn(Character_Archer)
-- Dynamic explicit binding of CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, and DungeonCompletionController to Archer
-- Universal UpgradeManager stat scaling on Archer: +20% damage (20 -> 24), +15% attack speed (cooldown 0.6 -> 0.5217s), +10% move speed (6.5 -> 7.15)
-- Zombie attacks Archer and Archer takes damage via IDamageable (100 -> 90 HP)
-- Archer fires arrows, damages Zombie (50 -> 30 HP), and kills drop XP
+- 44/44 automated Play Mode verification checks passed with 0 errors and 0 runtime exceptions (playmode_m8_4.log)
+- 68/68 automated Play Mode verification checks passed for Milestone 8.3 regression suite (playmode_m8_3_regression.log)
+- IPrimaryAttack contract validated on MeleeWeapon, BowWeapon, and RifleWeapon
+- RifleWeapon base damage = 10, cooldown = 0.18s, range = 25m, cast radius = 0.1m
+- Universal stat upgrades on Gunner: damage +20% (10 -> 12), attack speed +15% (cooldown 0.18 -> 0.1565s), move speed +10% (6.0 -> 6.6)
+- Pause guard: firing strictly blocked while Time.timeScale <= 0
+- Cooldown enforcement: rapid firing blocked, shot succeeds after cooldown expires
+- One attack input produces exactly one OnAttack event
+- Aim direction respected: aligned target hit, off-axis target untouched
+- Owner hierarchy safely ignored even when cast begins inside owner collider
+- Trigger volumes strictly ignored (QueryTriggerInteraction.Ignore)
+- Occlusion Case A: Owner ignored, Trigger ignored, Zombie damaged (10), Wall behind irrelevant
+- Occlusion Case B: Wall stops shot, Zombie behind wall receives zero damage
+- Occlusion Case C: Near Zombie damaged exactly once, Far Zombie receives zero damage (strictly no penetration)
+- Range limit: target beyond 25m receives zero damage
+- Gunner.prefab: Tag == "Player", CharacterController, PlayerMovement (6.0), PlayerAim, PlayerHealth (100), PlayerStats, PlayerExperience (100), PlayerAttack, PlayableCharacter, RifleWeapon, no MeleeWeapon or BowWeapon
+- Visual hierarchy: Visual, FacingIndicator, WeaponAnchor, RifleVisual, MuzzlePoint
+- Character_Gunner.asset: metadata valid, references Gunner.prefab, zero leaked combat math fields
+- Runtime PlayerSpawner instantiation of Gunner via PlayerSpawner.Spawn(Character_Gunner)
+- Dynamic explicit binding of CameraFollow, WaveManager, UpgradeManager, PlayerExperienceUI, and DungeonCompletionController to Gunner
+- Zombie attacks Gunner and Gunner takes damage via IDamageable (100 -> 90 HP)
+- Gunner fires rifle, damages and kills Zombie (5 shots = 50 HP)
+- Zombie death spawns ExperiencePickup, Gunner collects pickup and gains XP
+- Gunner level-up presents 3 upgrade choices, Damage upgrade applied successfully
+- Dungeon completion flow executes with Gunner and generates valid DungeonRunSummary
+- Warrior vertical slice non-regression: spawns and executes MeleeWeapon attack
+- Archer combat non-regression: spawns and fires BowWeapon arrow
 - Production Dungeon_Prototype.unity on disk retains Character_Warrior default and zero permanent verifiers
-- Warrior vertical slice non-regression: spawns and attacks with MeleeWeapon
 ```
 
 ## Known Issues
 
 ```text
-None. (Check 33 was an assertion timing bug in the verifier suite, resolved; production ArrowProjectile behavior verified 100% compliant).
+None.
 ```
 
 ## Next Task
 
 ```text
-Milestone 8.4 — Character System (Gunner)
+Milestone 8.5 — Character System (Character Selection UI & Integration)
 ```
 
 ## Latest Verified Commit
