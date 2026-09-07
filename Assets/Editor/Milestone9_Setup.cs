@@ -379,5 +379,19 @@ namespace DungeonRoguelite.Editor
 
             return btn;
         }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Run Gate 9.3 Verification")]
+        public static void RunGate9_3Verification()
+        {
+            Debug.Log("[GATE 9.3] Preparing Gate 9.3 verification...");
+            var scene = EditorSceneManager.OpenScene(DungeonPrototypeScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Gate9_3_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone9_3_Verifier>();
+
+            Debug.Log("[GATE 9.3] Entering Play Mode for automated verification...");
+            EditorApplication.EnterPlaymode();
+        }
     }
 }

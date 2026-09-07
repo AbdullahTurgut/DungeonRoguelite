@@ -231,6 +231,27 @@ namespace DungeonRoguelite.Dungeons
             Time.timeScale = 0f;
             isCompletionFinished = true;
 
+            // Persist dungeon campaign progression
+            string completedDungeonId = null;
+            if (waveManager != null && waveManager.ActiveDungeon != null)
+            {
+                completedDungeonId = waveManager.ActiveDungeon.Id;
+            }
+            else if (DungeonRunSession.HasSelection && DungeonRunSession.SelectedDungeon != null)
+            {
+                completedDungeonId = DungeonRunSession.SelectedDungeon.Id;
+            }
+            else
+            {
+                // Fallback for direct scene launch of Dungeon_Prototype
+                completedDungeonId = "dungeon_1";
+            }
+
+            if (!string.IsNullOrEmpty(completedDungeonId))
+            {
+                DungeonProgression.RecordDungeonCompleted(completedDungeonId);
+            }
+
             if (runStats != null)
             {
                 finalSummary = runStats.BuildSummary(playerExperience);
@@ -317,5 +338,18 @@ namespace DungeonRoguelite.Dungeons
                 playerDefeatController = defeat;
             }
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        /// <summary>
+        /// Resets completion state for automated testing suites.
+        /// </summary>
+        public void ResetCompletionForTesting()
+        {
+            hasCompleted = false;
+            isCompletionFinished = false;
+            isWaitingForUpgrades = false;
+            finalSummary = default;
+        }
+#endif
     }
 }
