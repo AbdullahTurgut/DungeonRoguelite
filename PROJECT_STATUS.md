@@ -736,7 +736,7 @@ Manual player-facing verification: confirmed GREEN across character selection re
 
 ```text
 Latest verified commit:
-09a03b0 feat: add character selection flow
+15ef55f feat: add character selection flow and gameplay QA improvements
 ```
 
 ---
@@ -855,5 +855,5 @@ Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)
 ## Latest Verified Commit
 
 ```text
-09a03b0 feat: add character selection flow
+15ef55f feat: add character selection flow and gameplay QA improvements
 ```
