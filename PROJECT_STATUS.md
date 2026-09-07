@@ -657,7 +657,7 @@ Manual player-facing verification: verified GREEN across Warrior, Archer, and Gu
 
 ```text
 Latest verified commit:
-8f308c1 docs: record verified commit hash in PROJECT_STATUS.md
+09a03b0 feat: add character selection flow
 ```
 
 ---
@@ -763,5 +763,5 @@ Milestone 9.1 — World Map & Multi-Dungeon Progression (Phase 9)
 ## Latest Verified Commit
 
 ```text
-8f308c1 docs: record verified commit hash in PROJECT_STATUS.md
+09a03b0 feat: add character selection flow
 ```
