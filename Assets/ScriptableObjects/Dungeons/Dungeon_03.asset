@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_03
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_3
+  displayName: "B\xF6l\xFCm 3: Mahzenin Derinlikleri"
+  description: "Mahzenin en karanl\u0131k k\xF6\u015Fesi. 4 dalga h\u0131zl\u0131
+    zombi ak\u0131n\u0131."
+  sceneName: Dungeon_03
+  requiredDungeonId: dungeon_2
+  waves:
+  - {fileID: 11400000, guid: 3e159b7051cb7ce40ac16b09cf9ba85c, type: 2}
+  - {fileID: 11400000, guid: 26a334e445aea8a4c94498f1b68936c2, type: 2}
+  - {fileID: 11400000, guid: b6191214d9351774483fe25f5b23e2d5, type: 2}
+  - {fileID: 11400000, guid: 0e1a68486d0955d40962157394d9e8b4, type: 2}
+  enemyHealthMultiplier: 1.2
+  enemyDamageMultiplier: 1.1
