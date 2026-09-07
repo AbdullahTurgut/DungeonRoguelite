@@ -13,8 +13,8 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 9: Dungeon Progression (Milestones 9.1–9.5 Complete)**  
-**NEXT UP — Phase 9 Manual QA / Player-Facing Campaign Verification (then Phase 10: Permanent Progression)**
+**APPROVED — Phase 9: Dungeon Progression (Core Flow Approved via Manual QA)**  
+**NEXT UP — Phase 9 Polish Pass (World Map Readability & Player Health UI)**
 
 Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), 8.5 (Character Selection UI & Integration), 9.1 (Data-Driven Dungeon Architecture), 9.2 (Run Lifecycle & Defeat Flow), 9.3 (Campaign Progression & Persistence), 9.4 (World Map Scene & Selection Flow), and 9.5 (Second Dungeon & Campaign Integration) are completed and verified.
 
@@ -393,18 +393,38 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
 
 ---
 
+# Phase 9 Manual QA Results & Immediate Polish Tasks
+
+## Manual QA Verification: CORE FLOW APPROVED (GREEN)
+
+Manual testing verified:
+- Character Selection -> World Map -> Dungeon 1 flow works seamlessly.
+- Selected character transfer (Warrior / Archer / Gunner) functions across scene transitions.
+- Dungeon entry and wave combat initialization work properly.
+- Defeat flow (YENİLDİN, YENİDEN DENE, HARİTAYA DÖN) functions correctly.
+- Gameplay loop is functioning correctly without regressions.
+- Core flow behavior approved; do not change core progression architecture.
+
+## Immediate Next Tasks: Phase 9 Polish Pass
+
+1. **World Map Readability Polish**:
+   - Selected dungeon card currently uses an overly strong bright fill.
+   - Title / description / status readability is weak.
+   - Keep card body dark.
+   - Use selected outline / border / accent highlight instead of a full bright fill.
+   - Improve text contrast and slightly increase description readability.
+
+2. **Player Health UI**:
+   - Gameplay currently lacks a visible player health bar.
+   - Add a simple event-driven player HP bar bound to `PlayerHealth`.
+   - Show current and max HP clearly (for example: `Can: 100 / 100`).
+   - Wire dynamic binding via `PlayerSpawner.OnPlayerSpawned`.
+
+---
+
 # Next Task
 
-**Phase 9 Manual QA / Player-Facing Campaign Verification**
-
-1. Run manual playtest of full campaign flow:
-   - Character Selection (Warrior / Archer / Gunner) -> START
-   - World Map (Dungeon 1 unlocked, Dungeon 2 locked) -> Enter Dungeon 1
-   - Dungeon 1 Defeat flow -> YENİDEN DENE & HARİTAYA DÖN
-   - Dungeon 1 Victory flow -> HARİTAYA DÖN
-   - World Map (Dungeon 1 completed, Dungeon 2 unlocked) -> Enter Dungeon 2
-   - Dungeon 2 (4 waves, darker atmosphere) -> Defeat & Victory flows
-2. Once manual playtest is approved, proceed to Phase 10 (Permanent Progression & Skill Trees).
+**Phase 9 Polish Pass (World Map Readability Polish & Player Health UI)**
 
 Deferred Work (Post-Milestone 8 / Future Phases):
 - **Enemy Corpse Cleanup**:
@@ -895,11 +915,11 @@ None.
 ## Next Task
 
 ```text
-Phase 9 Manual QA / Player-Facing Campaign Verification (Do NOT push)
+Phase 9 Polish Pass: World Map Readability Polish & Player Health UI (Do NOT push)
 ```
 
 ## Latest Verified Commit
 
 ```text
-da18a04 feat: add second dungeon and full campaign integration
+fef0b04 docs: record Phase 9 verified state
 ```
