@@ -167,20 +167,26 @@ namespace DungeonRoguelite.Dungeons
 
         /// <summary>
         /// Restores timeScale and reloads current active dungeon scene.
-        /// Preserves CharacterSelectionSession and DungeonRunSession across reload.
+        /// Preserves CharacterSelectionSession and rolls back RunProgressionSession to the entry checkpoint.
         /// </summary>
         public void RestartDungeon()
         {
+            // Discard failed-attempt gains by reverting to the dungeon entry checkpoint
+            DungeonRoguelite.Progression.RunProgressionSession.RestoreCheckpointOnRetry();
+
             Time.timeScale = 1f;
             Scene currentScene = SceneManager.GetActiveScene();
             SceneManager.LoadScene(currentScene.buildIndex);
         }
 
         /// <summary>
-        /// Restores timeScale and transitions back to WorldMap (falling back to CharacterSelection if not in build).
+        /// Restores timeScale, terminates the active campaign run, and transitions back to WorldMap.
         /// </summary>
         public void ReturnToWorldMap()
         {
+            // Defeat return to map ends current campaign run
+            DungeonRoguelite.Progression.RunProgressionSession.EndRun();
+
             Time.timeScale = 1f;
             string targetScene = Application.CanStreamedLevelBeLoaded("WorldMap") ? "WorldMap" : "CharacterSelection";
             SceneManager.LoadScene(targetScene);

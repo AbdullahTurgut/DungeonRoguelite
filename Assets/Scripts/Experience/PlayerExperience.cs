@@ -138,5 +138,24 @@ namespace DungeonRoguelite.Experience
 
             OnExperienceChanged?.Invoke(currentXP, xpToNextLevel);
         }
+
+        /// <summary>
+        /// Authoritative restoration contract for cross-dungeon campaign runs and retry checkpoints.
+        /// Sets runtime level and experience directly without generating level-up events or upgrade requests.
+        /// </summary>
+        /// <param name="level">Target level to restore.</param>
+        /// <param name="currentXp">Current XP progress toward the next level.</param>
+        /// <param name="totalXp">Cumulative run XP earned so far.</param>
+        public void RestoreState(int level, int currentXp, int totalXp)
+        {
+            currentLevel = Mathf.Max(1, level);
+            xpToNextLevel = CalculateRequiredXP(currentLevel);
+            currentXP = Mathf.Clamp(currentXp, 0, Mathf.Max(0, xpToNextLevel - 1));
+            totalXPEarned = Mathf.Max(0, totalXp);
+
+            // Notify UI listeners (PlayerExperienceUI) to immediately display restored state
+            OnExperienceChanged?.Invoke(currentXP, xpToNextLevel);
+            // NOTE: Strictly DOES NOT fire OnLevelUp to prevent duplicate upgrade prompts!
+        }
     }
 }

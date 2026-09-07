@@ -32,10 +32,12 @@ namespace DungeonRoguelite.Upgrades
         private bool isSelectionActive = false;
         private bool isResolvingSelection = false;
         private float previousTimeScale = 1f;
+        private readonly List<string> collectedUpgradeIds = new List<string>();
 
         public int PendingChoicesCount => pendingChoicesCount;
         public bool IsSelectionActive => isSelectionActive;
         public IReadOnlyList<UpgradeDefinition> AvailableUpgrades => availableUpgrades;
+        public IReadOnlyList<string> CollectedUpgradeIds => collectedUpgradeIds;
         public PlayerSpawner PlayerSpawner => playerSpawner;
         public PlayerExperience PlayerExperience => playerExperience;
         public PlayerStats PlayerStats => playerStats;
@@ -178,6 +180,11 @@ namespace DungeonRoguelite.Upgrades
             // Apply selected bonus to PlayerStats
             ApplyUpgradeToStats(upgrade);
 
+            if (!string.IsNullOrEmpty(upgrade.Id))
+            {
+                collectedUpgradeIds.Add(upgrade.Id);
+            }
+
             pendingChoicesCount--;
 
             if (pendingChoicesCount > 0)
@@ -228,6 +235,61 @@ namespace DungeonRoguelite.Upgrades
                     Debug.LogWarning($"[UpgradeManager] Unhandled upgrade type: {definition.UpgradeType}");
                     break;
             }
+        }
+
+        /// <summary>
+        /// Reconstructs temporary PlayerStats modifiers from recorded semantic upgrade IDs.
+        /// Operates without pausing gameplay or invoking upgrade selection UI.
+        /// </summary>
+        /// <param name="upgradeIds">Collection of stable upgrade string identifiers.</param>
+        public void ReconstructUpgrades(IEnumerable<string> upgradeIds)
+        {
+            if (playerStats == null)
+            {
+                ResolveReferences();
+            }
+
+            if (playerStats == null || upgradeIds == null)
+            {
+                return;
+            }
+
+            foreach (var id in upgradeIds)
+            {
+                if (string.IsNullOrEmpty(id)) continue;
+
+                var def = FindUpgradeDefinitionById(id);
+                if (def != null)
+                {
+                    ApplyUpgradeToStats(def);
+                    collectedUpgradeIds.Add(def.Id);
+                }
+                else
+                {
+                    Debug.LogWarning($"[UpgradeManager] Cannot reconstruct upgrade: ID '{id}' not found in pool.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Searches available upgrades for a matching unique ID.
+        /// </summary>
+        public UpgradeDefinition FindUpgradeDefinitionById(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return null;
+
+            if (availableUpgrades != null)
+            {
+                for (int i = 0; i < availableUpgrades.Length; i++)
+                {
+                    if (availableUpgrades[i] != null && string.Equals(availableUpgrades[i].Id, id, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return availableUpgrades[i];
+                    }
+                }
+            }
+
+            return null;
         }
 
         /// <summary>

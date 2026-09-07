@@ -252,6 +252,13 @@ namespace DungeonRoguelite.Dungeons
                 DungeonProgression.RecordDungeonCompleted(completedDungeonId);
             }
 
+            // Commit final victory progression into the active campaign run session
+            int finalLevel = playerExperience != null ? playerExperience.Level : 1;
+            int finalCurrentXP = playerExperience != null ? playerExperience.CurrentXP : 0;
+            int finalTotalXP = playerExperience != null ? playerExperience.TotalXPEarned : 0;
+            var finalUpgradeIds = upgradeManager != null ? upgradeManager.CollectedUpgradeIds : null;
+            DungeonRoguelite.Progression.RunProgressionSession.CommitDungeonVictory(finalLevel, finalCurrentXP, finalTotalXP, finalUpgradeIds);
+
             if (runStats != null)
             {
                 finalSummary = runStats.BuildSummary(playerExperience);

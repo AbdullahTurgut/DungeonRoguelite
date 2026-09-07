@@ -218,6 +218,9 @@ namespace DungeonRoguelite.UI
             // Commit selected character into session runtime carrier
             CharacterSelectionSession.SetSelection(currentSelection);
 
+            // Initialize fresh campaign run progression for the chosen character
+            DungeonRoguelite.Progression.RunProgressionSession.StartNewRun(currentSelection.Id);
+
             // Transition to gameplay scene
             SceneManager.LoadScene(targetSceneName);
         }

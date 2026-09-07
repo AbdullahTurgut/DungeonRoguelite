@@ -94,6 +94,31 @@ namespace DungeonRoguelite.Characters
             playable.SetCharacterDefinition(defToSpawn);
             activeCharacter = playable;
 
+            // Restore campaign run progression if an active run exists for this character
+            if (DungeonRoguelite.Progression.RunProgressionSession.HasActiveRun &&
+                DungeonRoguelite.Progression.RunProgressionSession.ValidateOwner(defToSpawn.Id))
+            {
+                var exp = playable.GetComponent<DungeonRoguelite.Experience.PlayerExperience>();
+                if (exp != null)
+                {
+                    exp.RestoreState(
+                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointLevel,
+                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointCurrentXP,
+                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointTotalXP);
+                }
+
+                var upgradeMgr = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.Upgrades.UpgradeManager>();
+                if (upgradeMgr != null)
+                {
+                    upgradeMgr.ReconstructUpgrades(DungeonRoguelite.Progression.RunProgressionSession.CheckpointUpgradeIds);
+                }
+            }
+            else
+            {
+                // Fallback / fresh run: initialize clean run state for this character
+                DungeonRoguelite.Progression.RunProgressionSession.StartNewRun(defToSpawn.Id);
+            }
+
             OnPlayerSpawned?.Invoke(activeCharacter);
             return activeCharacter;
         }
