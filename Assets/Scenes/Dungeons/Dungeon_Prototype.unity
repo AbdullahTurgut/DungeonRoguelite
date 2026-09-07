@@ -5266,6 +5266,8 @@ MonoBehaviour:
   titleText: {fileID: 457469698}
   restartButton: {fileID: 1322187404}
   returnToMapButton: {fileID: 175250236}
+  restartSubtitleText: {fileID: 0}
+  returnToMapSubtitleText: {fileID: 0}
 --- !u!114 &1554905397
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -10,7 +10,7 @@ namespace DungeonRoguelite.Player
     /// </summary>
     public class PlayerStats : MonoBehaviour
     {
-        [Header("Runtime Multipliers")]
+        [Header("Temporary Run Multipliers")]
         [Tooltip("Multiplicative modifier applied to base weapon damage (default: 1.0).")]
         [SerializeField] private float damageMultiplier = 1.0f;
 
@@ -20,9 +20,30 @@ namespace DungeonRoguelite.Player
         [Tooltip("Multiplicative modifier applied to base movement speed (default: 1.0).")]
         [SerializeField] private float movementSpeedMultiplier = 1.0f;
 
-        public float DamageMultiplier => damageMultiplier;
-        public float AttackSpeedMultiplier => attackSpeedMultiplier;
-        public float MovementSpeedMultiplier => movementSpeedMultiplier;
+        [Header("Permanent Multipliers (Progression Foundations)")]
+        [Tooltip("Permanent modifier foundation (default: 1.0).")]
+        [SerializeField] private float permanentDamageMultiplier = 1.0f;
+
+        [Tooltip("Permanent modifier foundation (default: 1.0).")]
+        [SerializeField] private float permanentAttackSpeedMultiplier = 1.0f;
+
+        [Tooltip("Permanent modifier foundation (default: 1.0).")]
+        [SerializeField] private float permanentMovementSpeedMultiplier = 1.0f;
+
+        // Temporary Run Multipliers
+        public float TemporaryDamageMultiplier => damageMultiplier;
+        public float TemporaryAttackSpeedMultiplier => attackSpeedMultiplier;
+        public float TemporaryMovementSpeedMultiplier => movementSpeedMultiplier;
+
+        // Permanent Multipliers
+        public float PermanentDamageMultiplier => permanentDamageMultiplier;
+        public float PermanentAttackSpeedMultiplier => permanentAttackSpeedMultiplier;
+        public float PermanentMovementSpeedMultiplier => permanentMovementSpeedMultiplier;
+
+        // Effective Multipliers: Base * Permanent * Temporary
+        public float DamageMultiplier => damageMultiplier * permanentDamageMultiplier;
+        public float AttackSpeedMultiplier => attackSpeedMultiplier * permanentAttackSpeedMultiplier;
+        public float MovementSpeedMultiplier => movementSpeedMultiplier * permanentMovementSpeedMultiplier;
 
         /// <summary>
         /// Fired whenever any runtime stat modifier changes.
@@ -44,6 +65,20 @@ namespace DungeonRoguelite.Player
             if (damageMultiplier < 0f) damageMultiplier = 0f;
             if (attackSpeedMultiplier < 0.01f) attackSpeedMultiplier = 0.01f;
             if (movementSpeedMultiplier < 0f) movementSpeedMultiplier = 0f;
+            if (permanentDamageMultiplier < 0f) permanentDamageMultiplier = 1f;
+            if (permanentAttackSpeedMultiplier < 0.01f) permanentAttackSpeedMultiplier = 1f;
+            if (permanentMovementSpeedMultiplier < 0f) permanentMovementSpeedMultiplier = 1f;
+        }
+
+        /// <summary>
+        /// Configures permanent stat multiplier foundations.
+        /// </summary>
+        public void SetPermanentMultipliers(float dmg = 1f, float atkSpd = 1f, float spd = 1f)
+        {
+            permanentDamageMultiplier = dmg > 0f ? dmg : 1f;
+            permanentAttackSpeedMultiplier = atkSpd > 0f ? atkSpd : 1f;
+            permanentMovementSpeedMultiplier = spd > 0f ? spd : 1f;
+            OnStatsChanged?.Invoke();
         }
 
         /// <summary>
