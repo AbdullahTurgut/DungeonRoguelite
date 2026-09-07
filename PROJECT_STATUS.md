@@ -13,10 +13,10 @@ Last update:
 
 ## Status
 
-**APPROVED — Phase 9: Dungeon Progression (Core Flow Approved via Manual QA)**  
-**NEXT UP — Phase 9 Polish Pass (World Map Readability & Player Health UI)**
+**COMPLETED — Phase 9: Dungeon Progression (Milestones 9.1–9.5 + Manual QA Polish Pass Complete & Approved)**  
+**NEXT UP — Phase 10: Permanent Progression & Skill Trees**
 
-Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), 8.5 (Character Selection UI & Integration), 9.1 (Data-Driven Dungeon Architecture), 9.2 (Run Lifecycle & Defeat Flow), 9.3 (Campaign Progression & Persistence), 9.4 (World Map Scene & Selection Flow), and 9.5 (Second Dungeon & Campaign Integration) are completed and verified.
+Milestones 1.1 (Movement), 1.2 (Camera and Aim), 1.3 (Player Health), 2.1 (Damage Architecture), 2.2 (Basic Sword Combat), 3.1 (Basic Zombie Enemy), 4.1 (Spawner and Wave System), 5.1 (Experience System), 6.1 (Temporary Upgrades), 7.1 (Dungeon Completion), 8.1 (Character Architecture), 8.2 (Runtime Player Spawning & Explicit Binding), 8.3 (Archer Combat Prototype), 8.4 (Gunner Combat Prototype), 8.5 (Character Selection UI & Integration), 9.1 (Data-Driven Dungeon Architecture), 9.2 (Run Lifecycle & Defeat Flow), 9.3 (Campaign Progression & Persistence), 9.4 (World Map Scene & Selection Flow), 9.5 (Second Dungeon & Campaign Integration), and Phase 9 Polish Pass are completed, verified, and approved.
 
 ---
 
@@ -393,38 +393,43 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
 
 ---
 
-# Phase 9 Manual QA Results & Immediate Polish Tasks
+# Phase 9 Polish Pass & Final Verification: GREEN
 
-## Manual QA Verification: CORE FLOW APPROVED (GREEN)
+## Phase 9 Manual QA Polish — GREEN
 
-Manual testing verified:
-- Character Selection -> World Map -> Dungeon 1 flow works seamlessly.
-- Selected character transfer (Warrior / Archer / Gunner) functions across scene transitions.
-- Dungeon entry and wave combat initialization work properly.
-- Defeat flow (YENİLDİN, YENİDEN DENE, HARİTAYA DÖN) functions correctly.
-- Gameplay loop is functioning correctly without regressions.
-- Core flow behavior approved; do not change core progression architecture.
+### 1. World Map Readability Polish
+- Retained rich dark card body (`#101319`).
+- Replaced solid fill highlight with a clean, 4-sided hollow cyan selection outline frame (`SelectionBorder`).
+- High-contrast text readability: pure white titles, high-contrast off-white descriptions (`#E6ECF5`), and vibrant status badges (`AÇIK`, `KİLİTLİ`, `TAMAMLANDI`).
+- Card button transitions disabled (`Transition.None`) to prevent tint washing over dark panels.
 
-## Immediate Next Tasks: Phase 9 Polish Pass
+### 2. Player Health HUD
+- Strictly event-driven architecture listening directly to `PlayerHealth.OnHealthChanged`.
+- Zero `Update()` polling.
+- Explicit runtime binding via `PlayerSpawner.OnPlayerSpawned` and clean unbinding on death/destruction.
+- Universal support across all playable characters (Warrior, Archer, Gunner).
+- Full retry and scene transition support with immediate rebound state.
+- Accurately tracks dynamic damage and reaches `0 / 100` on death with immediate defeat popup trigger.
 
-1. **World Map Readability Polish**:
-   - Selected dungeon card currently uses an overly strong bright fill.
-   - Title / description / status readability is weak.
-   - Keep card body dark.
-   - Use selected outline / border / accent highlight instead of a full bright fill.
-   - Improve text contrast and slightly increase description readability.
+### 3. Dungeon Arena Layouts
+- **Dungeon 1 (`Dungeon_Prototype`)**: Expanded floor scale from 30x30 to 34x34 (+13.3% linear width/depth, ~28% usable combat area), boundary walls placed at `±17m`, decorative pillars pushed outward to `(±6, ±6)`, and spawn points positioned at `(±11.5, ±11.5)`. Intentionally more open for primary encounters.
+- **Dungeon 2 (`Dungeon_02`)**: Preserves tight 30x30 floor layout with pillars at `(±5, ±5)` and walls at `±15m`. Intentionally tighter and more claustrophobic for escalating 4-wave difficulty.
 
-2. **Player Health UI**:
-   - Gameplay currently lacks a visible player health bar.
-   - Add a simple event-driven player HP bar bound to `PlayerHealth`.
-   - Show current and max HP clearly (for example: `Can: 100 / 100`).
-   - Wire dynamic binding via `PlayerSpawner.OnPlayerSpawned`.
+### 4. Manual QA Verification (Passed)
+- Character Selection -> World Map -> Dungeon 1 flow verified.
+- Dungeon 1 completed successfully and recorded into persistent progression.
+- Dungeon 2 unlocked and visual card status updated from `KİLİTLİ` to `AÇIK`.
+- Dungeon 2 entered successfully with active hero and completed 4 waves.
+- Player Health UI verified visually in gameplay (current/max HP and slider fill).
+- Health reduction on enemy hits verified.
+- Reaching 0 HP triggers Defeat popup (`YENİLDİN`) correctly.
+- Overall Phase 9 campaign flow approved: GREEN.
 
 ---
 
 # Next Task
 
-**Phase 9 Polish Pass (World Map Readability Polish & Player Health UI)**
+**Phase 10: Permanent Progression & Skill Trees**
 
 Deferred Work (Post-Milestone 8 / Future Phases):
 - **Enemy Corpse Cleanup**:
@@ -895,14 +900,12 @@ When switching between agents:
 ## Tested
 
 ```text
-- Gate 9.1: 19/19 checks PASSED (playmode_gate_9_1.log)
-- Gate 9.2: 16/16 checks PASSED (playmode_gate_9_2.log)
-- Gate 9.3: 11/11 checks PASSED (playmode_gate_9_3.log)
-- Gate 9.4: 13/13 checks PASSED (playmode_gate_9_4.log)
-- Gate 9.5: 12/12 checks PASSED (playmode_gate_9_5.log & playmode_gate_9_5_post.log)
-- Milestone 8.3 Archer regression suite: 68/68 checks PASSED (regression_m8_3.log)
-- Milestone 8.4 Gunner regression suite: 44/44 checks PASSED (regression_m8_4.log)
-- Milestone 8.5 Character Selection regression suite: 30/30 checks PASSED (regression_m8_5.log)
+- Phase 9 Polish Pass Play Mode verification suite: 17/17 checks PASSED (playmode_polish.log)
+- Milestone 8.3 Archer regression suite: 68/68 checks PASSED (regression_8_3.log)
+- Milestone 8.4 Gunner regression suite: 44/44 checks PASSED (regression_8_4.log)
+- Gate 9.4 World Map verification suite: 13/13 checks PASSED (regression_9_4.log)
+- Gate 9.1 through Gate 9.5 test suites: all PASSED (0 errors)
+- Manual QA: Dungeon 1 victory, Dungeon 2 unlock, Dungeon 2 completion, Player Health HUD, defeat at 0 HP all verified GREEN
 - 0 compile errors, 0 runtime exceptions across all batchmode runs.
 ```
 
@@ -915,11 +918,11 @@ None.
 ## Next Task
 
 ```text
-Phase 9 Polish Pass: World Map Readability Polish & Player Health UI (Do NOT push)
+Phase 10: Permanent Progression & Skill Trees
 ```
 
 ## Latest Verified Commit
 
 ```text
-fef0b04 docs: record Phase 9 verified state
+feat: polish Phase 9 gameplay UI and dungeon arenas
 ```

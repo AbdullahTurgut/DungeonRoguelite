@@ -86,11 +86,13 @@ namespace DungeonRoguelite.UI
             if (titleText != null)
             {
                 titleText.text = dungeon != null ? dungeon.DisplayName : string.Empty;
+                titleText.color = Color.white;
             }
 
             if (descriptionText != null)
             {
                 descriptionText.text = dungeon != null ? dungeon.Description : string.Empty;
+                descriptionText.color = unlocked ? new Color(0.90f, 0.93f, 0.97f, 1f) : new Color(0.72f, 0.76f, 0.82f, 1f);
             }
 
             if (lockOverlay != null)
@@ -103,17 +105,17 @@ namespace DungeonRoguelite.UI
                 if (completed)
                 {
                     statusText.text = "TAMAMLANDI";
-                    statusText.color = new Color(0.3f, 0.9f, 0.3f, 1f);
+                    statusText.color = new Color(0.35f, 0.95f, 0.45f, 1f);
                 }
                 else if (unlocked)
                 {
                     statusText.text = "AÇIK";
-                    statusText.color = new Color(0.4f, 0.8f, 1f, 1f);
+                    statusText.color = new Color(0.25f, 0.85f, 1f, 1f);
                 }
                 else
                 {
                     statusText.text = "KİLİTLİ";
-                    statusText.color = new Color(0.8f, 0.3f, 0.3f, 1f);
+                    statusText.color = new Color(0.95f, 0.35f, 0.35f, 1f);
                 }
             }
         }
