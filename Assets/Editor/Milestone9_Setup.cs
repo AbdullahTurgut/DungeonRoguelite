@@ -4,8 +4,11 @@ using System.IO;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 using DungeonRoguelite.Characters;
 using DungeonRoguelite.Dungeons;
+using DungeonRoguelite.UI;
 using DungeonRoguelite.Waves;
 
 namespace DungeonRoguelite.Editor
@@ -133,19 +136,248 @@ namespace DungeonRoguelite.Editor
             SetupGate9_1();
 
             var scene = EditorSceneManager.OpenScene(DungeonPrototypeScenePath, OpenSceneMode.Single);
-
-            // Clean any existing verifiers
-            var existingVerifiers = UnityEngine.Object.FindObjectsByType<DungeonRoguelite.Tests.Milestone9_1_Verifier>(FindObjectsSortMode.None);
-            foreach (var v in existingVerifiers)
-            {
-                UnityEngine.Object.DestroyImmediate(v.gameObject);
-            }
+            CleanAllVerifiers();
 
             var verifierGo = new GameObject("Gate9_1_VerifierRunner");
             verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone9_1_Verifier>();
 
             Debug.Log("[GATE 9.1] Entering Play Mode for automated verification...");
             EditorApplication.EnterPlaymode();
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Setup Gate 9.2 (Defeat Flow)")]
+        public static void SetupGate9_2()
+        {
+            Debug.Log("[Milestone 9.2 Setup] Configuring PlayerDefeatController and Defeat UI in Dungeon_Prototype...");
+            var scene = EditorSceneManager.OpenScene(DungeonPrototypeScenePath, OpenSceneMode.Single);
+
+            // 1. Clean existing verifiers
+            CleanAllVerifiers();
+
+            // 2. Resolve scene objects
+            var waveManager = UnityEngine.Object.FindFirstObjectByType<WaveManager>();
+            var playerSpawner = UnityEngine.Object.FindFirstObjectByType<PlayerSpawner>();
+            var completionController = UnityEngine.Object.FindFirstObjectByType<DungeonCompletionController>();
+
+            var runControllersGo = GameObject.Find("RunControllers");
+            if (runControllersGo == null)
+            {
+                runControllersGo = new GameObject("RunControllers");
+            }
+
+            // 3. Setup PlayerDefeatController on RunControllers
+            var defeatController = runControllersGo.GetComponent<PlayerDefeatController>();
+            if (defeatController == null)
+            {
+                defeatController = runControllersGo.AddComponent<PlayerDefeatController>();
+            }
+            defeatController.SetReferences(waveManager, playerSpawner, completionController);
+
+            var sDefeat = new SerializedObject(defeatController);
+            sDefeat.FindProperty("waveManager").objectReferenceValue = waveManager;
+            sDefeat.FindProperty("playerSpawner").objectReferenceValue = playerSpawner;
+            sDefeat.FindProperty("completionController").objectReferenceValue = completionController;
+            sDefeat.ApplyModifiedProperties();
+            EditorUtility.SetDirty(defeatController);
+
+            // 4. Update DungeonCompletionController with defeatController
+            if (completionController != null)
+            {
+                var sComp = new SerializedObject(completionController);
+                sComp.FindProperty("playerDefeatController").objectReferenceValue = defeatController;
+                sComp.ApplyModifiedProperties();
+                EditorUtility.SetDirty(completionController);
+            }
+
+            // 5. Canvas resolution
+            var canvasGo = GameObject.Find("Canvas");
+            if (canvasGo == null)
+            {
+                Debug.LogError("[Milestone 9.2 Setup] Canvas not found in scene!");
+                return;
+            }
+
+            // 6. Setup DefeatPanel under Canvas
+            var defeatPanelTransform = canvasGo.transform.Find("DefeatPanel");
+            GameObject defeatPanelGo;
+            if (defeatPanelTransform == null)
+            {
+                defeatPanelGo = new GameObject("DefeatPanel");
+                defeatPanelGo.transform.SetParent(canvasGo.transform, false);
+
+                var rect = defeatPanelGo.AddComponent<RectTransform>();
+                rect.anchorMin = Vector2.zero;
+                rect.anchorMax = Vector2.one;
+                rect.sizeDelta = Vector2.zero;
+                rect.anchoredPosition = Vector2.zero;
+
+                var img = defeatPanelGo.AddComponent<Image>();
+                img.color = new Color(0.04f, 0.04f, 0.04f, 0.90f);
+            }
+            else
+            {
+                defeatPanelGo = defeatPanelTransform.gameObject;
+            }
+
+            // Title Text
+            var titleTMP = CreateOrGetText(defeatPanelGo, "Title", "YENİLDİN", new Vector2(0f, 100f), new Vector2(400f, 70f), 48f, new Color(0.95f, 0.25f, 0.25f, 1f));
+
+            // Restart Button
+            var restartBtn = CreateButton(defeatPanelGo, "RestartButton", "YENİDEN DENE", new Vector2(0f, 0f), new Vector2(280f, 50f));
+
+            // Return to Map Button
+            var returnToMapBtn = CreateButton(defeatPanelGo, "MapButton", "HARİTAYA DÖN", new Vector2(0f, -65f), new Vector2(280f, 50f));
+
+            // Setup PlayerDefeatUI on Canvas
+            var defeatUI = canvasGo.GetComponent<PlayerDefeatUI>();
+            if (defeatUI == null)
+            {
+                defeatUI = canvasGo.AddComponent<PlayerDefeatUI>();
+            }
+            defeatUI.SetReferences(defeatController, defeatPanelGo, titleTMP, restartBtn, returnToMapBtn);
+
+            var sDefeatUI = new SerializedObject(defeatUI);
+            sDefeatUI.FindProperty("defeatController").objectReferenceValue = defeatController;
+            sDefeatUI.FindProperty("panelRoot").objectReferenceValue = defeatPanelGo;
+            sDefeatUI.FindProperty("titleText").objectReferenceValue = titleTMP;
+            sDefeatUI.FindProperty("restartButton").objectReferenceValue = restartBtn;
+            sDefeatUI.FindProperty("returnToMapButton").objectReferenceValue = returnToMapBtn;
+            sDefeatUI.ApplyModifiedProperties();
+            EditorUtility.SetDirty(defeatUI);
+
+            // Defeat panel hidden by default
+            defeatPanelGo.SetActive(false);
+
+            // 7. Update DungeonCompletePanel with MapButton
+            var completePanelTransform = canvasGo.transform.Find("DungeonCompletePanel");
+            if (completePanelTransform != null)
+            {
+                var completePanelGo = completePanelTransform.gameObject;
+                var compRect = completePanelGo.GetComponent<RectTransform>();
+                if (compRect != null)
+                {
+                    compRect.sizeDelta = new Vector2(600f, 530f);
+                }
+
+                var existingRestartTransform = completePanelGo.transform.Find("RestartButton");
+                if (existingRestartTransform != null)
+                {
+                    var rRect = existingRestartTransform.GetComponent<RectTransform>();
+                    if (rRect != null)
+                    {
+                        rRect.anchoredPosition = new Vector2(0f, -130f);
+                    }
+                }
+
+                var mapBtnComplete = CreateButton(completePanelGo, "MapButton", "HARİTAYA DÖN", new Vector2(0f, -195f), new Vector2(250f, 50f));
+
+                var completeUI = canvasGo.GetComponent<DungeonCompleteUI>();
+                if (completeUI != null)
+                {
+                    var sCompleteUI = new SerializedObject(completeUI);
+                    sCompleteUI.FindProperty("returnToMapButton").objectReferenceValue = mapBtnComplete;
+                    sCompleteUI.ApplyModifiedProperties();
+                    EditorUtility.SetDirty(completeUI);
+                }
+            }
+
+            EditorSceneManager.SaveScene(scene, DungeonPrototypeScenePath);
+            Debug.Log("[Milestone 9.2 Setup] Gate 9.2 setup complete. Clean scene saved.");
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 9/Run Gate 9.2 Verification")]
+        public static void RunGate9_2Verification()
+        {
+            Debug.Log("[GATE 9.2] Running setup before verification...");
+            SetupGate9_2();
+
+            var scene = EditorSceneManager.OpenScene(DungeonPrototypeScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Gate9_2_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone9_2_Verifier>();
+
+            Debug.Log("[GATE 9.2] Entering Play Mode for automated verification...");
+            EditorApplication.EnterPlaymode();
+        }
+
+        public static void CleanAllVerifiers()
+        {
+            var oldVerifiers = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var mb in oldVerifiers)
+            {
+                if (mb != null && mb.GetType().Name.Contains("Verifier"))
+                {
+                    UnityEngine.Object.DestroyImmediate(mb.gameObject);
+                }
+            }
+        }
+
+        private static TextMeshProUGUI CreateOrGetText(GameObject container, string name, string text, Vector2 pos, Vector2 size, float fontSize, Color color)
+        {
+            var t = container.transform.Find(name);
+            GameObject go = t != null ? t.gameObject : new GameObject(name);
+            go.transform.SetParent(container.transform, false);
+
+            var rect = go.GetComponent<RectTransform>();
+            if (rect == null) rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = pos;
+            rect.sizeDelta = size;
+
+            var tmp = go.GetComponent<TextMeshProUGUI>();
+            if (tmp == null) tmp = go.AddComponent<TextMeshProUGUI>();
+            tmp.text = text;
+            tmp.fontSize = fontSize;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = color;
+            return tmp;
+        }
+
+        private static Button CreateButton(GameObject parent, string name, string label, Vector2 pos, Vector2 size)
+        {
+            var existing = parent.transform.Find(name);
+            GameObject btnGo = existing != null ? existing.gameObject : new GameObject(name);
+            btnGo.transform.SetParent(parent.transform, false);
+
+            var rect = btnGo.GetComponent<RectTransform>();
+            if (rect == null) rect = btnGo.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = pos;
+            rect.sizeDelta = size;
+
+            var img = btnGo.GetComponent<Image>();
+            if (img == null) img = btnGo.AddComponent<Image>();
+            img.color = new Color(0.2f, 0.2f, 0.2f, 0.95f);
+
+            var btn = btnGo.GetComponent<Button>();
+            if (btn == null) btn = btnGo.AddComponent<Button>();
+
+            var labelTransform = btnGo.transform.Find("Text");
+            GameObject labelGo = labelTransform != null ? labelTransform.gameObject : new GameObject("Text");
+            labelGo.transform.SetParent(btnGo.transform, false);
+
+            var labelRect = labelGo.GetComponent<RectTransform>();
+            if (labelRect == null) labelRect = labelGo.AddComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.sizeDelta = Vector2.zero;
+            labelRect.anchoredPosition = Vector2.zero;
+
+            var tmp = labelGo.GetComponent<TextMeshProUGUI>();
+            if (tmp == null) tmp = labelGo.AddComponent<TextMeshProUGUI>();
+            tmp.text = label;
+            tmp.fontSize = 20f;
+            tmp.fontStyle = FontStyles.Bold;
+            tmp.alignment = TextAlignmentOptions.Center;
+            tmp.color = Color.white;
+
+            return btn;
         }
     }
 }

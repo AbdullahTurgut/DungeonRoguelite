@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using DungeonRoguelite.Dungeons;
@@ -37,6 +37,9 @@ namespace DungeonRoguelite.UI
         [Tooltip("Button to restart the dungeon.")]
         [SerializeField] private Button restartButton;
 
+        [Tooltip("Button to return to the world map.")]
+        [SerializeField] private Button returnToMapButton;
+
         public GameObject PanelRoot => panelRoot;
         public TextMeshProUGUI TitleText => titleText;
         public TextMeshProUGUI TimeText => timeText;
@@ -44,6 +47,7 @@ namespace DungeonRoguelite.UI
         public TextMeshProUGUI LevelText => levelText;
         public TextMeshProUGUI XPText => xpText;
         public Button RestartButton => restartButton;
+        public Button ReturnToMapButton => returnToMapButton;
 
         private void Awake()
         {
@@ -58,6 +62,12 @@ namespace DungeonRoguelite.UI
             {
                 restartButton.onClick.RemoveListener(OnRestartButtonClicked);
                 restartButton.onClick.AddListener(OnRestartButtonClicked);
+            }
+
+            if (returnToMapButton != null)
+            {
+                returnToMapButton.onClick.RemoveListener(OnReturnToMapButtonClicked);
+                returnToMapButton.onClick.AddListener(OnReturnToMapButtonClicked);
             }
         }
 
@@ -82,6 +92,11 @@ namespace DungeonRoguelite.UI
             if (restartButton != null)
             {
                 restartButton.onClick.RemoveListener(OnRestartButtonClicked);
+            }
+
+            if (returnToMapButton != null)
+            {
+                returnToMapButton.onClick.RemoveListener(OnReturnToMapButtonClicked);
             }
         }
 
@@ -137,6 +152,19 @@ namespace DungeonRoguelite.UI
             }
         }
 
+        private void OnReturnToMapButtonClicked()
+        {
+            if (completionController == null)
+            {
+                ResolveReferences();
+            }
+
+            if (completionController != null)
+            {
+                completionController.ReturnToWorldMap();
+            }
+        }
+
         public void SetReferences(
             DungeonCompletionController controller,
             GameObject root,
@@ -145,7 +173,8 @@ namespace DungeonRoguelite.UI
             TextMeshProUGUI enemies,
             TextMeshProUGUI level,
             TextMeshProUGUI xp,
-            Button restartBtn)
+            Button restartBtn,
+            Button returnBtn = null)
         {
             completionController = controller;
             panelRoot = root;
@@ -155,6 +184,7 @@ namespace DungeonRoguelite.UI
             levelText = level;
             xpText = xp;
             restartButton = restartBtn;
+            returnToMapButton = returnBtn;
         }
     }
 }

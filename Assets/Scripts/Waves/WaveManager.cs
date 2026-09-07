@@ -17,7 +17,8 @@ namespace DungeonRoguelite.Waves
         Spawning,
         WaveActive,
         WaveCompleted,
-        DungeonCompleted
+        DungeonCompleted,
+        Inactive
     }
 
     /// <summary>
@@ -524,6 +525,16 @@ namespace DungeonRoguelite.Waves
             {
                 ConfigureFromDungeon(DungeonRunSession.SelectedDungeon);
             }
+        }
+
+        /// <summary>
+        /// Immediately halts wave progression, stops active spawning and transition coroutines,
+        /// and sets the state to Inactive. Used upon player defeat to prevent further wave events.
+        /// </summary>
+        public void HaltDungeon()
+        {
+            CleanupSubscriptionsAndRoutines();
+            currentState = WaveState.Inactive;
         }
 
         private void CleanupSubscriptionsAndRoutines()

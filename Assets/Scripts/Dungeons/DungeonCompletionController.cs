@@ -25,6 +25,9 @@ namespace DungeonRoguelite.Dungeons
         [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
         [SerializeField] private PlayerSpawner playerSpawner;
 
+        [Tooltip("Optional reference to the PlayerDefeatController for mutual exclusion.")]
+        [SerializeField] private PlayerDefeatController playerDefeatController;
+
         private bool hasCompleted = false;
         private bool isWaitingForUpgrades = false;
         private bool isCompletionFinished = false;
@@ -36,6 +39,7 @@ namespace DungeonRoguelite.Dungeons
         public DungeonRunSummary FinalSummary => finalSummary;
         public PlayerSpawner PlayerSpawner => playerSpawner;
         public PlayerExperience PlayerExperience => playerExperience;
+        public PlayerDefeatController PlayerDefeatController => playerDefeatController;
 
         /// <summary>
         /// Fired when all XP pickups and pending upgrades are resolved,
@@ -129,16 +133,29 @@ namespace DungeonRoguelite.Dungeons
             {
                 playerExperience = FindFirstObjectByType<PlayerExperience>();
             }
+
+            if (playerDefeatController == null)
+            {
+                playerDefeatController = FindFirstObjectByType<PlayerDefeatController>();
+            }
         }
 
         /// <summary>
         /// Handles the dungeon completed notification from WaveManager.
         /// Guaranteed single-fire. Resolves any remaining XP pickups and sequences upgrade UI.
+        /// Enforces mutual exclusion with PlayerDefeatController.
         /// </summary>
         public void HandleWaveManagerCompletion()
         {
             if (hasCompleted)
             {
+                return;
+            }
+
+            // Mutual exclusion: if player has already been defeated, victory is suppressed
+            if (playerDefeatController != null && playerDefeatController.IsDefeated)
+            {
+                Debug.Log("[DungeonCompletionController] Victory suppressed: Player is already defeated.");
                 return;
             }
 
@@ -279,12 +296,26 @@ namespace DungeonRoguelite.Dungeons
             SceneManager.LoadScene(currentScene.buildIndex);
         }
 
-        public void SetReferences(WaveManager wave, UpgradeManager upgrade, DungeonRunStats stats, PlayerExperience exp)
+        /// <summary>
+        /// Restores normal time scale and transitions back to WorldMap (falling back to CharacterSelection if not in build).
+        /// </summary>
+        public void ReturnToWorldMap()
+        {
+            Time.timeScale = 1f;
+            string targetScene = Application.CanStreamedLevelBeLoaded("WorldMap") ? "WorldMap" : "CharacterSelection";
+            SceneManager.LoadScene(targetScene);
+        }
+
+        public void SetReferences(WaveManager wave, UpgradeManager upgrade, DungeonRunStats stats, PlayerExperience exp, PlayerDefeatController defeat = null)
         {
             waveManager = wave;
             upgradeManager = upgrade;
             runStats = stats;
             playerExperience = exp;
+            if (defeat != null)
+            {
+                playerDefeatController = defeat;
+            }
         }
     }
 }
