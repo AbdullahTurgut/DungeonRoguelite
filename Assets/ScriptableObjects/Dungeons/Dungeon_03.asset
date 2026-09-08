@@ -25,3 +25,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 0e1a68486d0955d40962157394d9e8b4, type: 2}
   enemyHealthMultiplier: 1.2
   enemyDamageMultiplier: 1.1
+  dungeonType: 0
