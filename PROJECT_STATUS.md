@@ -3,9 +3,9 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 10 (Campaign Run Progression & Scaling, Milestones 10.1–10.5) implemented and verified across all gates.
-- RunProgressionSession with commit/checkpoint semantics, data-driven enemy scaling (D1, D2, D3), defeat rollback, playable Dungeon 3, and PlayerStats progression foundations integrated.
-- 100% green automated suites for Gates 10.1 (11/11), 10.2 (7/7), 10.3 (5/5), 10.4 (5/5), 10.5 (10/10), and regressions for Gate 9.4 (13/13) and Phase 9 Polish (17/17).
+- Phase 10 (Campaign Run Progression & Scaling, Milestones 10.1–10.5) completely implemented and verified across all gates.
+- RunProgressionSession with commit/checkpoint semantics, data-driven enemy scaling (D1, D2, D3), defeat rollback, playable Dungeon 3, Warrior melee reach tuned to 2.5m, chapter/boss data foundations, and PlayerStats progression foundations integrated.
+- 100% green automated suites for Gates 10.1 (11/11), 10.2 (15/15), 10.3 (5/5), 10.4 (5/5), 10.5 (11/11), and full sequential regression (47/47 checks passed).
 
 ---
 
@@ -914,13 +914,12 @@ When switching between agents:
 
 ```text
 - Gate 10.1 Play Mode Verification: 11/11 checks PASSED (Commit/checkpoint, silent restoration, character change reset).
-- Gate 10.2 Play Mode Verification: 7/7 checks PASSED (Enemy scaling math, instance scaling without asset mutation).
-- Gate 10.3 Play Mode Verification: 5/5 checks PASSED (Defeat retry rollback, map return end run, Turkish UI subtitles).
-- Gate 10.4 Play Mode Verification: 5/5 checks PASSED (Dungeon 3 playable, 4 waves, 5 scenes registered in build settings).
-- Gate 10.5 Play Mode Verification: 10/10 checks PASSED (PlayerStats 3-tier layering, session decoupling invariants, zero HP in session).
-- Gate 9.4 World Map regression: 13/13 checks PASSED.
-- Phase 9 Polish regression: 17/17 checks PASSED.
-- 0 compile errors, 0 runtime exceptions across all batchmode test runs.
+- Gate 10.2 Play Mode Verification: 15/15 checks PASSED (Enemy scaling math, instance scaling without asset mutation, Warrior 2.5m melee reach, weapon arc/facing isolation).
+- Gate 10.3 Play Mode Verification: 5/5 checks PASSED (Defeat retry rollback, map return end run, Turkish UI subtitles, direct launch neutrality).
+- Gate 10.4 Play Mode Verification: 5/5 checks PASSED (Dungeon 3 playable, 4 waves, 5 scenes registered in build settings, full D1->D2->D3 run continuity).
+- Gate 10.5 Play Mode Verification: 11/11 checks PASSED (PlayerStats 3-tier layering, session decoupling invariants, zero HP in session, Boss/Chapter classification foundation).
+- Full Phase 10 Sequential Regression: 47/47 checks PASSED back-to-back in Unity batchmode with 0 errors and 0 warnings.
+- 0 compile errors, 0 runtime exceptions across all test suites.
 ```
 
 ## Manual QA Verification Plan (For User)
@@ -950,6 +949,12 @@ When switching between agents:
    - In any dungeon, die and click "HARİTAYA DÖN".
    - From World Map, re-enter Dungeon 1.
    - Verify the character starts a fresh run at Level 1 with 0 XP and 0 upgrades.
+
+4. Warrior Melee Reach (2.5m Reach Feel Check):
+   - Select Warrior from CharacterSelection.
+   - Enter Dungeon 1.
+   - Test sword swing spacing against approaching zombies.
+   - Verify sword connects at comfortable spacing without requiring point-blank collision, maintaining clean hit confirmation.
 ```
 
 ## Known Issues
@@ -961,11 +966,11 @@ None.
 ## Next Task
 
 ```text
-Phase 11: Permanent Progression & Meta Trees
+Awaiting User Manual QA confirmation for Phase 10, then Phase 11: Permanent Progression & Meta Trees.
 ```
 
 ## Latest Verified Commit
 
 ```text
-c144210 feat: add Phase 10 progression foundations
+98424bf feat: establish progression foundations and architecture invariants (Gate 10.5)
 ```

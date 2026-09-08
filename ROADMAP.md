@@ -268,10 +268,11 @@ Implemented:
   - Progression committed strictly on victory; entry checkpoint restored on defeat retry; run ended on map return
   - Full health restored on entry/retry (health is never part of run progression)
   - Character ownership validation (`ownerCharacterId`) decoupling character selection from run session
-- Milestone 10.2: Data-Driven Enemy Scaling
+- Milestone 10.2: Data-Driven Enemy Scaling & Warrior Melee Reach Tuning
   - `DungeonDefinition` scaling multipliers (`EnemyHealthMultiplier`, `EnemyDamageMultiplier`)
   - Runtime enemy scaling in `EnemyHealth`, `EnemyAttack`, and `WaveManager`
   - Tuned dungeon difficulty: D1 (1.0x HP, 1.0x Dmg), D2 (1.1x HP, 1.0x Dmg), D3 (1.2x HP, 1.1x Dmg)
+  - Tuned Warrior melee attack reach from 2.0m to 2.5m (preserving 25 damage, 120° arc, 0.5s cooldown)
 - Milestone 10.3: Run Lifecycle & End-Run Semantics
   - Zero-exploit rollback on defeat retry (discards XP/upgrades earned in failed attempt)
   - Run termination and reset on defeat return to map
@@ -284,7 +285,8 @@ Implemented:
 - Milestone 10.5: Progression Foundations & Architecture Invariants
   - Layered `PlayerStats` architecture: Effective Multiplier = Base * Permanent * Temporary
   - Architecture boundaries verified: `CharacterSelectionSession` owns hero, `DungeonRunSession` owns dungeon, `RunProgressionSession` owns campaign progression
-  - Comprehensive automated Play Mode test suite (10/10 checks) and full regressions passed
+  - Chapter/Boss classification foundation defined (`DungeonType.Normal`, `DungeonType.Boss`)
+  - Comprehensive automated Play Mode test suite (11/11 checks) and full sequential regressions passed (47/47 checks)
 
 ---
 
