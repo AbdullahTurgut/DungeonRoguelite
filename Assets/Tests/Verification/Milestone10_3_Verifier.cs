@@ -26,6 +26,11 @@ namespace DungeonRoguelite.Tests
     /// </summary>
     public class Milestone10_3_Verifier : MonoBehaviour
     {
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         private void Start()
         {
             StartCoroutine(RunVerificationSafe());
@@ -59,7 +64,8 @@ namespace DungeonRoguelite.Tests
                 yield return current;
             }
 
-            yield return new WaitForSeconds(0.5f);
+            Time.timeScale = 1f;
+            yield return null;
 
             if (success)
             {
@@ -71,14 +77,19 @@ namespace DungeonRoguelite.Tests
             }
 
 #if UNITY_EDITOR
+            System.IO.File.AppendAllText("gate_verification_results.log", $"[GATE 10.3 RESULT] Success: {success} at {DateTime.Now}\n");
             EditorApplication.isPlaying = false;
-            EditorApplication.Exit(success ? 0 : 1);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(success ? 0 : 1);
+            }
 #endif
         }
 
         private IEnumerator RunVerificationRoutine(Action<bool> onComplete)
         {
             yield return null;
+            Time.timeScale = 1f;
             Debug.Log("[GATE 10.3] Beginning Milestone 10.3 Automated Play Mode Verification...");
             bool allPassed = true;
 
