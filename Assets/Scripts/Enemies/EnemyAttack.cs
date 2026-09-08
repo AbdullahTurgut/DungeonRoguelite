@@ -9,7 +9,7 @@ namespace DungeonRoguelite.Enemies
     /// Strictly manages attack timing and damage application; contains no movement logic.
     /// Cleanly reacts to EnemyHealth.OnDied by ceasing all attack processing.
     /// </summary>
-    public class EnemyAttack : MonoBehaviour
+    public class EnemyAttack : MonoBehaviour, IEnemyAttack
     {
         [Header("Attack Configuration")]
         [Tooltip("Damage applied per successful attack.")]

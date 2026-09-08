@@ -96,7 +96,9 @@ Zombie
 ├── EnemyMovement
 ├── EnemyAttack
 ├── EnemyHealth
-└── ExperienceReward
+├── ExperienceReward
+├── EnemyVisualFeedback
+└── CorpseCleanup
 ```
 
 ---
@@ -240,6 +242,19 @@ Recommended:
 - Attack cooldown.
 - Attack range.
 - Damage.
+- Implements `IEnemyAttack`: `InitializeAttack(float damageMultiplier)` and `SetTarget(Transform target)`.
+- `WaveManager` resolves this interface once per spawn for difficulty scaling and explicit target binding. Health and movement retain their existing components; no enemy-type branching is required.
+
+## EnemyVisualFeedback
+- Subscribes to `EnemyHealth.OnHealthChanged`; only decreases below maximum health trigger a hit flash, including lethal damage. Initialization and full-health restoration do not flash.
+- Uses cached `MaterialPropertyBlock` instances and URP Lit `_BaseColor`, preserving shared materials and restoring pre-flash overrides. No `Renderer.material` or `Renderer.materials` access.
+- White flash lasts 0.08 unscaled seconds; repeated hits restart it, and disabling the component restores the previous overrides.
+
+## CorpseCleanup
+- Subscribes independently to `EnemyHealth.OnDied` and destroys the dead enemy root, including its visual children, after 1.5 unscaled seconds.
+- Does not control health, physics, attacks, XP, wave counts, or completion. Existing death listeners stop movement/attacks/collision and spawn XP immediately.
+- Keeps the dead root active until cleanup, allowing hit feedback to finish even during upgrade/result pauses. No pooling or resurrection support is introduced.
+- `WaveManager.CurrentWaveSpawned` is a historical list and may contain destroyed Unity references; `ActiveEnemies` remains the authoritative living collection.
 
 ## EnemyHealth
 - Current health.

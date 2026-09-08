@@ -397,9 +397,10 @@ namespace DungeonRoguelite.Waves
                 enemyHealthComp.InitializeHealth(healthMult);
             }
 
-            if (damageMult != 1f && enemyInstance.TryGetComponent<EnemyAttack>(out var enemyAttackComp))
+            var attack = enemyInstance.GetComponent<IEnemyAttack>();
+            if (damageMult != 1f && attack != null)
             {
-                enemyAttackComp.InitializeAttack(damageMult);
+                attack.InitializeAttack(damageMult);
             }
 
             // Assign target explicitly to prevent per-frame scene searching
@@ -411,7 +412,6 @@ namespace DungeonRoguelite.Waves
                     movement.SetTarget(playerTarget);
                 }
 
-                var attack = enemyInstance.GetComponent<EnemyAttack>();
                 if (attack != null)
                 {
                     attack.SetTarget(playerTarget);

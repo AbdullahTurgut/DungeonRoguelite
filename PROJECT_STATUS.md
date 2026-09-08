@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Gate 11.1 implementation (2026-09-08): minimal `IEnemyAttack`, Zombie hit feedback and corpse cleanup are implemented on `codex-gate11-test`, based on Phase 10 commit `8f11ae7`. Verification results are recorded in the current gate section below; prior Phase 10 notes are historical.
 - Phase 10 Final Manual QA is GREEN & Approved:
   - Architecture Audit complete: explicit serialized bindings confirmed across production scenes; Editor-only asset lookups cleanly isolated behind `#if UNITY_EDITOR`; standalone builds decoupled from AssetDatabase; discrete state ownership confirmed across `CharacterSelectionSession`, `DungeonRunSession`, `RunProgressionSession`, and `DungeonProgression`; World Map 3-card catalog layout verified.
   - Test Suite Integrity: 10/10 checks PASSED in `Milestone10_QA_Verifier.cs`; 11/11 checks PASSED in `Milestone10_5_Verifier.cs` full regression suite; 0 compiler errors, 0 warnings (resolved legacy CS0219).
@@ -24,8 +25,9 @@ Last update:
 ## Status
 
 **COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
-**AUTOMATED GREEN | MANUAL QA GREEN | READY TO PUSH**  
-**NEXT UP — Phase 11: Permanent Progression & Meta Trees**  
+**PHASE 10 AUTOMATED GREEN | PHASE 10 MANUAL QA GREEN**
+
+**CURRENT — Gate 11.1: Enemy Attack Contract, Hit Feedback & Corpse Cleanup**
 
 Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
 
@@ -43,9 +45,37 @@ Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blockin
 
 ---
 
-## PHASE 11 — Permanent Progression & Meta Trees (Next Up)
+## Gate 11.1 — Enemy Attack Contract, Hit Feedback & Corpse Cleanup
 
-- Milestone 11.1: Meta Currency & Character Skill Trees
+The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope with this gate. Permanent progression remains deferred; later gates are not renumbered here.
+
+### Implemented
+
+- `Assets/Scripts/Enemies/IEnemyAttack.cs`: exactly `InitializeAttack(float)` and `SetTarget(Transform)`.
+- `EnemyAttack` implements the interface without changing attack math, target resolution, cooldown, range or death behavior.
+- `WaveManager` resolves one root-level `IEnemyAttack` per spawned instance for runtime damage scaling and explicit player binding. Existing multiplier precedence and neutral-multiplier guards are unchanged.
+- `EnemyVisualFeedback` listens to health decreases below maximum, flashes both Zombie renderers white for 0.08 unscaled seconds using cached property blocks, and restores original overrides. Initialization/restoration does not flash; repeated hits restart the timer; no material instantiation is used.
+- `CorpseCleanup` independently schedules destruction of the dead root after 1.5 unscaled seconds. Existing authoritative death, collision shutdown, XP drop and wave/completion listeners remain unchanged and immediate.
+- Zombie prefab includes both components with explicit renderer bindings. Base health 50, damage 10, speed 3, stopping distance 1.3, range 1.5, cooldown 1, gravity 20, turn speed 720 and XP 10 are preserved. D1/D2/D3 health/damage remain 50/10, 55/10, 60/11.
+- `Milestone11_1_Verifier` uses production wave configuration/start APIs, real damage and completion flows, and an alternate interface implementation. No private spawning calls or new production test-only APIs.
+- `Milestone11_1_VerificationRunner` runs the gate in an unsaved empty scene. Its batch regression entrypoint bypasses older launchers that save setup changes; persistent dungeon-progress data is restored after tests.
+
+### Verification
+
+- Final Unity 6000.3.23f1 batch Play Mode run: 43/43 checks passed, exit code 0 (`Logs/gate11_1_final.log`). Includes first-hit/lethal feedback, post-death suppression, interface substitution, unscaled flash/cleanup, final-kill XP, upgrades and victory ordering, and unchanged material counts/references.
+- Phase 10.1–10.5 regression: 47/47 checks passed; Phase 10 QA regression: 10/10 passed. Archer 8.3: 68/68 passed; Gunner 8.4: 44/44 passed, including Warrior and XP/completion integration checks. Logs: `Logs/regression_10_1.log` through `regression_10_5.log`, `regression_10_QA.log`, `regression_8_3.log`, and `regression_8_4.log`. Total final gate plus regression coverage: 212 passing checks.
+- Unity compilation succeeded with no C# errors. Existing obsolete `TMP_Text.enableWordWrapping` warnings are emitted from `Milestone6_1_Setup`, `Milestone8_5_Setup`, and `Milestone9_Setup`.
+- Editor startup emits `ArgumentOutOfRangeException` from `UnityEditor.Search.SearchDatabase` before the verifier starts; this is not a gameplay exception. It is not fixed in this gate.
+- Graphical/manual QA and a standalone player build have not been performed. Headless checks validate property blocks and lifetime behavior, not visual readability in dungeon lighting.
+- Run the gate from `DungeonRoguelite/Phase 11/Run Gate 11.1 Verification`, or batch `-executeMethod DungeonRoguelite.Editor.Milestone11_1_VerificationRunner.Run`. The regression entrypoint is `RunRegression -gateSuite 10_2` (also supports 10_1, 10_3, 10_4, 10_5, 10_QA, 8_3 and 8_4).
+
+### Decisions and next task
+
+- Visual timers use unscaled time so upgrade/victory/defeat pauses cannot retain a flash or corpse indefinitely.
+- Cleanup destroys the entire already-dead root, avoiding invisible component shells. No pooling/resurrection support is added.
+- `CurrentWaveSpawned` may contain destroyed Unity references; `ActiveEnemies` remains authoritative. Consumers must null-check historical references.
+- Next: complete manual Warrior/Archer/Gunner feedback QA in D1/D2/D3 and approve Gate 11.1 before selecting another gate.
+- Automated implementation and regressions are user-approved GREEN (212/212). One local checkpoint commit is authorized: `feat: establish enemy attack abstraction and combat feedback foundation`. Do not push or begin Gate 11.2; wait for manual gameplay QA. Production scenes and difficulty assets remain unchanged.
 
 ---
 
@@ -984,17 +1014,21 @@ When switching between agents:
 ## Known Issues
 
 ```text
-None.
+Gate 11.1: graphical/manual QA and standalone build remain unverified.
+Unity Editor Search.SearchDatabase throws a startup indexing ArgumentOutOfRangeException in this worktree before tests begin.
+Three legacy setup scripts emit obsolete TMP_Text.enableWordWrapping warnings; no C# compilation errors or Gate 11.1 gameplay errors were observed.
 ```
 
 ## Next Task
 
 ```text
-Awaiting User Manual QA confirmation for Phase 10, then Phase 11: Permanent Progression & Meta Trees.
+Gate 11.1 manual visual QA: verify Warrior/Archer/Gunner hit readability, corpse disappearance during pauses, and normal dungeon completion in D1/D2/D3. Phase 10 manual QA was already approved. Await the user's next gate selection after Gate 11.1 acceptance.
 ```
 
 ## Latest Verified Commit
 
 ```text
-98424bf feat: establish progression foundations and architecture invariants (Gate 10.5)
+8f11ae7 docs: record Phase 10 manual QA green and approved roguelite run semantics
+Gate 11.1 local checkpoint on codex-gate11-test: feat: establish enemy attack abstraction and combat feedback foundation
+Manual gameplay QA pending; no push authorized.
 ```

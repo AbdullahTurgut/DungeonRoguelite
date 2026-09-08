@@ -290,7 +290,23 @@ Implemented:
 
 ---
 
-# PHASE 11 — Permanent Progression & Meta Trees
+# PHASE 11 — Current Approved Gate
+
+## Gate 11.1 — Enemy Attack Contract, Hit Feedback & Corpse Cleanup
+
+The user's approved Gate 11.1 supersedes the previous 11.1 meta-progression assignment.
+
+- Minimal `IEnemyAttack` contract used by `EnemyAttack` and `WaveManager`.
+- Zombie hit flash using `MaterialPropertyBlock` (0.08 unscaled seconds).
+- Independent corpse cleanup (1.5 unscaled seconds), preserving immediate death, XP drops, and wave completion.
+- Preserve Zombie configuration and Phase 10 difficulty scaling.
+- Verify through production APIs with `Milestone11_1_Verifier`; keep production scenes free of verifiers.
+
+See `PROJECT_STATUS.md` for verification results and remaining acceptance work.
+
+## Deferred — Permanent Progression & Meta Trees
+
+These remain future work; no later gate numbering is assigned by this change.
 
 Implement:
 
@@ -370,9 +386,9 @@ Phase 9 (Dungeon Progression)                 -> COMPLETED
     ↓
 Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
     ↓
-Phase 11 (Permanent Progression & Meta Trees) -> NEXT UP
+Gate 11.1 (Enemy Contract & Feedback)        -> CURRENT (see PROJECT_STATUS.md)
 ```
 
 Milestones 0 through 10 are fully implemented, automated-verified, and manual-QA-verified.
 Phase 10 is complete and signed off.
-Next phase is Phase 11 (Permanent Progression & Meta Trees).
+Current authorized work is Gate 11.1 (Enemy Attack Contract, Hit Feedback & Corpse Cleanup).
