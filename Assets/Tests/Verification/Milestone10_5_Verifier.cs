@@ -24,6 +24,11 @@ namespace DungeonRoguelite.Tests
     /// </summary>
     public class Milestone10_5_Verifier : MonoBehaviour
     {
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         private void Start()
         {
             StartCoroutine(RunVerificationSafe());
@@ -31,6 +36,7 @@ namespace DungeonRoguelite.Tests
 
         private IEnumerator RunVerificationSafe()
         {
+            Time.timeScale = 1f;
             yield return null;
             yield return null;
 
@@ -57,7 +63,9 @@ namespace DungeonRoguelite.Tests
                 yield return current;
             }
 
-            yield return new WaitForSeconds(0.5f);
+            Time.timeScale = 1f;
+            yield return null;
+            yield return null;
 
             if (success)
             {
@@ -69,13 +77,18 @@ namespace DungeonRoguelite.Tests
             }
 
 #if UNITY_EDITOR
+            System.IO.File.AppendAllText("gate_verification_results.log", $"[GATE 10.5 RESULT] Success: {success} at {DateTime.Now}\n");
             EditorApplication.isPlaying = false;
-            EditorApplication.Exit(success ? 0 : 1);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(success ? 0 : 1);
+            }
 #endif
         }
 
         private IEnumerator RunVerificationRoutine(Action<bool> onComplete)
         {
+            Time.timeScale = 1f;
             yield return null;
             Debug.Log("[GATE 10.5] Beginning Milestone 10.5 Automated Play Mode Verification...");
             bool allPassed = true;
@@ -308,12 +321,30 @@ namespace DungeonRoguelite.Tests
                 allPassed = false;
             }
 
+            // -------------------------------------------------------------
+            // CHECK 11: Boss / Chapter Classification Foundation
+            // -------------------------------------------------------------
+            bool c11 = d1 != null && d1.Type == DungeonType.Normal &&
+                       d2 != null && d2.Type == DungeonType.Normal &&
+                       d3 != null && d3.Type == DungeonType.Normal &&
+                       Enum.IsDefined(typeof(DungeonType), DungeonType.Boss);
+
+            if (c11)
+            {
+                Debug.Log("[CHECK 11 PASSED] Dungeon classification foundation verified: D1, D2, D3 classified as Normal; Boss type defined.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 11 FAILED] Dungeon classification mismatch: D1={d1?.Type}, D2={d2?.Type}, D3={d3?.Type}");
+                allPassed = false;
+            }
+
             RunProgressionSession.Clear();
             DungeonRunSession.Clear();
 
             if (allPassed)
             {
-                Debug.Log("[GATE 10.5 TEST COMPLETE] All 10 checks PASSED with 0 errors.");
+                Debug.Log("[GATE 10.5 TEST COMPLETE] All 11 checks PASSED with 0 errors.");
             }
             else
             {
