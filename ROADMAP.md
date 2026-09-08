@@ -290,75 +290,37 @@ Implemented:
 
 ---
 
-# PHASE 11 — Current Approved Gate
+# PHASE 11 — Combat & Enemy Variety
 
-## Gate 11.1 — Enemy Attack Contract, Hit Feedback & Corpse Cleanup
+- Gate 11.1: Enemy attack contract, hit feedback, corpse cleanup — automated and user manual QA GREEN.
+- Gate 11.2: Runner — automated GREEN; 41 focused checks and 170 focused regression checks.
+- Gate 11.3: Tank.
+- Gate 11.4: Ranged enemy and locally owned projectiles.
+- Gate 11.5: Approved mixed waves and campaign integration.
 
-The user's approved Gate 11.1 supersedes the previous 11.1 meta-progression assignment.
-
-- Minimal `IEnemyAttack` contract used by `EnemyAttack` and `WaveManager`.
-- Zombie hit flash using `MaterialPropertyBlock` (0.08 unscaled seconds).
-- Independent corpse cleanup (1.5 unscaled seconds), preserving immediate death, XP drops, and wave completion.
-- Preserve Zombie configuration and Phase 10 difficulty scaling.
-- Verify through production APIs with `Milestone11_1_Verifier`; keep production scenes free of verifiers.
-
-See `PROJECT_STATUS.md` for verification results and remaining acceptance work.
-
-## Deferred — Permanent Progression & Meta Trees
-
-These remain future work; no later gate numbering is assigned by this change.
-
-Implement:
-
-- Meta currency / Skill points earned from runs
-- Character-specific permanent skill tree
-- 5–8 initial nodes per character
-- Permanent upgrades save/load
-- Hooking permanent multipliers into `PlayerStats` foundations
+Sequential automated gates and local checkpoints; manual gameplay/balance QA after 11.5.
+No physical knockback, pooling, enemy hierarchy, or enemy-definition migration.
 
 ---
 
-# PHASE 12 — Enemy Expansion
+# PHASE 12 — Permanent Progression / Skill Tree
 
-Add:
-
-- Runner
-- Brute
-- Ranged enemy
-- Elite enemy
-
-Then balance spawn compositions.
+- Permanent progression and character skill trees.
+- Permanent upgrades and save/load integration.
 
 ---
 
-# PHASE 13 — Bosses
+# PHASE 13 — Dungeon 4 + Encounter Design
 
-Implement:
-
-- Boss framework
-- Boss health UI
-- Attack telegraphs
-- First dungeon boss
+- Dungeon 4 and encounter design.
 
 ---
 
-# PHASE 14 — Content and Polish
+# PHASE 14 — Dungeon 5 + First Boss
 
-Add:
-
-- Real character models
-- Environment assets
-- Animations
-- VFX
-- Audio
-- Music
-- Screen shake where appropriate
-- Better UI
-- Feedback
-- Balancing
+- Dungeon 5 and first boss.
 
 ---
-
 # PHASE 15 — Production
 
 Implement:
@@ -386,9 +348,9 @@ Phase 9 (Dungeon Progression)                 -> COMPLETED
     ↓
 Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
     ↓
-Gate 11.1 (Enemy Contract & Feedback)        -> CURRENT (see PROJECT_STATUS.md)
+Phase 11 (Combat & Enemy Variety)           -> CURRENT (see PROJECT_STATUS.md)
 ```
 
 Milestones 0 through 10 are fully implemented, automated-verified, and manual-QA-verified.
 Phase 10 is complete and signed off.
-Current authorized work is Gate 11.1 (Enemy Attack Contract, Hit Feedback & Corpse Cleanup).
+Current authorized work is sequential Gates 11.2 through 11.5, followed by full regression and user manual QA. No push or Phase 12 work is authorized.

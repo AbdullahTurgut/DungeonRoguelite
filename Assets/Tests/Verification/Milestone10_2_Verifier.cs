@@ -246,11 +246,14 @@ namespace DungeonRoguelite.Tests
             var waveMgr = waveMgrGo.AddComponent<WaveManager>();
             waveMgr.ConfigureFromDungeon(d2);
 
-            // Spawn one enemy via WaveManager using private method through Reflection or public interface
-            var spawnMethod = typeof(WaveManager).GetMethod("SpawnEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (spawnMethod != null && zombiePrefab != null)
+            // Exercise public grouped spawning independently of production wave composition.
+            var scalingWave = ScriptableObject.CreateInstance<WaveDefinition>();
+            scalingWave.Initialize(new[] { new EnemySpawnEntry(zombiePrefab, 1) }, 0.02f);
+            waveMgr.SetWaves(new[] { scalingWave });
+            waveMgr.SetSpawnPoints(new[] { waveMgrGo.transform });
+            if (zombiePrefab != null)
             {
-                spawnMethod.Invoke(waveMgr, new object[] { zombiePrefab });
+                waveMgr.BeginDungeon();
 
                 bool foundScaled = false;
                 foreach (var living in waveMgr.ActiveEnemies)
@@ -274,7 +277,7 @@ namespace DungeonRoguelite.Tests
             }
             else
             {
-                Debug.LogError("[CHECK 6 FAILED] Could not find SpawnEnemy method on WaveManager.");
+                Debug.LogError("[CHECK 6 FAILED] Missing Zombie prefab.");
                 allPassed = false;
             }
 
@@ -286,38 +289,36 @@ namespace DungeonRoguelite.Tests
                 if (z != null) DestroyImmediate(z.gameObject);
             }
             DestroyImmediate(waveMgrGo);
+            DestroyImmediate(scalingWave);
 
             // -------------------------------------------------------------
             // CHECK 7: Mathematical Hit-to-Kill Breakpoint Validation
             // -------------------------------------------------------------
             // D1: Zombie HP = 50
             // Warrior: 25 dmg -> 2 hits
-            // Archer: 18 dmg -> 3 hits
-            // Gunner: 12 dmg -> 5 hits
+            // Production Archer: 20 damage; Gunner: 10 damage; damage upgrade: 20%.
             int d1WarriorHits = Mathf.CeilToInt(50f / 25f);
-            int d1ArcherHits = Mathf.CeilToInt(50f / 18f);
-            int d1GunnerHits = Mathf.CeilToInt(50f / 12f);
+            int d1ArcherHits = Mathf.CeilToInt(50f / 20f);
+            int d1GunnerHits = Mathf.CeilToInt(50f / 10f);
 
             // D2: Zombie HP = 55
             // Warrior base: 25 dmg -> 3 hits (+1 hit penalty)
-            // Warrior +15% dmg: 28.75 dmg -> 2 hits (upgrade restores 2-hit breakpoint!)
+            // Warrior +20%: 30 damage -> 2 hits.
             int d2WarriorBaseHits = Mathf.CeilToInt(55f / 25f);
-            int d2WarriorUpgradedHits = Mathf.CeilToInt(55f / (25f * 1.15f));
+            int d2WarriorUpgradedHits = Mathf.CeilToInt(55f / (25f * 1.2f));
 
-            // Archer base: 18 dmg -> 4 hits (+1 hit penalty)
-            // Archer +15% dmg: 20.7 dmg -> 3 hits (upgrade restores 3-hit breakpoint!)
-            int d2ArcherBaseHits = Mathf.CeilToInt(55f / 18f);
-            int d2ArcherUpgradedHits = Mathf.CeilToInt(55f / (18f * 1.15f));
+            // Archer base/upgraded: 20/24 damage -> 3 hits.
+            int d2ArcherBaseHits = Mathf.CeilToInt(55f / 20f);
+            int d2ArcherUpgradedHits = Mathf.CeilToInt(55f / (20f * 1.2f));
 
-            // Gunner base: 12 dmg -> 5 hits
-            // Gunner +15% dmg: 13.8 dmg -> 4 hits (upgrade saves 1 hit!)
-            int d2GunnerBaseHits = Mathf.CeilToInt(55f / 12f);
-            int d2GunnerUpgradedHits = Mathf.CeilToInt(55f / (12f * 1.15f));
+            // Gunner base/upgraded: 10/12 damage -> 6/5 hits.
+            int d2GunnerBaseHits = Mathf.CeilToInt(55f / 10f);
+            int d2GunnerUpgradedHits = Mathf.CeilToInt(55f / (10f * 1.2f));
 
             bool c7 = (d1WarriorHits == 2 && d1ArcherHits == 3 && d1GunnerHits == 5) &&
                       (d2WarriorBaseHits == 3 && d2WarriorUpgradedHits == 2) &&
-                      (d2ArcherBaseHits == 4 && d2ArcherUpgradedHits == 3) &&
-                      (d2GunnerBaseHits == 5 && d2GunnerUpgradedHits == 4);
+                      (d2ArcherBaseHits == 3 && d2ArcherUpgradedHits == 3) &&
+                      (d2GunnerBaseHits == 6 && d2GunnerUpgradedHits == 5);
 
             if (c7)
             {

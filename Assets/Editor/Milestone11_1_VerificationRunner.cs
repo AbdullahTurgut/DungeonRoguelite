@@ -10,11 +10,12 @@ namespace DungeonRoguelite.Editor
         private const string Pending = "DungeonRoguelite.Gate11.1.Pending";
         private const string Suite = "DungeonRoguelite.Gate11.1.Suite";
         private const string SaveBackup = "DungeonRoguelite.Gate11.1.SaveBackup";
+        private static Tests.Phase11StateSnapshot stateSnapshot;
 
         static Milestone11_1_VerificationRunner()
         {
             EditorApplication.playModeStateChanged += HandlePlayMode;
-            EditorApplication.quitting += RestoreSave;
+            EditorApplication.quitting += () => { stateSnapshot?.Dispose(); RestoreSave(); };
         }
 
         [MenuItem("DungeonRoguelite/Phase 11/Run Gate 11.1 Verification")]
@@ -84,6 +85,7 @@ namespace DungeonRoguelite.Editor
             if (state != PlayModeStateChange.EnteredPlayMode || !SessionState.GetBool(Pending, false)) return;
             SessionState.EraseBool(Pending);
             string suite = SessionState.GetString(Suite, "11_1");
+            stateSnapshot = new Tests.Phase11StateSnapshot();
             var type = System.Type.GetType($"DungeonRoguelite.Tests.Milestone{suite}_Verifier, Assembly-CSharp", true);
             new GameObject("Gate_Verifier_" + suite).AddComponent(type);
         }

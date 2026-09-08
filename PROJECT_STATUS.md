@@ -27,7 +27,7 @@ Last update:
 **COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
 **PHASE 10 AUTOMATED GREEN | PHASE 10 MANUAL QA GREEN**
 
-**CURRENT — Gate 11.1: Enemy Attack Contract, Hit Feedback & Corpse Cleanup**
+**CURRENT — Phase 11: Combat & Enemy Variety; Gate 11.2 automated GREEN**
 
 Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
 
@@ -74,11 +74,22 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Visual timers use unscaled time so upgrade/victory/defeat pauses cannot retain a flash or corpse indefinitely.
 - Cleanup destroys the entire already-dead root, avoiding invisible component shells. No pooling/resurrection support is added.
 - `CurrentWaveSpawned` may contain destroyed Unity references; `ActiveEnemies` remains authoritative. Consumers must null-check historical references.
-- Next: complete manual Warrior/Archer/Gunner feedback QA in D1/D2/D3 and approve Gate 11.1 before selecting another gate.
-- Automated implementation and regressions are user-approved GREEN (212/212). One local checkpoint commit is authorized: `feat: establish enemy attack abstraction and combat feedback foundation`. Do not push or begin Gate 11.2; wait for manual gameplay QA. Production scenes and difficulty assets remain unchanged.
+- Gate 11.1 manual gameplay QA is GREEN based on explicit user approval on 2026-09-08.
+- Gate 11.1 baseline checkpoint: `72817f6`. Gates 11.2 through 11.5 are now explicitly authorized sequentially, with local checkpoints and no push. Manual QA follows Gate 11.5.
 
 ---
 
+
+## Gate 11.2 — Runner (automated GREEN, 2026-09-08)
+
+- Canonical baseline confirmed: main at 72817f617a31b6a236ab9426dfc0a99eaee94c02, initially clean.
+- Added Runner prefab and amber/orange URP material using unchanged shared enemy composition. HP 25, speed 5.5, stop 1.1, melee range 1.3, damage 6, cooldown 0.65, XP 10. Visual scale 0.85; controller height 1.7, radius 0.425, center Y 0.85. No production scripts, scenes, Zombie, or wave assets changed.
+- Focused verifier: 41/41 PASSED; actual D1/D2/D3 scaling 25/6, 28/6, 30/7. Real Warrior/Archer/Gunner damage, pursuit, cooldown, pause, hit flash, immediate death/living count, exactly-once XP, final upgrade/victory ordering, unscaled corpse cleanup, and prefab immutability verified.
+- Focused regressions: 11.1 43/43; 10.2 15/15; Archer 8.3 68/68; Gunner 8.4 44/44. Each isolated invocation had a success marker, restoration marker, bounded process exit, and exit code 0. Total: 211 passing focused/regression checks.
+- Gate 10.2 verifier corrected to existing 20/10 ranged weapon damage and 20% upgrade math; private SpawnEnemy reflection replaced with public wave configuration/start. Production balance unchanged.
+- Added test-only exact static state snapshot/restore, bounded coroutine waits, timeout guard, and Windows process wrapper. Intentional assertion and timeout probes both emitted STATE RESTORED and FAILED, then exited 1. Logs remain local under Logs; legacy root result log is ignored.
+- Compilation: 0 errors; 3 existing CS0618 warnings (TMP_Text.enableWordWrapping in Milestone6_1_Setup, Milestone8_5_Setup, Milestone9_Setup). No gameplay/runtime exceptions in successful suites. Initial sandbox launch stalled before licensing; terminated and rerun with approved licensing access. Successful launches had Editor shutdown Curl error 42/ADB messages; no Search exception observed in these runs.
+- Next: Gate 11.3 Tank after local Runner checkpoint and clean-tree confirmation. No push. Combined manual gameplay/balance QA remains pending after Gate 11.5.
 # Completed
 
 - Core game concept defined.
