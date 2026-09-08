@@ -269,21 +269,17 @@ Recommended:
 
 # Enemy Configuration
 
-`EnemyDefinition` ScriptableObject:
+Phase 11 uses prefab configuration with shared components. `EnemyDefinition` migration is deferred.
 
-```text
-Display Name
-Max Health
-Move Speed
-Damage
-Attack Range
-Attack Cooldown
-XP Reward
-Prefab
-```
+- Zombie: baseline 50 HP, 3m/s, 10 melee damage, 10 XP.
+- Runner: 25 HP, 5.5m/s, 6 melee damage, 10 XP; 0.85 visual silhouette.
+- Tank: 150 HP, 1.8m/s, 22 melee damage, 40 XP; 1.4 visual silhouette. Durability is HP only.
+
+The root stays at unit scale; visual scale and CharacterController dimensions match each silhouette.
+`WaveManager` uses prefab references and `IEnemyAttack`, with no archetype-name branches.
+Production wave compositions remain unchanged until Gate 11.5.
 
 ---
-
 # Experience
 
 ## PlayerExperience

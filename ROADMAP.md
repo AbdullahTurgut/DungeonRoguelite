@@ -294,7 +294,7 @@ Implemented:
 
 - Gate 11.1: Enemy attack contract, hit feedback, corpse cleanup — automated and user manual QA GREEN.
 - Gate 11.2: Runner — automated GREEN; 41 focused checks and 170 focused regression checks.
-- Gate 11.3: Tank.
+- Gate 11.3: Tank — automated GREEN; 273 focused checks and 211 focused regression checks.
 - Gate 11.4: Ranged enemy and locally owned projectiles.
 - Gate 11.5: Approved mixed waves and campaign integration.
 

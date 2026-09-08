@@ -27,7 +27,7 @@ Last update:
 **COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
 **PHASE 10 AUTOMATED GREEN | PHASE 10 MANUAL QA GREEN**
 
-**CURRENT — Phase 11: Combat & Enemy Variety; Gate 11.2 automated GREEN**
+**CURRENT — Phase 11: Combat & Enemy Variety; Gates 11.2 and 11.3 automated GREEN**
 
 Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
 
@@ -90,6 +90,14 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Added test-only exact static state snapshot/restore, bounded coroutine waits, timeout guard, and Windows process wrapper. Intentional assertion and timeout probes both emitted STATE RESTORED and FAILED, then exited 1. Logs remain local under Logs; legacy root result log is ignored.
 - Compilation: 0 errors; 3 existing CS0618 warnings (TMP_Text.enableWordWrapping in Milestone6_1_Setup, Milestone8_5_Setup, Milestone9_Setup). No gameplay/runtime exceptions in successful suites. Initial sandbox launch stalled before licensing; terminated and rerun with approved licensing access. Successful launches had Editor shutdown Curl error 42/ADB messages; no Search exception observed in these runs.
 - Next: Gate 11.3 Tank after local Runner checkpoint and clean-tree confirmation. No push. Combined manual gameplay/balance QA remains pending after Gate 11.5.
+## Gate 11.3 — Tank (automated GREEN, 2026-09-08)
+
+- Added Tank prefab and charcoal URP material with shared composition only: HP 150, speed/stop 1.8, melee range 2, damage 22, cooldown 1.8, XP 40. Visual scale 1.4; controller height 2.8, radius 0.7, center Y 1.4. No armor, mitigation, resistance, shield, or invulnerability.
+- Final focused suite: 273/273 PASSED (Logs/gate11_3_final.log). Runtime D1/D2/D3 HP/damage: 150/22, 165/22, 180/24.
+- Actual unupgraded hits D1/D2/D3: Warrior 6/7/8, Archer 8/9/9, Gunner 15/17/18. With the production UpgradeManager 20% damage upgrade: Warrior 5/6/6, Archer 7/7/8, Gunner 13/14/15. Every hit checks full damage; added nonlethal child collider verifies deduplication. Production prefab has only its controller; corpse collision shutdown, nonfinal wave transition, XP once, feedback, final upgrade/victory ordering, pause and cleanup verified.
+- Required regressions: 11.1 43/43, 11.2 41/41, 10.2 15/15, 8.3 68/68, 8.4 44/44. All completion/restoration markers present, bounded exits 0. Total focused plus regressions: 484 passing checks.
+- One implementation-time verifier compiler error CS1061 was corrected: PlayerExperience uses GainExperience, not AddExperience. Final compilation has 0 errors and the same 3 existing CS0618 warnings. Successful suites contain no gameplay/runtime exceptions or Search exceptions. Unity-generated font/TimeManager changes restored before checkpoint.
+- Runner checkpoint: 8d0a718 feat: add runner enemy archetype. Next: local Tank checkpoint, clean tree, then Gate 11.4. No push; manual QA remains after integration.
 # Completed
 
 - Core game concept defined.
