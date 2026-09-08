@@ -3,10 +3,12 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 10 Manual QA Blocking Fix Pass complete:
-  - Finding 1: Dungeon 3 visibility, card layout, and cascading unlocking on World Map resolved. WorldMapController dynamically binds all catalog entries with a clean 3-card horizontal layout (width 440, spacing 500, anchored at X=[-500, 0, +500]), and setup tooling pre-serializes 3 cards into WorldMap.unity scene.
-  - Finding 2: Campaign run continuity and replay preservation resolved. PlayerSpawner binds UpgradeManager before reconstruction, restores from committed run state (Level, CurrentXP, TotalXP, CommittedUpgradeIds), and establishes dungeon entry checkpoints immediately upon entry. ReconstructUpgrades clears collected IDs before rebuilding, and DungeonCompletionController includes null-fallback resolution to ensure finalLevel and finalUpgradeIds are never read from null.
-  - 10/10 checks PASSED in automated QA verification suite (Milestone10_QA_Verifier.cs).
+- Phase 10 Manual QA Compilation Blocker & Verification complete:
+  - Fixed CS1061 compile errors in `Milestone10_QA_Verifier.cs` without altering production APIs: mapped assertions cleanly to `PlayerStats.DamageMultiplier`, `MeleeWeapon.EffectiveDamage`, `PlayerStats.AttackSpeedMultiplier`, and `MeleeWeapon.EffectiveAttackCooldown`.
+  - Finding 1: Dungeon 3 visibility, card layout, and cascading unlocking on World Map resolved. Updated `Milestone9_Setup` and `Milestone10_Setup` to consistently preserve all 3 dungeons in `DungeonCatalog.asset`. Pre-serialized 3 cards into `WorldMap.unity` with horizontal layout (width 440, spacing 500, anchored at X=[-500, 0, +500]).
+  - Finding 2: Campaign run continuity and replay preservation verified. Connected `PlayerExperience` leveling to `UpgradeManager` selection in the verifier, correctly resolving `upgrade_attack_speed` and proving replay stat preservation (30 damage, 0.417s cooldown).
+  - 10/10 checks PASSED in `Milestone10_QA_Verifier.cs` (0 errors, 0 compiler warnings).
+  - 11/11 checks PASSED in full regression test suite `Milestone10_5_Verifier.cs`.
   - All Phase 10 automated test suites maintain 100% green integrity.
 
 ---

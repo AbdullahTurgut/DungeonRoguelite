@@ -248,6 +248,16 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[Milestone 10] Setting up 3 cards in WorldMap scene...");
             Milestone9_Setup.SetupGate9_4();
 
+            var d1 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon01Path);
+            var d2 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon02Path);
+            var d3 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon03Path);
+            var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>(DungeonCatalogPath);
+            if (catalog != null && d1 != null && d2 != null && d3 != null)
+            {
+                catalog.SetDungeons(new DungeonDefinition[] { d1, d2, d3 });
+                EditorUtility.SetDirty(catalog);
+            }
+
             var buildScenes = new EditorBuildSettingsScene[]
             {
                 new EditorBuildSettingsScene(CharacterSelectionScenePath, true),

@@ -418,17 +418,24 @@ namespace DungeonRoguelite.Editor
             // 1. Create or update DungeonCatalog.asset
             var d1 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon01Path);
             var d2 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon02Path);
+            var d3 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_03.asset");
+            var catalogList = new List<DungeonDefinition> { d1, d2 };
+            if (d3 != null)
+            {
+                catalogList.Add(d3);
+            }
+
             var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>(DungeonCatalogPath);
             if (catalog == null)
             {
                 catalog = ScriptableObject.CreateInstance<DungeonCatalog>();
-                catalog.SetDungeons(new DungeonDefinition[] { d1, d2 });
+                catalog.SetDungeons(catalogList.ToArray());
                 AssetDatabase.CreateAsset(catalog, DungeonCatalogPath);
                 Debug.Log($"[Milestone 9.4 Setup] Created {DungeonCatalogPath}");
             }
             else
             {
-                catalog.SetDungeons(new DungeonDefinition[] { d1, d2 });
+                catalog.SetDungeons(catalogList.ToArray());
                 EditorUtility.SetDirty(catalog);
             }
             AssetDatabase.SaveAssets();
