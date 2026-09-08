@@ -73,8 +73,12 @@ namespace DungeonRoguelite.Tests
             Time.timeScale = 1f;
 
 #if UNITY_EDITOR
+            System.IO.File.AppendAllText("gate_verification_results.log", $"[GATE 10.1 RESULT] Success: {success} at {DateTime.Now}\n");
             EditorApplication.isPlaying = false;
-            EditorApplication.Exit(success ? 0 : 1);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(success ? 0 : 1);
+            }
 #endif
         }
 
