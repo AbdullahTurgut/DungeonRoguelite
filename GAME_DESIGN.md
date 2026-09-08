@@ -36,6 +36,15 @@ Unlock Next Dungeon
 Return to World Map
 ```
 
+### Roguelite Campaign Run Semantics
+
+Campaign progression across dungeons (D1 -> D2 -> D3) follows strict roguelite run semantics:
+
+- **Victory**: The active run continues into subsequent dungeons, preserving character Level, accumulated XP, and collected temporary upgrades.
+- **Defeat -> Retry**: The player retries the current dungeon, rolling back exclusively to the dungeon-entry checkpoint (restoring the Level, XP, and temporary upgrades that the player had when entering that specific dungeon attempt).
+- **Defeat -> Return to Map**: The active run ends immediately. Level, XP, and temporary upgrades reset to baseline (Level 1, 0 XP, neutral modifiers).
+- **Persistent Progression**: Completed and unlocked dungeons in the campaign (`DungeonProgression`) remain permanently saved across runs and defeats.
+
 ---
 
 # Playable Characters
@@ -60,6 +69,10 @@ Movement: Medium
 Starting weapon:
 
 **Sword**
+- Base Damage: 25
+- Attack Range: 2.5m (manually tuned and accepted)
+- Cleave Arc: 120°
+- Attack Cooldown: 0.5s
 
 Possible future skills:
 

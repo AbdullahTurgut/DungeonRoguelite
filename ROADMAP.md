@@ -368,10 +368,11 @@ Phase 8 (Character System)                    -> COMPLETED
     ↓
 Phase 9 (Dungeon Progression)                 -> COMPLETED
     ↓
-Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA Pending)
+Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
     ↓
 Phase 11 (Permanent Progression & Meta Trees) -> NEXT UP
 ```
 
-Milestones 0 through 10 are fully implemented and verified.
-Current focus is Phase 10 Manual QA verification, followed by Phase 11 (Permanent Progression & Meta Trees).
+Milestones 0 through 10 are fully implemented, automated-verified, and manual-QA-verified.
+Phase 10 is complete and signed off.
+Next phase is Phase 11 (Permanent Progression & Meta Trees).

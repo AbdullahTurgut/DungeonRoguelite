@@ -3,13 +3,19 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 10 Manual QA Compilation Blocker & Verification complete:
-  - Fixed CS1061 compile errors in `Milestone10_QA_Verifier.cs` without altering production APIs: mapped assertions cleanly to `PlayerStats.DamageMultiplier`, `MeleeWeapon.EffectiveDamage`, `PlayerStats.AttackSpeedMultiplier`, and `MeleeWeapon.EffectiveAttackCooldown`.
-  - Finding 1: Dungeon 3 visibility, card layout, and cascading unlocking on World Map resolved. Updated `Milestone9_Setup` and `Milestone10_Setup` to consistently preserve all 3 dungeons in `DungeonCatalog.asset`. Pre-serialized 3 cards into `WorldMap.unity` with horizontal layout (width 440, spacing 500, anchored at X=[-500, 0, +500]).
-  - Finding 2: Campaign run continuity and replay preservation verified. Connected `PlayerExperience` leveling to `UpgradeManager` selection in the verifier, correctly resolving `upgrade_attack_speed` and proving replay stat preservation (30 damage, 0.417s cooldown).
-  - 10/10 checks PASSED in `Milestone10_QA_Verifier.cs` (0 errors, 0 compiler warnings).
-  - 11/11 checks PASSED in full regression test suite `Milestone10_5_Verifier.cs`.
-  - All Phase 10 automated test suites maintain 100% green integrity.
+- Phase 10 Final Manual QA is GREEN & Approved:
+  - Architecture Audit complete: explicit serialized bindings confirmed across production scenes; Editor-only asset lookups cleanly isolated behind `#if UNITY_EDITOR`; standalone builds decoupled from AssetDatabase; discrete state ownership confirmed across `CharacterSelectionSession`, `DungeonRunSession`, `RunProgressionSession`, and `DungeonProgression`; World Map 3-card catalog layout verified.
+  - Test Suite Integrity: 10/10 checks PASSED in `Milestone10_QA_Verifier.cs`; 11/11 checks PASSED in `Milestone10_5_Verifier.cs` full regression suite; 0 compiler errors, 0 warnings (resolved legacy CS0219).
+  - Core Roguelite Run Semantics Verified:
+    - Victory -> run continues into subsequent dungeons, preserving Level, accumulated XP, and collected temporary upgrades.
+    - Defeat -> Retry -> rolls back to the dungeon-entry checkpoint (preserving entry Level, XP, and upgrades).
+    - Defeat -> Return to Map -> active run ends, resetting Level to 1, XP to 0, and upgrades to empty.
+    - Persistent dungeon progression (`DungeonProgression`) remains intact across defeats and returns.
+  - Manual Gameplay Evidence:
+    - Player progressed through D1 -> D2 -> D3 reaching Dungeon 3 at Level 5 with build intact.
+    - Defeat in Dungeon 3 -> "HARİTAYA DÖN" successfully ended the active run.
+    - Re-entering Dungeon 3 started fresh at Level 1 / 0 XP / neutral progression while D1 & D2 completed and D3 unlocked states persisted.
+    - Warrior melee reach of 2.5m manually accepted.
 
 ---
 
@@ -17,11 +23,11 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 10: Campaign Run Progression & Scaling (Manual QA Fix Pass Complete & Verified)**  
-**READY FOR USER MANUAL QA SIGN-OFF — DO NOT PUSH YET**  
-**NEXT UP — Phase 11: Permanent Progression & Meta Trees**
+**COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
+**AUTOMATED GREEN | MANUAL QA GREEN | READY TO PUSH**  
+**NEXT UP — Phase 11: Permanent Progression & Meta Trees**  
 
-Milestones 1.1 through 9.5, Phase 9 Polish Pass, Phase 10 (10.1–10.5), and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and ready for user manual QA sign-off.
+Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
 
 ---
 

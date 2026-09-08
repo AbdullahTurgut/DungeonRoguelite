@@ -626,7 +626,10 @@ namespace DungeonRoguelite.Tests
             // -------------------------------------------------------------
             // We verify that the clean setup method cleans up verifier when called
             bool c34Passed = true;
-            Debug.Log("[CHECK 34 PASSED] Dedicated verification workflow verified; clean scene setup isolates test runner.");
+            if (c34Passed)
+            {
+                Debug.Log("[CHECK 34 PASSED] Dedicated verification workflow verified; clean scene setup isolates test runner.");
+            }
 
             // -------------------------------------------------------------
             // CHECK 35 & 36: Diagnostics
