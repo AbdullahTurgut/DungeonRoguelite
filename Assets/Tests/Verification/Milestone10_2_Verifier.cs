@@ -1,10 +1,14 @@
 using System;
 using System.Collections;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
+using DungeonRoguelite.Characters;
 using DungeonRoguelite.Dungeons;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Waves;
+using DungeonRoguelite.Weapons;
+using DungeonRoguelite.Player;
 
 namespace DungeonRoguelite.Tests
 {
@@ -21,6 +25,11 @@ namespace DungeonRoguelite.Tests
     /// </summary>
     public class Milestone10_2_Verifier : MonoBehaviour
     {
+        private void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
         private void Start()
         {
             StartCoroutine(RunVerificationSafe());
@@ -54,7 +63,8 @@ namespace DungeonRoguelite.Tests
                 yield return current;
             }
 
-            yield return new WaitForSeconds(0.5f);
+            Time.timeScale = 1f;
+            yield return null;
 
             if (success)
             {
@@ -66,14 +76,37 @@ namespace DungeonRoguelite.Tests
             }
 
 #if UNITY_EDITOR
+            System.IO.File.AppendAllText("gate_verification_results.log", $"[GATE 10.2 RESULT] Success: {success} at {DateTime.Now}\n");
             EditorApplication.isPlaying = false;
-            EditorApplication.Exit(success ? 0 : 1);
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(success ? 0 : 1);
+            }
 #endif
         }
 
         private IEnumerator RunVerificationRoutine(Action<bool> onComplete)
         {
             yield return null;
+            Time.timeScale = 1f;
+
+            // Halt ambient scene WaveManager and remove ambient enemies to prevent background defeat
+            var ambientWaveMgr = FindFirstObjectByType<WaveManager>();
+            if (ambientWaveMgr != null)
+            {
+                ambientWaveMgr.HaltDungeon();
+            }
+            var ambientSpawner = FindFirstObjectByType<PlayerSpawner>();
+            if (ambientSpawner != null)
+            {
+                ambientSpawner.gameObject.SetActive(false);
+            }
+            var ambientEnemies = FindObjectsByType<EnemyHealth>(FindObjectsSortMode.None);
+            foreach (var enemy in ambientEnemies)
+            {
+                if (enemy != null) DestroyImmediate(enemy.gameObject);
+            }
+
             Debug.Log("[GATE 10.2] Beginning Milestone 10.2 Automated Play Mode Verification...");
             bool allPassed = true;
 
@@ -296,9 +329,220 @@ namespace DungeonRoguelite.Tests
                 allPassed = false;
             }
 
+            // -------------------------------------------------------------
+            // CHECK 8: Warrior Prefab Melee Reach Configuration (2.5m)
+            // -------------------------------------------------------------
+            var warriorPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Characters/Warrior.prefab");
+            var warriorMelee = warriorPrefab != null ? warriorPrefab.GetComponent<MeleeWeapon>() : null;
+            bool c8 = warriorMelee != null &&
+                      Mathf.Approximately(warriorMelee.Range, 2.5f) &&
+                      Mathf.Approximately(warriorMelee.Damage, 25f) &&
+                      Mathf.Approximately(warriorMelee.AttackCooldown, 0.5f) &&
+                      Mathf.Approximately(warriorMelee.ArcAngle, 120f);
+
+            if (c8)
+            {
+                Debug.Log($"[CHECK 8 PASSED] Warrior prefab melee configuration verified: Range={warriorMelee.Range}m (2.5m target), Damage={warriorMelee.Damage}, Cooldown={warriorMelee.AttackCooldown}s, Arc={warriorMelee.ArcAngle}°.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 8 FAILED] Warrior prefab melee configuration mismatch: Range={warriorMelee?.Range}, Damage={warriorMelee?.Damage}, Cooldown={warriorMelee?.AttackCooldown}, Arc={warriorMelee?.ArcAngle}");
+                allPassed = false;
+            }
+
+            // -------------------------------------------------------------
+            // Setup Helpers for Functional Hit Tests (Checks 9-14)
+            // -------------------------------------------------------------
+            Func<string, (GameObject, MeleeWeapon, PlayerStats)> createTestWeapon = (name) =>
+            {
+                var go = new GameObject(name);
+                go.transform.position = Vector3.zero;
+                go.transform.rotation = Quaternion.identity;
+                var melee = go.AddComponent<MeleeWeapon>();
+                var stats = go.AddComponent<PlayerStats>();
+                melee.SetPlayerStats(stats);
+                return (go, melee, stats);
+            };
+
+            Func<string, Vector3, (GameObject, TestDamageableTarget)> createTarget = (name, pos) =>
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                go.name = name;
+                go.transform.position = pos;
+                var dummy = go.AddComponent<TestDamageableTarget>();
+                return (go, dummy);
+            };
+
+            // -------------------------------------------------------------
+            // CHECK 9: Target at 2.25m (Outside Old 2.0m, Inside New 2.5m) is Hit
+            // -------------------------------------------------------------
+            Time.timeScale = 1f;
+            var (wGo9, testMelee9, _) = createTestWeapon("Warrior_Test_C9");
+            var (target225Go, target225Dummy) = createTarget("Target_225m", new Vector3(0f, 0f, 2.25f));
+            Physics.SyncTransforms();
+            bool attackAt225 = testMelee9.TryAttack();
+            bool c9 = attackAt225 && target225Dummy.HitCount == 1 && Mathf.Approximately(target225Dummy.LastDamageReceived, 25f);
+            if (c9)
+            {
+                Debug.Log("[CHECK 9 PASSED] Target at 2.25m (outside old 2.0m range, inside new 2.5m range) successfully hit with 25 damage.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 9 FAILED] Target at 2.25m was not hit: attack={attackAt225}, hitCount={target225Dummy.HitCount}, lastDmg={target225Dummy.LastDamageReceived}");
+                allPassed = false;
+            }
+            DestroyImmediate(target225Go);
+            DestroyImmediate(wGo9);
+            yield return null;
+
+            // -------------------------------------------------------------
+            // CHECK 10: Target Beyond 2.5m (Center 3.25m / Surface 2.75m) Receives Zero Damage
+            // -------------------------------------------------------------
+            // Capsule primitive has radius 0.5m; center at 3.25m puts closest collider surface at 2.75m (> 2.5m range)
+            Time.timeScale = 1f;
+            var (wGo10, testMelee10, _) = createTestWeapon("Warrior_Test_C10");
+            var (targetFarGo, targetFarDummy) = createTarget("Target_275m_Surface", new Vector3(0f, 0f, 3.25f));
+            Physics.SyncTransforms();
+            bool attack10Fired = testMelee10.TryAttack();
+            bool c10 = attack10Fired && targetFarDummy.HitCount == 0 && Mathf.Approximately(targetFarDummy.CurrentHealth, 100f);
+            if (c10)
+            {
+                Debug.Log("[CHECK 10 PASSED] Target beyond 2.5m (surface at 2.75m) receives zero damage from executed swing.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 10 FAILED] Target beyond 2.5m was hit or swing blocked: fired={attack10Fired}, hitCount={targetFarDummy.HitCount}, hp={targetFarDummy.CurrentHealth}");
+                allPassed = false;
+            }
+            DestroyImmediate(targetFarGo);
+            DestroyImmediate(wGo10);
+            yield return null;
+
+            // -------------------------------------------------------------
+            // CHECK 11: Arc Cone (120°) Still Applies at New Range
+            // -------------------------------------------------------------
+            // Target at 2.25m distance but 90 degrees sideways (outside 120-degree cone)
+            Time.timeScale = 1f;
+            var (wGo11, testMelee11, _) = createTestWeapon("Warrior_Test_C11");
+            var (targetArcGo, targetArcDummy) = createTarget("Target_90deg", new Vector3(2.25f, 0f, 0f));
+            Physics.SyncTransforms();
+            bool attack11Fired = testMelee11.TryAttack();
+            bool c11 = attack11Fired && targetArcDummy.HitCount == 0 && Mathf.Approximately(targetArcDummy.CurrentHealth, 100f);
+            if (c11)
+            {
+                Debug.Log("[CHECK 11 PASSED] 120° forward arc cone strictly filters out sideways targets at 2.25m from executed swing.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 11 FAILED] Sideways target outside arc was hit or swing blocked: fired={attack11Fired}, hitCount={targetArcDummy.HitCount}");
+                allPassed = false;
+            }
+            DestroyImmediate(targetArcGo);
+            DestroyImmediate(wGo11);
+            yield return null;
+
+            // -------------------------------------------------------------
+            // CHECK 12: One Attack Does Not Double-Hit
+            // -------------------------------------------------------------
+            Time.timeScale = 1f;
+            var (wGo12, testMelee12, _) = createTestWeapon("Warrior_Test_C12");
+            var (targetDedupeGo, targetDedupeDummy) = createTarget("Target_Dedupe", new Vector3(0f, 0f, 1.8f));
+            Physics.SyncTransforms();
+            bool attack12Fired = testMelee12.TryAttack();
+            bool c12 = attack12Fired && targetDedupeDummy.HitCount == 1;
+            if (c12)
+            {
+                Debug.Log("[CHECK 12 PASSED] Attack hit detection de-duplicates cleanly: exactly 1 hit per swing.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 12 FAILED] Multi-hit detected: fired={attack12Fired}, hitCount={targetDedupeDummy.HitCount}");
+                allPassed = false;
+            }
+            DestroyImmediate(targetDedupeGo);
+            DestroyImmediate(wGo12);
+            yield return null;
+
+            // -------------------------------------------------------------
+            // CHECK 13: PlayerStats Damage Scaling Works with New Range
+            // -------------------------------------------------------------
+            float c13PreTimeScale = Time.timeScale;
+            Time.timeScale = 1f;
+            var (wGo13, testMelee13, testStats13) = createTestWeapon("Warrior_Test_C13");
+            testStats13.AddDamageBonus(0.20f); // +20% -> 30 effective damage
+            bool multOk = Mathf.Approximately(testStats13.DamageMultiplier, 1.20f);
+            Debug.Log($"[CHECK 13 PRE-CHECK] preTimeScale={c13PreTimeScale}, currentTimeScale={Time.timeScale}, multOk={multOk} ({testStats13.DamageMultiplier}), effDmg={testMelee13.EffectiveDamage}, Time.time={Time.time}");
+
+            var (targetScaledGo, targetScaledDummy) = createTarget("Target_Scaled", new Vector3(0f, 0f, 2.25f));
+            Physics.SyncTransforms();
+            bool attack13Fired = testMelee13.TryAttack();
+            bool c13 = attack13Fired && multOk && targetScaledDummy.HitCount == 1 && Mathf.Approximately(targetScaledDummy.LastDamageReceived, 30f);
+            if (c13)
+            {
+                Debug.Log($"[CHECK 13 PASSED] PlayerStats damage scaling (+20% -> 30 damage) functions accurately at new 2.25m reach (fired={attack13Fired}, hitCount={targetScaledDummy.HitCount}, dmg={targetScaledDummy.LastDamageReceived}).");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 13 FAILED] Scaled attack mismatch: fired={attack13Fired}, multOk={multOk} ({testStats13.DamageMultiplier}), hitCount={targetScaledDummy.HitCount}, dmg={targetScaledDummy.LastDamageReceived} (expected 30)");
+                allPassed = false;
+            }
+            DestroyImmediate(targetScaledGo);
+            DestroyImmediate(wGo13);
+            yield return null;
+
+            // -------------------------------------------------------------
+            // CHECK 14: Melee Attack Compatible with Pause State
+            // -------------------------------------------------------------
+            var (wGo14, testMelee14, _) = createTestWeapon("Warrior_Test_C14");
+            var (targetPauseGo, targetPauseDummy) = createTarget("Target_Pause", new Vector3(0f, 0f, 1.5f));
+            Physics.SyncTransforms();
+            try
+            {
+                Time.timeScale = 0f;
+                bool pauseAttack = testMelee14.TryAttack();
+                bool c14 = !pauseAttack && targetPauseDummy.HitCount == 0;
+                if (c14)
+                {
+                    Debug.Log("[CHECK 14 PASSED] Melee attack respects pause guard (Time.timeScale <= 0f blocks attacks).");
+                }
+                else
+                {
+                    Debug.LogError($"[CHECK 14 FAILED] Attack executed during pause: allowed={pauseAttack}, hitCount={targetPauseDummy.HitCount}");
+                    allPassed = false;
+                }
+            }
+            finally
+            {
+                Time.timeScale = 1f;
+            }
+            DestroyImmediate(targetPauseGo);
+            DestroyImmediate(wGo14);
+
+            // -------------------------------------------------------------
+            // CHECK 15: Archer / Gunner Combat Systems Unaffected
+            // -------------------------------------------------------------
+            var archerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Characters/Archer.prefab");
+            var bowComp = archerPrefab != null ? archerPrefab.GetComponent<BowWeapon>() : null;
+            var gunnerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Characters/Gunner.prefab");
+            var rifleComp = gunnerPrefab != null ? gunnerPrefab.GetComponent<RifleWeapon>() : null;
+
+            bool c15Archer = bowComp != null && Mathf.Approximately(bowComp.Damage, 20f) && Mathf.Approximately(bowComp.AttackCooldown, 0.6f);
+            bool c15Gunner = rifleComp != null && Mathf.Approximately(rifleComp.Damage, 10f) && Mathf.Approximately(rifleComp.AttackCooldown, 0.18f) && Mathf.Approximately(rifleComp.Range, 25f);
+            bool c15 = c15Archer && c15Gunner;
+
+            if (c15)
+            {
+                Debug.Log("[CHECK 15 PASSED] Archer (Bow: 20 dmg, 0.6s cd) and Gunner (Rifle: 10 dmg, 0.18s cd, 25m range) configurations unaffected.");
+            }
+            else
+            {
+                Debug.LogError($"[CHECK 15 FAILED] Archetype combat affected: ArcherOk={c15Archer}, GunnerOk={c15Gunner}");
+                allPassed = false;
+            }
+
             if (allPassed)
             {
-                Debug.Log("[GATE 10.2 TEST COMPLETE] All 7 checks PASSED with 0 errors.");
+                Debug.Log("[GATE 10.2 TEST COMPLETE] All 15 checks PASSED with 0 errors.");
             }
             else
             {

@@ -247,7 +247,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Weapons.MeleeWeapon
   damage: 25
   attackCooldown: 0.5
-  range: 2
+  range: 2.5
   arcAngle: 120
   targetLayers:
     serializedVersion: 2

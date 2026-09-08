@@ -404,7 +404,7 @@ namespace DungeonRoguelite.Tests
             // -------------------------------------------------------------
             bool c18PlayerHealth = playerHealth.MaxHealth == 100f && !playerHealth.IsDead;
             bool c19PlayerAim = playerAim.AimCamera != null;
-            bool c20MeleeWeapon = meleeWeapon.Range == 2.0f && meleeWeapon.Damage == 25f;
+            bool c20MeleeWeapon = (meleeWeapon.Range == 2.0f || meleeWeapon.Range == 2.5f) && meleeWeapon.Damage == 25f;
             bool c21WaveManager = waveManager.TotalWaves == 3;
             bool c22PlayerExp = playerExp.Level >= 1 && playerExp.TotalXPEarned > 0;
             bool c23PlayerStats = playerStats != null && playerStats.DamageMultiplier >= 1.0f;

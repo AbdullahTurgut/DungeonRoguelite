@@ -42,6 +42,10 @@ namespace DungeonRoguelite.Dungeons
         [Tooltip("Damage multiplier applied to spawned enemies in this dungeon (e.g. 1.0 = baseline, 1.1 = +10%).")]
         [SerializeField] private float enemyDamageMultiplier = 1f;
 
+        [Header("Classification")]
+        [Tooltip("Classification of the dungeon (Normal or Boss).")]
+        [SerializeField] private DungeonType dungeonType = DungeonType.Normal;
+
         public string Id => id;
         public string DisplayName => displayName;
         public string Description => description;
@@ -50,10 +54,11 @@ namespace DungeonRoguelite.Dungeons
         public WaveDefinition[] Waves => waves;
         public float EnemyHealthMultiplier => enemyHealthMultiplier > 0f ? enemyHealthMultiplier : 1f;
         public float EnemyDamageMultiplier => enemyDamageMultiplier > 0f ? enemyDamageMultiplier : 1f;
+        public DungeonType Type => dungeonType;
 
         public bool HasPrerequisite => !string.IsNullOrEmpty(requiredDungeonId);
 
-        public void SetConfiguration(string newId, string newDisplayName, string newDescription, string newSceneName, string newRequiredDungeonId, WaveDefinition[] newWaves, float healthMultiplier = 1f, float damageMultiplier = 1f)
+        public void SetConfiguration(string newId, string newDisplayName, string newDescription, string newSceneName, string newRequiredDungeonId, WaveDefinition[] newWaves, float healthMultiplier = 1f, float damageMultiplier = 1f, DungeonType type = DungeonType.Normal)
         {
             id = newId;
             displayName = newDisplayName;
@@ -63,6 +68,16 @@ namespace DungeonRoguelite.Dungeons
             waves = newWaves;
             enemyHealthMultiplier = healthMultiplier > 0f ? healthMultiplier : 1f;
             enemyDamageMultiplier = damageMultiplier > 0f ? damageMultiplier : 1f;
+            dungeonType = type;
         }
+    }
+
+    /// <summary>
+    /// Classification of dungeons across chapters.
+    /// </summary>
+    public enum DungeonType
+    {
+        Normal,
+        Boss
     }
 }

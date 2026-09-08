@@ -21,7 +21,7 @@ namespace DungeonRoguelite.Weapons
         [SerializeField] private float attackCooldown = 0.5f;
 
         [Tooltip("Maximum reach of the melee attack in meters.")]
-        [SerializeField] private float range = 2.0f;
+        [SerializeField] private float range = 2.5f;
 
         [Tooltip("Total horizontal arc angle of the attack cone in degrees.")]
         [SerializeField] private float arcAngle = 120f;
