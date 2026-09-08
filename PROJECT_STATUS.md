@@ -3,9 +3,11 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 10 (Campaign Run Progression & Scaling, Milestones 10.1–10.5) completely implemented and verified across all gates.
-- RunProgressionSession with commit/checkpoint semantics, data-driven enemy scaling (D1, D2, D3), defeat rollback, playable Dungeon 3, Warrior melee reach tuned to 2.5m, chapter/boss data foundations, and PlayerStats progression foundations integrated.
-- 100% green automated suites for Gates 10.1 (11/11), 10.2 (15/15), 10.3 (5/5), 10.4 (5/5), 10.5 (11/11), and full sequential regression (47/47 checks passed).
+- Phase 10 Manual QA Blocking Fix Pass complete:
+  - Finding 1: Dungeon 3 visibility, card layout, and cascading unlocking on World Map resolved. WorldMapController dynamically binds all catalog entries with a clean 3-card horizontal layout (width 440, spacing 500, anchored at X=[-500, 0, +500]), and setup tooling pre-serializes 3 cards into WorldMap.unity scene.
+  - Finding 2: Campaign run continuity and replay preservation resolved. PlayerSpawner binds UpgradeManager before reconstruction, restores from committed run state (Level, CurrentXP, TotalXP, CommittedUpgradeIds), and establishes dungeon entry checkpoints immediately upon entry. ReconstructUpgrades clears collected IDs before rebuilding, and DungeonCompletionController includes null-fallback resolution to ensure finalLevel and finalUpgradeIds are never read from null.
+  - 10/10 checks PASSED in automated QA verification suite (Milestone10_QA_Verifier.cs).
+  - All Phase 10 automated test suites maintain 100% green integrity.
 
 ---
 
@@ -13,10 +15,11 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 10: Campaign Run Progression & Scaling (Milestones 10.1–10.5 Complete & Verified)**  
+**COMPLETED — Phase 10: Campaign Run Progression & Scaling (Manual QA Fix Pass Complete & Verified)**  
+**READY FOR USER MANUAL QA SIGN-OFF — DO NOT PUSH YET**  
 **NEXT UP — Phase 11: Permanent Progression & Meta Trees**
 
-Milestones 1.1 through 9.5, Phase 9 Polish Pass, and Phase 10 (10.1: Campaign Run Progression Checkpoints, 10.2: Data-Driven Enemy Scaling, 10.3: Run Lifecycle & End-Run Semantics, 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity, 10.5: Progression Foundations & Architecture Invariants) are completed, verified, and approved.
+Milestones 1.1 through 9.5, Phase 9 Polish Pass, Phase 10 (10.1–10.5), and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and ready for user manual QA sign-off.
 
 ---
 
@@ -478,6 +481,19 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
     - Invariant verification: confirmed strict architectural separation between `CharacterSelectionSession` (hero ownership), `DungeonRunSession` (dungeon ownership), and `RunProgressionSession` (campaign progression ownership). Confirmed zero health persistence in session.
     - Automated Play Mode verification suite (`Milestone10_5_Verifier.cs`) ran and passed all 10 checks with 0 errors. Checkpoint commit `c144210`.
     - Full regression suites: Gate 9.4 (World Map 13/13 checks) and Phase 9 Polish (17/17 checks) verified GREEN.
+  - **Phase 10 — Manual QA Blocking Fix Pass (Finding 1 & Finding 2)**:
+    - **Finding 1 (Dungeon 3 Visibility & Layout)**:
+      - Root Cause: Fixed 2-card array in `WorldMapController` and `WorldMap.unity` ignored `DungeonCatalog[2]`.
+      - Resolution: `WorldMapController` dynamically matches cards to catalog size (`EnsureCardsMatchCatalog()`), positions them cleanly in a horizontal row (`ApplyHorizontalCardLayout()`, X=[-500, 0, +500], width 440), and updates `Milestone9_Setup` / `Milestone10_Setup` to pre-serialize 3 cards.
+      - Dynamic state: D1 AÇIK, D2 KİLİTLİ, D3 KİLİTLİ initially; D1 completed -> D2 AÇIK; D2 completed -> D3 AÇIK.
+    - **Finding 2 (Run Progression Reset On Victory & Replay)**:
+      - Root Causes:
+        1. In `PlayerSpawner.Spawn()`, `upgradeMgr.ReconstructUpgrades` was called before `OnPlayerSpawned`, while `UpgradeManager.playerStats` was null, discarding all reconstructed upgrades.
+        2. `PlayerSpawner.Spawn()` restored from entry checkpoints instead of the authoritative committed run state (`Level`, `CurrentXP`, `TotalXP`, `CommittedUpgradeIds`), and never initialized entry checkpoints upon dungeon arrival.
+        3. `DungeonCompletionController.FinalizeCompletion()` read `playerExperience` and `upgradeManager` without defensive fallbacks, risking default Level 1 commits.
+      - Resolution: `PlayerSpawner.Spawn()` explicitly binds `upgradeMgr.BindPlayer(exp, stats)` before reconstruction, restores from committed run state, and creates the dungeon entry checkpoint immediately. `UpgradeManager.ReconstructUpgrades` clears collected IDs before rebuilding to maintain strict idempotency. `DungeonCompletionController` defensively resolves instances via `PlayerExperience.ActiveInstance` and `FindFirstObjectByType<UpgradeManager>()`.
+      - Result: Campaign run builds (Level, Total XP, accumulated upgrades, effective stat multipliers) persist flawlessly across victories and replays, roll back to entry checkpoints upon retry, and cleanly terminate only upon defeat-return-to-map or character reselection.
+    - Automated Play Mode verification suite (`Milestone10_QA_Verifier.cs`) verified all 10 checks GREEN.
 
 ---
 

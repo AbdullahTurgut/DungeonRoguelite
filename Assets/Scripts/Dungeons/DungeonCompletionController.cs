@@ -252,6 +252,19 @@ namespace DungeonRoguelite.Dungeons
                 DungeonProgression.RecordDungeonCompleted(completedDungeonId);
             }
 
+            // Ensure component references are resolved before reading final run state
+            if (playerExperience == null)
+            {
+                playerExperience = PlayerExperience.ActiveInstance != null
+                    ? PlayerExperience.ActiveInstance
+                    : FindFirstObjectByType<PlayerExperience>();
+            }
+
+            if (upgradeManager == null)
+            {
+                upgradeManager = FindFirstObjectByType<UpgradeManager>();
+            }
+
             // Commit final victory progression into the active campaign run session
             int finalLevel = playerExperience != null ? playerExperience.Level : 1;
             int finalCurrentXP = playerExperience != null ? playerExperience.CurrentXP : 0;

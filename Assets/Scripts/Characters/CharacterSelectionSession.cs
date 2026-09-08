@@ -12,6 +12,7 @@ namespace DungeonRoguelite.Characters
     public static class CharacterSelectionSession
     {
         private static CharacterDefinition selectedCharacter;
+        private static string selectedCharacterId;
 
         /// <summary>
         /// The currently selected CharacterDefinition for the upcoming or active dungeon run.
@@ -19,9 +20,14 @@ namespace DungeonRoguelite.Characters
         public static CharacterDefinition SelectedCharacter => selectedCharacter;
 
         /// <summary>
+        /// The unique ID of the currently selected character, preserved even if the asset reference is cleared.
+        /// </summary>
+        public static string SelectedCharacterId => selectedCharacterId;
+
+        /// <summary>
         /// True if a non-null CharacterDefinition is currently assigned to the session.
         /// </summary>
-        public static bool HasSelection => selectedCharacter != null;
+        public static bool HasSelection => selectedCharacter != null || !string.IsNullOrEmpty(selectedCharacterId);
 
         /// <summary>
         /// Sets the active character selection for the session.
@@ -30,6 +36,7 @@ namespace DungeonRoguelite.Characters
         public static void SetSelection(CharacterDefinition character)
         {
             selectedCharacter = character;
+            selectedCharacterId = character != null ? character.Id : null;
         }
 
         /// <summary>
@@ -38,6 +45,7 @@ namespace DungeonRoguelite.Characters
         public static void Clear()
         {
             selectedCharacter = null;
+            selectedCharacterId = null;
         }
 
         /// <summary>

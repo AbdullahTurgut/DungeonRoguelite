@@ -59,11 +59,27 @@ namespace DungeonRoguelite.Characters
                 return activeCharacter;
             }
 
-            CharacterDefinition defToSpawn = definition != null
-                ? definition
-                : (CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null
-                    ? CharacterSelectionSession.SelectedCharacter
-                    : defaultCharacter);
+            CharacterDefinition defToSpawn = definition;
+            if (defToSpawn == null && CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null)
+            {
+                defToSpawn = CharacterSelectionSession.SelectedCharacter;
+            }
+            if (defToSpawn == null && !string.IsNullOrEmpty(CharacterSelectionSession.SelectedCharacterId) &&
+                defaultCharacter != null && string.Equals(defaultCharacter.Id, CharacterSelectionSession.SelectedCharacterId, StringComparison.OrdinalIgnoreCase))
+            {
+                defToSpawn = defaultCharacter;
+            }
+            if (defToSpawn == null && DungeonRoguelite.Progression.RunProgressionSession.HasActiveRun &&
+                !string.IsNullOrEmpty(DungeonRoguelite.Progression.RunProgressionSession.OwnerCharacterId) &&
+                defaultCharacter != null && string.Equals(defaultCharacter.Id, DungeonRoguelite.Progression.RunProgressionSession.OwnerCharacterId, StringComparison.OrdinalIgnoreCase))
+            {
+                defToSpawn = defaultCharacter;
+            }
+            if (defToSpawn == null)
+            {
+                defToSpawn = defaultCharacter;
+            }
+
             if (defToSpawn == null)
             {
                 Debug.LogError("[PlayerSpawner] Cannot spawn: No CharacterDefinition specified or configured.");
@@ -94,24 +110,35 @@ namespace DungeonRoguelite.Characters
             playable.SetCharacterDefinition(defToSpawn);
             activeCharacter = playable;
 
+            var exp = playable.GetComponent<DungeonRoguelite.Experience.PlayerExperience>();
+            var stats = playable.GetComponent<DungeonRoguelite.Player.PlayerStats>();
+            var upgradeMgr = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.Upgrades.UpgradeManager>();
+
+            // Explicitly bind UpgradeManager to player components FIRST so references are never null during reconstruction
+            if (upgradeMgr != null && (exp != null || stats != null))
+            {
+                upgradeMgr.BindPlayer(exp, stats);
+            }
+
             // Restore campaign run progression if an active run exists for this character
             if (DungeonRoguelite.Progression.RunProgressionSession.HasActiveRun &&
                 DungeonRoguelite.Progression.RunProgressionSession.ValidateOwner(defToSpawn.Id))
             {
-                var exp = playable.GetComponent<DungeonRoguelite.Experience.PlayerExperience>();
                 if (exp != null)
                 {
                     exp.RestoreState(
-                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointLevel,
-                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointCurrentXP,
-                        DungeonRoguelite.Progression.RunProgressionSession.CheckpointTotalXP);
+                        DungeonRoguelite.Progression.RunProgressionSession.Level,
+                        DungeonRoguelite.Progression.RunProgressionSession.CurrentXP,
+                        DungeonRoguelite.Progression.RunProgressionSession.TotalXP);
                 }
 
-                var upgradeMgr = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.Upgrades.UpgradeManager>();
                 if (upgradeMgr != null)
                 {
-                    upgradeMgr.ReconstructUpgrades(DungeonRoguelite.Progression.RunProgressionSession.CheckpointUpgradeIds);
+                    upgradeMgr.ReconstructUpgrades(DungeonRoguelite.Progression.RunProgressionSession.CommittedUpgradeIds);
                 }
+
+                // Capture fresh entry checkpoint for this dungeon attempt (used for retry rollback)
+                DungeonRoguelite.Progression.RunProgressionSession.CreateDungeonCheckpoint();
             }
             else
             {

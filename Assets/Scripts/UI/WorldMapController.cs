@@ -51,6 +51,7 @@ namespace DungeonRoguelite.UI
         private void Awake()
         {
             ResolveReferences();
+            EnsureCardsMatchCatalog();
         }
 
         private void Start()
@@ -94,6 +95,9 @@ namespace DungeonRoguelite.UI
                 activeHeroText.text = $"Kahraman: {heroName}";
             }
 
+            // Ensure card components match catalog count
+            EnsureCardsMatchCatalog();
+
             // Bind catalog to cards
             if (cards != null && dungeonCatalog != null)
             {
@@ -118,6 +122,9 @@ namespace DungeonRoguelite.UI
                     }
                 }
             }
+
+            // Reposition cards in a clean, readable horizontal row
+            ApplyHorizontalCardLayout();
 
             // Default local selection: prioritize previously selected dungeon if unlocked, else first unlocked
             DungeonDefinition defaultToSelect = null;
@@ -258,6 +265,88 @@ namespace DungeonRoguelite.UI
 
             isTransitioning = true;
             SceneManager.LoadScene("CharacterSelection");
+        }
+
+        private void EnsureCardsMatchCatalog()
+        {
+            if (dungeonCatalog == null || dungeonCatalog.Count == 0) return;
+
+            var cardList = new List<WorldMapCard>();
+            if (cards != null)
+            {
+                foreach (var c in cards)
+                {
+                    if (c != null) cardList.Add(c);
+                }
+            }
+
+            if (cardList.Count == 0)
+            {
+                var foundCards = GetComponentsInChildren<WorldMapCard>(true);
+                if (foundCards != null)
+                {
+                    cardList.AddRange(foundCards);
+                }
+            }
+
+            if (cardList.Count > 0 && cardList.Count < dungeonCatalog.Count)
+            {
+                Transform parentTransform = cardList[0].transform.parent;
+                WorldMapCard template = cardList[0];
+
+                for (int i = cardList.Count; i < dungeonCatalog.Count; i++)
+                {
+                    GameObject cloneGo = Instantiate(template.gameObject, parentTransform, false);
+                    cloneGo.name = $"Card_Dungeon{(i + 1):D2}";
+                    WorldMapCard cloneCard = cloneGo.GetComponent<WorldMapCard>();
+                    if (cloneCard != null)
+                    {
+                        cloneCard.SetSelected(false);
+                        cardList.Add(cloneCard);
+                    }
+                }
+
+                cards = cardList.ToArray();
+            }
+        }
+
+        private void ApplyHorizontalCardLayout()
+        {
+            if (cards == null || cards.Length == 0) return;
+
+            int activeCount = 0;
+            for (int i = 0; i < cards.Length; i++)
+            {
+                if (cards[i] != null && cards[i].gameObject.activeSelf)
+                {
+                    activeCount++;
+                }
+            }
+
+            if (activeCount == 0) return;
+
+            // Spacing calculations for 1920 reference resolution (scaled cleanly to 1280x720)
+            // For 3 cards: width = 440, spacing = 500, positions: -500, 0, +500
+            // For 2 cards: width = 460, spacing = 560, positions: -280, +280
+            // For 1 card: width = 460, position: 0
+            float cardWidth = activeCount >= 3 ? 440f : 460f;
+            float spacing = activeCount >= 3 ? 500f : (activeCount == 2 ? 560f : 0f);
+            float startX = -((activeCount - 1) * spacing) / 2f;
+
+            int currentIndex = 0;
+            for (int i = 0; i < cards.Length; i++)
+            {
+                if (cards[i] != null && cards[i].gameObject.activeSelf)
+                {
+                    var rect = cards[i].GetComponent<RectTransform>();
+                    if (rect != null)
+                    {
+                        rect.sizeDelta = new Vector2(cardWidth, 450f);
+                        rect.anchoredPosition = new Vector2(startX + currentIndex * spacing, 30f);
+                    }
+                    currentIndex++;
+                }
+            }
         }
 
         public void SetReferences(

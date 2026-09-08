@@ -484,9 +484,10 @@ namespace DungeonRoguelite.Editor
             var heroTMP = CreateOrGetText(canvasGo, "ActiveHeroText", "Kahraman: Savaşçı", new Vector2(0f, 350f), new Vector2(600f, 45f), 24f, new Color(0.95f, 0.85f, 0.35f, 1f));
 
             // Dungeon Cards
-            var cardComponents = new WorldMapCard[2];
-            cardComponents[0] = CreateWorldMapCard(canvasGo, "Card_Dungeon01", new Vector2(-280f, 30f));
-            cardComponents[1] = CreateWorldMapCard(canvasGo, "Card_Dungeon02", new Vector2(280f, 30f));
+            var cardComponents = new WorldMapCard[3];
+            cardComponents[0] = CreateWorldMapCard(canvasGo, "Card_Dungeon01", new Vector2(-500f, 30f));
+            cardComponents[1] = CreateWorldMapCard(canvasGo, "Card_Dungeon02", new Vector2(0f, 30f));
+            cardComponents[2] = CreateWorldMapCard(canvasGo, "Card_Dungeon03", new Vector2(500f, 30f));
 
             // Enter Button
             var enterBtn = CreateButton(canvasGo, "EnterButton", "ZİNDANA GİR", new Vector2(0f, -280f), new Vector2(340f, 65f));
@@ -502,9 +503,10 @@ namespace DungeonRoguelite.Editor
             var sMap = new SerializedObject(mapController);
             sMap.FindProperty("dungeonCatalog").objectReferenceValue = catalogAsset;
             var cardsProp = sMap.FindProperty("cards");
-            cardsProp.arraySize = 2;
+            cardsProp.arraySize = 3;
             cardsProp.GetArrayElementAtIndex(0).objectReferenceValue = cardComponents[0];
             cardsProp.GetArrayElementAtIndex(1).objectReferenceValue = cardComponents[1];
+            cardsProp.GetArrayElementAtIndex(2).objectReferenceValue = cardComponents[2];
             sMap.FindProperty("enterDungeonButton").objectReferenceValue = enterBtn;
             sMap.FindProperty("backButton").objectReferenceValue = backBtn;
             sMap.FindProperty("activeHeroText").objectReferenceValue = heroTMP;
@@ -555,7 +557,7 @@ namespace DungeonRoguelite.Editor
             rect.anchorMax = new Vector2(0.5f, 0.5f);
             rect.pivot = new Vector2(0.5f, 0.5f);
             rect.anchoredPosition = pos;
-            rect.sizeDelta = new Vector2(460f, 450f);
+            rect.sizeDelta = new Vector2(440f, 450f);
 
             var img = cardGo.AddComponent<Image>();
             img.color = new Color(0.10f, 0.12f, 0.16f, 0.96f); // Rich dark card body
@@ -569,16 +571,16 @@ namespace DungeonRoguelite.Editor
             borderGo.SetActive(false);
 
             // Title text (large, bold, pure white)
-            var titleTMP = CreateOrGetText(cardGo, "Title", "Bölüm", new Vector2(0f, 150f), new Vector2(420f, 60f), 32f, Color.white);
+            var titleTMP = CreateOrGetText(cardGo, "Title", "Bölüm", new Vector2(0f, 150f), new Vector2(400f, 60f), 28f, Color.white);
             titleTMP.fontStyle = FontStyles.Bold;
 
-            // Description text (increased size 22f, high contrast #E6ECF5)
-            var descTMP = CreateOrGetText(cardGo, "Description", "Açıklama", new Vector2(0f, 45f), new Vector2(410f, 120f), 22f, new Color(0.90f, 0.93f, 0.97f, 1f));
+            // Description text (clean size 20f, high contrast #E6ECF5)
+            var descTMP = CreateOrGetText(cardGo, "Description", "Açıklama", new Vector2(0f, 45f), new Vector2(390f, 120f), 20f, new Color(0.90f, 0.93f, 0.97f, 1f));
             descTMP.enableWordWrapping = true;
             descTMP.lineSpacing = 8f;
 
-            // Status text (bold 26f)
-            var statusTMP = CreateOrGetText(cardGo, "Status", "AÇIK", new Vector2(0f, -80f), new Vector2(320f, 40f), 26f, new Color(0.25f, 0.85f, 1f, 1f));
+            // Status text (bold 24f)
+            var statusTMP = CreateOrGetText(cardGo, "Status", "AÇIK", new Vector2(0f, -80f), new Vector2(320f, 40f), 24f, new Color(0.25f, 0.85f, 1f, 1f));
             statusTMP.fontStyle = FontStyles.Bold;
 
             // Lock overlay

@@ -241,5 +241,41 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[GATE 10.5] Entering Play Mode for automated verification...");
             EditorApplication.EnterPlaymode();
         }
+
+        [MenuItem("DungeonRoguelite/Phase 10/Setup WorldMap 3 Cards")]
+        public static void SetupWorldMapCards()
+        {
+            Debug.Log("[Milestone 10] Setting up 3 cards in WorldMap scene...");
+            Milestone9_Setup.SetupGate9_4();
+
+            var buildScenes = new EditorBuildSettingsScene[]
+            {
+                new EditorBuildSettingsScene(CharacterSelectionScenePath, true),
+                new EditorBuildSettingsScene(WorldMapScenePath, true),
+                new EditorBuildSettingsScene(DungeonPrototypeScenePath, true),
+                new EditorBuildSettingsScene(Dungeon02ScenePath, true),
+                new EditorBuildSettingsScene(Dungeon03ScenePath, true)
+            };
+            EditorBuildSettings.scenes = buildScenes;
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("[Milestone 10] WorldMap 3 cards setup complete.");
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 10/Run Manual QA Verification")]
+        public static void RunManualQAVerification()
+        {
+            Debug.Log("[MANUAL QA FIX VERIFICATION] Preparing test suite...");
+            SetupWorldMapCards();
+
+            var scene = EditorSceneManager.OpenScene(WorldMapScenePath, OpenSceneMode.Single);
+            CleanAllVerifiers();
+
+            var verifierGo = new GameObject("Milestone10_QA_VerifierRunner");
+            verifierGo.AddComponent<DungeonRoguelite.Tests.Milestone10_QA_Verifier>();
+
+            Debug.Log("[MANUAL QA FIX VERIFICATION] Entering Play Mode...");
+            EditorApplication.EnterPlaymode();
+        }
     }
 }

@@ -254,6 +254,8 @@ namespace DungeonRoguelite.Upgrades
                 return;
             }
 
+            collectedUpgradeIds.Clear();
+
             foreach (var id in upgradeIds)
             {
                 if (string.IsNullOrEmpty(id)) continue;
@@ -288,6 +290,20 @@ namespace DungeonRoguelite.Upgrades
                     }
                 }
             }
+
+#if UNITY_EDITOR
+            // Fallback in Editor in case instance array was not pre-populated in scene
+            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:UpgradeDefinition");
+            foreach (var guid in guids)
+            {
+                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+                var def = UnityEditor.AssetDatabase.LoadAssetAtPath<UpgradeDefinition>(path);
+                if (def != null && string.Equals(def.Id, id, StringComparison.OrdinalIgnoreCase))
+                {
+                    return def;
+                }
+            }
+#endif
 
             return null;
         }
