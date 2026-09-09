@@ -35,6 +35,11 @@ namespace DungeonRoguelite.Editor
                     Debug.Log("[GATE 13.3 COMPLETE] All Gate 13.3 checks PASSED.");
                     return;
                 }
+                if (gate == "13_4")
+                {
+                    VerifyGate13_4(); success = true;
+                    Debug.Log("[GATE 13.4 COMPLETE] All Gate 13.4 checks PASSED."); return;
+                }
                 Phase13Setup.SetupGate13_1();
                 var d4 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
                 var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
@@ -64,7 +69,7 @@ namespace DungeonRoguelite.Editor
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                Debug.LogError("[GATE 13.1 COMPLETE] Verification FAILED.");
+                Debug.LogError("[GATE " + gate.Replace('_', '.') + " COMPLETE] Verification FAILED.");
             }
             finally
             {
@@ -112,6 +117,31 @@ namespace DungeonRoguelite.Editor
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/Dungeons/Dungeon_04.unity", OpenSceneMode.Single);
             var manager = UnityEngine.Object.FindFirstObjectByType<WaveManager>();
             Check(manager != null && manager.TotalWaves == 4, "WaveManager final-enemy completion foundation has four waves");
+        }
+
+        private static void VerifyGate13_4()
+        {
+            string[] names = { "Zombie", "Runner", "Tank", "Ranged" };
+            // Production uses Mathf.Round for both health and damage.
+            float[] health = { 65f, 32f, 195f, 46f };
+            float[] damage = { 12f, 7f, 26f, 10f };
+            for (int i = 0; i < names.Length; i++)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/" + names[i] + ".prefab");
+                var instance = UnityEngine.Object.Instantiate(prefab);
+                try
+                {
+                    var enemyHealth = instance.GetComponent<DungeonRoguelite.Enemies.EnemyHealth>();
+                    enemyHealth.InitializeHealth(1.3f);
+                    Check(Mathf.Approximately(enemyHealth.MaxHealth, health[i]), names[i] + " D4 runtime HP rounding");
+                    var melee = instance.GetComponent<DungeonRoguelite.Enemies.EnemyAttack>();
+                    var ranged = instance.GetComponent<DungeonRoguelite.Enemies.EnemyRangedAttack>();
+                    if (melee != null) { melee.InitializeAttack(1.2f); Check(Mathf.Approximately(melee.Damage, damage[i]), names[i] + " D4 runtime damage"); }
+                    else { ranged.InitializeAttack(1.2f); Check(Mathf.Approximately(ranged.Damage, damage[i]), names[i] + " D4 runtime damage"); }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(instance); }
+            }
+            Check(System.IO.File.ReadAllText("Assets/Scripts/Waves/WaveManager.cs").Contains("EnemyHealthMultiplier"), "WaveManager applies selected dungeon scaling without prefab mutation");
         }
 
         private static void Check(bool value, string name)
