@@ -7,6 +7,8 @@ using DungeonRoguelite.Dungeons;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Waves;
+using DungeonRoguelite.Progression;
+using DungeonRoguelite.Tests;
 
 namespace DungeonRoguelite.Editor
 {
@@ -17,7 +19,7 @@ namespace DungeonRoguelite.Editor
             string[] args = Environment.GetCommandLineArgs(); int index = Array.IndexOf(args, "-gateSuite"); string gate = index >= 0 && index + 1 < args.Length ? args[index + 1] : "14_1"; bool ok = false;
             try
             {
-                if (gate == "14_1") VerifyFoundation(); else if (gate == "14_2") VerifyArena(); else if (gate == "14_3") VerifyBoss(); else if (gate == "14_4") VerifyEncounter(); else throw new InvalidOperationException("Unknown Phase 14 gate " + gate);
+                if (gate == "14_1") VerifyFoundation(); else if (gate == "14_2") VerifyArena(); else if (gate == "14_3") VerifyBoss(); else if (gate == "14_4") VerifyEncounter(); else if (gate == "14_5") VerifyCampaign(); else throw new InvalidOperationException("Unknown Phase 14 gate " + gate);
                 ok = true; Debug.Log("[GATE " + gate.Replace('_', '.') + " COMPLETE] All checks PASSED.");
             }
             catch (Exception ex) { Debug.LogException(ex); Debug.LogError("[GATE " + gate.Replace('_', '.') + " COMPLETE] Verification FAILED."); }
@@ -51,6 +53,17 @@ namespace DungeonRoguelite.Editor
             Check(d5.Waves[0].EnemyEntries.Select(e=>e.EnemyPrefab.name+":"+e.Count).SequenceEqual(new[]{"Zombie:3","Runner:2","Ranged:2"}),"Wave 1 composition");
             Check(d5.Waves[1].EnemyEntries.Select(e=>e.EnemyPrefab.name+":"+e.Count).SequenceEqual(new[]{"Zombie:3","Runner:3","Ranged:4","Tank:1"}),"Wave 2 composition");
             Check(d5.Waves[2].EnemyEntries.Count==1 && d5.Waves[2].EnemyEntries[0].EnemyPrefab.GetComponent<BossWardenController>()!=null,"boss final wave");
+        }
+        private static void VerifyCampaign()
+        {
+            using (var snapshot = new Phase12StateSnapshot())
+            {
+                var d5=D5; DungeonProgression.ResetProgression(); Check(!DungeonProgression.IsDungeonUnlocked(d5),"D5 locked before D4 completion"); DungeonProgression.RecordDungeonCompleted("dungeon_4"); Check(DungeonProgression.IsDungeonUnlocked(d5),"D4 completion unlocks D5 replay route");
+                RunProgressionSession.StartNewRun("warrior"); RunProgressionSession.CommitDungeonVictory(7,7,2085,new[]{"damage"}); RunProgressionSession.CreateDungeonCheckpoint(); Check(RunProgressionSession.Level==7 && RunProgressionSession.CurrentXP==7 && RunProgressionSession.TotalXP==2085,"D5 entry checkpoint preserves D4 run state");
+                var go=new GameObject("D5CampaignExperience"); var xp=go.AddComponent<PlayerExperience>(); xp.RestoreState(7,7,2085); xp.GainExperience(1200); Check(xp.Level==8 && xp.CurrentXP==68 && xp.XPToNextLevel==1709 && xp.TotalXPEarned==3285,"D5 1200 XP ends Level 8, 68 of 1709"); UnityEngine.Object.DestroyImmediate(go);
+                Check(PermanentProgression.GetDungeonFirstClearPoints("dungeon_5")==0 && !PermanentProgression.TryAwardDungeonFirstClear("warrior","dungeon_5",out int award) && award==0,"D5 reward and replay remain zero points");
+                RunProgressionSession.RestoreCheckpointOnRetry(); Check(RunProgressionSession.Level==7 && RunProgressionSession.CurrentXP==7 && RunProgressionSession.TotalXP==2085,"Retry restores D5 entry checkpoint"); RunProgressionSession.EndRun(); Check(!RunProgressionSession.HasActiveRun && RunProgressionSession.Level==1 && RunProgressionSession.TotalXP==0,"Return Map ends run");
+            }
         }
         private static bool Near(Vector3 a,Vector3 b)=>Vector3.Distance(a,b)<.01f;
         private static void Check(bool value,string name){if(!value)throw new InvalidOperationException("[CHECK FAILED] "+name);Debug.Log("[CHECK PASSED] "+name);}
