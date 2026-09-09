@@ -315,9 +315,11 @@ Implemented:
 
 ---
 
-# PHASE 13 — Dungeon 4 + Encounter Design (NEXT)
+# PHASE 13 — Dungeon 4 + Encounter Design (COMPLETE)
 
-- Dungeon 4 and encounter design.
+- Dungeon 4, The Colonnade / Bölüm 4: Sütunlu Salon, is complete: a 36m x 28m four-pillar arena with six spawn points, four production waves, 45 enemies, and 705 XP.
+- D4 uses 1.3x enemy health and 1.2x enemy damage, unlocks after D3, awards 3 permanent points per character only on first clear, and carries the campaign to Level 7 late in D4.
+- Automated gates, the 2129-check final matrix, D4 Wave 1 -> Wave 2 runtime regression, and manual gameplay QA are GREEN.
 
 ---
 
@@ -357,9 +359,9 @@ Phase 11 (Combat & Enemy Variety)             -> COMPLETED (Manual QA ALL GREEN)
     ↓
 Phase 12 (Permanent Progression / Skill Tree) -> COMPLETED (Manual QA ALL GREEN)
     ↓
-Phase 13 (Dungeon 4 + Encounter Design)       -> NEXT
+Phase 13 (Dungeon 4 + Encounter Design)       -> COMPLETED (Manual QA GREEN)
 ```
 
-Milestones 0 through 12 are fully implemented, automated-verified, and manual-QA-verified.
-Phase 12 is complete and signed off.
-Next task: Phase 13 (Dungeon 4 + Encounter Design).
+Milestones 0 through 13 are fully implemented, automated-verified, and manual-QA-verified.
+Phase 13 is complete and signed off.
+Next task: Phase 14 (Dungeon 5 + First Boss).

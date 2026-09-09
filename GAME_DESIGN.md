@@ -352,6 +352,7 @@ Enemy health and damage scale per dungeon via `DungeonDefinition` multipliers wi
 | **Dungeon 1** | Bölüm 1: Giriş | 3 | 38 | 410 XP | 1.0x | 50 HP | 1.0x | 10 Dmg |
 | **Dungeon 2** | Bölüm 2: Karanlık Koridor | 4 | 35 | 430 XP | 1.1x | 55 HP | 1.0x | 10 Dmg |
 | **Dungeon 3** | Bölüm 3: Mahzenin Derinlikleri | 4 | 42 | 540 XP | 1.2x | 60 HP | 1.1x | 11 Dmg |
+| **Dungeon 4** | Bölüm 4: Sütunlu Salon | 4 | 45 | 705 XP | 1.3x | 65 HP | 1.2x | 12 Dmg |
 
 ### Combat Breakpoint Philosophy
 
@@ -372,6 +373,8 @@ Phase 11 approved production encounters (Z = Zombie, R = Runner, T = Tank, A = R
 | D3 / 4 | 1 T, 2 A, 5 Z, 3 R | 11 | 150 |
 
 Entries spawn in the listed order. Campaign totals: 115 enemies, 1380 XP (+2.2% versus Phase 10's 1350 XP). Successful dungeon ends: D1 Level 3 / 160 of 225 XP; D2 Level 5 / 27 of 506 XP; D3 Level 6 / 61 of 759 XP. Dungeon 3 entry preserves the manually accepted approximate Level 5 pacing.
+
+Dungeon 4 is The Colonnade: a 36m x 28m hall with four pillars, central and side lanes, six spawn points, and no hazard. Its four waves use only Zombie, Runner, Tank, and Ranged for 45 enemies / 705 XP. Campaign total through D4 is 2085 XP; D4 enters at Level 6, 61/759 and ends at Level 7, 7/1139. First clear grants 3 permanent points per character; replay grants none.
 
 - Player power growth via level-up upgrades (+20% damage, +15% attack speed) outpaces the subtle enemy HP scaling (10-20%), creating a sense of increasing mastery rather than a bullet-sponge grind.
 - Weapon breakpoints against 50/55/60 HP zombies remain smooth:

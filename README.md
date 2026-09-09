@@ -198,6 +198,6 @@ Kalıcı yetenek harcamaları çatışma dışı bir eylemdir ve Dünya Haritas�
 - **Phase 10**: Çoklu Zindan Sefer Akışı & Ölçekleme — **TAMAMLANDI**
 - **Phase 11**: Savaş Geri Bildirimi & Düşman Çeşitliliği (Zombi, Koşucu, Tank, Menzilli) — **TAMAMLANDI**
 - **Phase 12**: Kalıcı İlerleme & Yetenek Ağaçları (Permanent Progression) — **TAMAMLANDI**
-- **Phase 13**: Zindan 4 + Karşılaşma Tasarımı (Dungeon 4 + Encounter Design) — **SIRADAKİ HEDEF**
+- **Phase 13**: Zindan 4 + Karşılaşma Tasarımı (Dungeon 4 + Encounter Design) — **TAMAMLANDI**
 - **Phase 14**: Zindan 5 + İlk Boss (Dungeon 5 + First Boss)
 - **Phase 15**: Prodüksiyon, Ayarlar ve Yayın Hazırlığı
