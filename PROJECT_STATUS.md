@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 12 Gate 12.3 Warrior Skill Tree & Spawn-Time Modifier Binding (2026-09-09): Gate 12.3 is COMPLETE and automated GREEN (200/200 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Gate 12.2: 99/99, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485; 1925 checks total). Implemented single Warrior `SkillTreeDefinition` ScriptableObject with 3 branches (Durability: +35% Max HP, Power: +35% Damage, Tempo: +15% Attack Speed, +5% Move Speed), 3 linear tiers per branch, 9 nodes total at 1 point each. Bound skill tree asset to `Character_Warrior.asset`. Integrated spawn-time permanent modifier binding into `PlayerSpawner` -> `PlayerStats` and `PlayerHealth`, enforcing fresh health scaling (`BaseMaxHealth` 100 -> `MaxHealth` 135, `CurrentHealth` 135) and layered combat math (`Base * Permanent * Temporary`). Verified run semantics compatibility across Victory, Defeat Retry rollback, and EndRun, alongside complete cross-character isolation (Archer and Gunner retain neutral 1.0x multipliers and 100 HP). Next task awaits Gate 12.4 authorization.
 - Phase 12 Gate 12.2 Reward Economy & Completion Integration (2026-09-09): Gate 12.2 is COMPLETE and automated GREEN (99/99 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485). Implemented approved first-clear economy in `PermanentProgression` (D1 = 2 pts, D2 = 2 pts, D3 = 3 pts; 7 pts total per character max) with case-insensitive and idempotent reward mapping. Integrated authoritative completion awarding into `DungeonCompletionController.FinalizeCompletion()`, preserving global `DungeonProgression` unlock semantics while recording character-isolated permanent rewards. Verified duplicate-clear rejection, cross-character isolation, exclusion from defeat/retry/return-to-map/run-XP, persistence across simulated reloads, and fail-safe handling on null/empty character/dungeon IDs. Next task awaits Gate 12.3 authorization.
 - Phase 12 Gate 12.1 Foundation & Persistence (2026-09-09): Gate 12.1 is COMPLETE and automated GREEN (87/87 checks passed, state restored, Unity exit code 0). Regressions GREEN (Suite 10.5: 11/11 passed, Suite 11.5: 1485/1485 passed). Implemented `PermanentEffectType` enum, `SkillNodeDefinition` node data model, `SkillTreeDefinition` ScriptableObject, and `PermanentProgression` static persistence service with PlayerPrefs JSON storage, domain reload reset, idempotent dungeon first-clear point awarding (D1=2, D2=2, D3=3 per character; 7 max), purchase prerequisites/cost deduction, character isolation, and stat aggregation. Added permanent health scaling to `PlayerHealth` (`ApplyPermanentHealthMultiplier`, `BaseMaxHealth`) and layered multipliers in `PlayerStats`. Gate 12.2 is NEXT.
 - Phase 11 Final Sign-off (2026-09-09): Phase 11 is COMPLETE. Gates 11.1–11.5 automated GREEN (1485/1485 in Gate 11.5 suite, 2117/2117 total across all 13 regression suites). User manual gameplay QA is ALL GREEN. Four enemy archetypes implemented (Zombie, Runner, Tank, Ranged) using shared composition and minimal `IEnemyAttack`. Visual hit feedback and unscaled corpse cleanup active. Ranged projectiles use authoritative sweep collision and shooter-owned cancellation on death. Wave compositions verified: D1 (38 enemies / 410 XP), D2 (35 enemies / 430 XP), D3 (42 enemies / 540 XP), Campaign total (115 enemies / 1380 XP). Roguelite run semantics preserved across Victory, Defeat Retry rollback, and Defeat Return to Map. Phase 12 (Permanent Progression / Skill Tree) is NEXT.
@@ -29,9 +30,9 @@ Last update:
 ## Status
 
 **IN PROGRESS — Phase 12: Permanent Progression / Skill Tree**
-**GATES 12.1 & 12.2 AUTOMATED GREEN (Gate 12.2: 99/99, Gate 12.1: 87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.1: 43/43, 11.5: 1485/1485)**
+**GATES 12.1, 12.2, 12.3 AUTOMATED GREEN (Gate 12.3: 200/200, Gate 12.2: 99/99, Gate 12.1: 87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.1: 43/43, 11.5: 1485/1485)**
 
-**NEXT — Gate 12.3: Character Skill Trees & World Map Purchase UI**
+**NEXT — Gate 12.4: World Map Permanent Skill Tree Purchase UI**
 
 Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
 
@@ -43,9 +44,66 @@ Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are 
 
 - Gate 12.1: Permanent Progression Foundation (Completed & Verified)
 - Gate 12.2: Permanent Reward Economy & Dungeon Completion Integration (Completed & Verified)
-- Gate 12.3: Character Skill Trees & World Map Purchase UI (Pending)
-- Gate 12.4: Permanent Progression Save/Load System & Reset Safety (Pending)
+- Gate 12.3: Warrior Permanent Skill Tree & Spawn-Time Modifier Binding (Completed & Verified)
+- Gate 12.4: World Map Permanent Skill Tree Purchase UI (Pending)
 - Gate 12.5: Character-Specific Progression Verification & Phase 12 Regression (Pending)
+
+---
+
+## Gate 12.3 — Warrior Permanent Skill Tree & Spawn-Time Modifier Binding (Automated GREEN, 2026-09-09)
+
+### Implemented
+
+- `Assets/Scripts/Characters/CharacterDefinition.cs`:
+  - Added serialized `skillTree` field (`SkillTreeDefinition`) with public getter `SkillTree` and configuration method `SetSkillTree(SkillTreeDefinition tree)`.
+- `Assets/ScriptableObjects/Progression/SkillTree_Warrior.asset`:
+  - Created single authoritative Warrior `SkillTreeDefinition` ScriptableObject with 3 branches, 3 tiers per branch, 9 nodes total at 1 point per node:
+    - **Durability** branch (`MaxHealthMultiplier`): T1 `warrior_durability_1` (+10%, prereq null), T2 `warrior_durability_2` (+10%, prereq T1), T3 `warrior_durability_3` (+15%, prereq T2). Total branch: +35% max health (1.35x).
+    - **Power** branch (`DamageMultiplier`): T1 `warrior_power_1` (+10%, prereq null), T2 `warrior_power_2` (+10%, prereq T1), T3 `warrior_power_3` (+15%, prereq T2). Total branch: +35% damage (1.35x).
+    - **Tempo** branch (`AttackSpeedMultiplier` / `MovementSpeedMultiplier`): T1 `warrior_tempo_1` (+5% attack speed, prereq null), T2 `warrior_tempo_2` (+5% move speed, prereq T1), T3 `warrior_tempo_3` (+10% attack speed, prereq T2). Total branch: +15% attack speed (1.15x), +5% movement speed (1.05x).
+  - Validated cleanly via `SkillTreeDefinition.ValidateTree(out string error)`.
+- `Assets/ScriptableObjects/Characters/Character_Warrior.asset`:
+  - Bound serialized `skillTree` property directly to `SkillTree_Warrior.asset`.
+- `Assets/Scripts/Characters/PlayerSpawner.cs`:
+  - Integrated spawn-time permanent modifier binding immediately following character instantiation.
+  - Resolved character's `SkillTreeDefinition` (with Editor fallback for standalone unit testing).
+  - Derived aggregated `PermanentStatModifiers` via `PermanentProgression.GetPermanentModifiers(characterId, skillTree)`.
+  - Applied permanent multipliers to `PlayerStats` via `SetPermanentMultipliers(damage, atkSpeed, moveSpeed, maxHealth)`.
+  - Applied permanent max health scaling to `PlayerHealth` via `ApplyPermanentHealthMultiplier(maxHealthMultiplier)`.
+  - Enforced the fresh health rule: on entry, `BaseMaxHealth` is preserved at 100, `MaxHealth` is scaled from base (e.g. 100 * 1.35 = 135), and `CurrentHealth` initializes to full scaled capacity (135/135).
+- `Assets/Editor/Phase12AssetBuilder.cs`:
+  - Automated generator utility for building and linking the Warrior skill tree ScriptableObject asset and establishing folder meta files.
+- `Assets/Editor/Phase12VerificationRunner.cs`:
+  - Added menu item `[MenuItem("DungeonRoguelite/Phase 12/Run Gate 12.3 Verification")]` and suite routing for `12_3`.
+- `Assets/Tests/Verification/Milestone12_3_Verifier.cs`:
+  - Comprehensive 200-check Play Mode verification suite covering:
+    - Tree asset integrity, node count, metadata, tier hierarchy, prerequisite linkage, and `ValidateTree()` clean execution.
+    - Purchase progression rules: cost deduction, duplicate purchase rejection, prerequisite gating, cross-character purchase rejection, 7-point campaign cap verification, and PlayerPrefs reload persistence.
+    - Additive modifier aggregation across tiers and full 9-node unlocks (`HP: 1.35x`, `Dmg: 1.35x`, `AtkSpd: 1.15x`, `MoveSpd: 1.05x`).
+    - Spawn binding on real Warrior prefab: baseline stats (100 HP, 25 dmg, 0.5s cd, 6.0 speed) vs. upgraded stats (135 HP, 33.75 dmg, 0.4348s cd, 6.3 speed).
+    - Layered combat math: `Base * Permanent * Temporary` with temporary `PlayerStats` bonuses and `MeleeWeapon`/`PlayerMovement` component outputs.
+    - Roguelite run semantics compatibility: Victory preservation, Defeat Retry rollback with fresh scaled HP restoration, and EndRun session teardown.
+    - Character isolation: Archer and Gunner retain null skill trees and strictly neutral 1.0x multipliers upon spawn.
+    - Fail-safe clamping on null/empty inputs and negative multipliers.
+
+### Verification
+
+- Final Unity 6000.3.23f1 batch Play Mode run: 200/200 checks passed, exit code 0 (`Logs/gate12_3.log`). All completion and state restoration markers present.
+- Regression Gate 12.1 (`Milestone12_1_Verifier`): 87/87 checks passed, exit code 0 (`Logs/gate12_1_reg.log`).
+- Regression Gate 12.2 (`Milestone12_2_Verifier`): 99/99 checks passed, exit code 0 (`Logs/gate12_2_reg.log`).
+- Regression Suite 10.5 (`Milestone10_5_Verifier`): 11/11 checks passed, exit code 0 (`Logs/regression_10_5.log`).
+- Regression Suite 11.1 (`Milestone11_1_Verifier`): 43/43 checks passed, exit code 0 (`Logs/regression_11_1.log`).
+- Regression Suite 11.5 (`Milestone11_5_Verifier`): 1485/1485 checks passed, exit code 0 (`Logs/regression_11_5.log`).
+- Compilation: 0 errors; 3 existing CS0618 warnings in legacy setup scripts (`TMP_Text.enableWordWrapping`).
+- Working tree clean of accidental project setting changes.
+
+### Decisions and Next Task
+
+- Single authoritative Warrior tree (`SkillTree_Warrior.asset`) is bound to `Character_Warrior.asset`.
+- Multipliers stack additively within permanent progression (`1.0 + sum(magnitudes)`), and layer multiplicatively with temporary run upgrades (`Base * Permanent * Temporary`).
+- Fresh health rule is strictly enforced at spawn and retry: player enters dungeon at full scaled max health.
+- Character isolation is preserved: Archer and Gunner spawn with neutral 1.0x multipliers.
+- Gate 12.3 is complete and checkpointed locally. Gate 12.4 (World Map Permanent Skill Tree Purchase UI) is NEXT. Do NOT push.
 
 ---
 

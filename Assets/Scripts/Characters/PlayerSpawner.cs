@@ -120,6 +120,34 @@ namespace DungeonRoguelite.Characters
                 upgradeMgr.BindPlayer(exp, stats);
             }
 
+            // Apply permanent progression modifiers if character has a skill tree definition
+            var skillTree = defToSpawn.SkillTree;
+#if UNITY_EDITOR
+            if (skillTree == null && !string.IsNullOrEmpty(defToSpawn.Id))
+            {
+                string treePath = $"Assets/ScriptableObjects/Progression/SkillTree_{char.ToUpper(defToSpawn.Id[0]) + defToSpawn.Id.Substring(1)}.asset";
+                skillTree = UnityEditor.AssetDatabase.LoadAssetAtPath<DungeonRoguelite.Progression.SkillTreeDefinition>(treePath);
+            }
+#endif
+            var permanentModifiers = skillTree != null
+                ? DungeonRoguelite.Progression.PermanentProgression.GetPermanentModifiers(defToSpawn.Id, skillTree)
+                : DungeonRoguelite.Progression.PermanentStatModifiers.Default;
+
+            if (stats != null)
+            {
+                stats.SetPermanentMultipliers(
+                    permanentModifiers.damageMultiplier,
+                    permanentModifiers.attackSpeedMultiplier,
+                    permanentModifiers.movementSpeedMultiplier,
+                    permanentModifiers.maxHealthMultiplier);
+            }
+
+            var health = playable.GetComponent<DungeonRoguelite.Player.PlayerHealth>();
+            if (health != null)
+            {
+                health.ApplyPermanentHealthMultiplier(permanentModifiers.maxHealthMultiplier);
+            }
+
             // Restore campaign run progression if an active run exists for this character
             if (DungeonRoguelite.Progression.RunProgressionSession.HasActiveRun &&
                 DungeonRoguelite.Progression.RunProgressionSession.ValidateOwner(defToSpawn.Id))

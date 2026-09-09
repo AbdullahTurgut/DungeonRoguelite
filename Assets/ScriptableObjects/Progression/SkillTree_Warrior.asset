@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebf0e6b1cfc70548b312499b79ba989, type: 3}
+  m_Name: SkillTree_Warrior
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Progression.SkillTreeDefinition
+  characterId: warrior
+  nodes:
+  - id: warrior_durability_1
+    characterId: warrior
+    branchId: durability
+    tier: 1
+    displayName: "Demir B\xFCnye I"
+    description: +10% Azami Can
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 0
+    effectMagnitude: 0.1
+  - id: warrior_durability_2
+    characterId: warrior
+    branchId: durability
+    tier: 2
+    displayName: "Demir B\xFCnye II"
+    description: +10% Azami Can
+    cost: 1
+    prerequisiteNodeId: warrior_durability_1
+    effectType: 0
+    effectMagnitude: 0.1
+  - id: warrior_durability_3
+    characterId: warrior
+    branchId: durability
+    tier: 3
+    displayName: "Demir B\xFCnye III"
+    description: +15% Azami Can
+    cost: 1
+    prerequisiteNodeId: warrior_durability_2
+    effectType: 0
+    effectMagnitude: 0.15
+  - id: warrior_power_1
+    characterId: warrior
+    branchId: power
+    tier: 1
+    displayName: "A\u011F\u0131r Darbe I"
+    description: +10% Hasar
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 1
+    effectMagnitude: 0.1
+  - id: warrior_power_2
+    characterId: warrior
+    branchId: power
+    tier: 2
+    displayName: "A\u011F\u0131r Darbe II"
+    description: +10% Hasar
+    cost: 1
+    prerequisiteNodeId: warrior_power_1
+    effectType: 1
+    effectMagnitude: 0.1
+  - id: warrior_power_3
+    characterId: warrior
+    branchId: power
+    tier: 3
+    displayName: "A\u011F\u0131r Darbe III"
+    description: +15% Hasar
+    cost: 1
+    prerequisiteNodeId: warrior_power_2
+    effectType: 1
+    effectMagnitude: 0.15
+  - id: warrior_tempo_1
+    characterId: warrior
+    branchId: tempo
+    tier: 1
+    displayName: "\xC7evik Hamle I"
+    description: "+5% Sald\u0131r\u0131 H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 2
+    effectMagnitude: 0.05
+  - id: warrior_tempo_2
+    characterId: warrior
+    branchId: tempo
+    tier: 2
+    displayName: "Hafif Ad\u0131m II"
+    description: "+5% Hareket H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: warrior_tempo_1
+    effectType: 3
+    effectMagnitude: 0.05
+  - id: warrior_tempo_3
+    characterId: warrior
+    branchId: tempo
+    tier: 3
+    displayName: "Kas\u0131rga Bi\xE7i\u015F III"
+    description: "+10% Sald\u0131r\u0131 H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: warrior_tempo_2
+    effectType: 2
+    effectMagnitude: 0.1

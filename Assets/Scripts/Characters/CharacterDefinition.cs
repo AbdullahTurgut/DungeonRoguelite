@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace DungeonRoguelite.Characters
 {
@@ -29,12 +29,26 @@ namespace DungeonRoguelite.Characters
         public string Description => description;
         public GameObject CharacterPrefab => characterPrefab;
 
+        [Header("Progression")]
+        [Tooltip("Permanent skill tree definition for this character archetype.")]
+        [SerializeField] private DungeonRoguelite.Progression.SkillTreeDefinition skillTree;
+
+        public DungeonRoguelite.Progression.SkillTreeDefinition SkillTree => skillTree;
+
         /// <summary>
         /// Test or editor helper to configure the character prefab reference.
         /// </summary>
         public void SetCharacterPrefab(GameObject prefab)
         {
             characterPrefab = prefab;
+        }
+
+        /// <summary>
+        /// Configures the permanent skill tree definition reference.
+        /// </summary>
+        public void SetSkillTree(DungeonRoguelite.Progression.SkillTreeDefinition tree)
+        {
+            skillTree = tree;
         }
     }
 }

@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Character_Warrior
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: warrior
-  displayName: Savaşçı
-  description: "Yakın dövüşte güçlüdür. Kılıcıyla güçlü ve dayanıklı saldırılar yapar."
+  displayName: "Sava\u015F\xE7\u0131"
+  description: "Yak\u0131n d\xF6v\xFC\u015Fte g\xFC\xE7l\xFCd\xFCr. K\u0131l\u0131c\u0131yla
+    g\xFC\xE7l\xFC ve dayan\u0131kl\u0131 sald\u0131r\u0131lar yapar."
   characterPrefab: {fileID: 3441253740286043302, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
+  skillTree: {fileID: 11400000, guid: 8852054bca0700342beae66fd11bda94, type: 2}
