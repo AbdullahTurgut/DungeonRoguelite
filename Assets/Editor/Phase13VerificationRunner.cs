@@ -15,9 +15,19 @@ namespace DungeonRoguelite.Editor
         [MenuItem("DungeonRoguelite/Phase 13/Run Gate 13.1 Verification")]
         public static void Run()
         {
+            string[] args = Environment.GetCommandLineArgs();
+            int gateArg = Array.IndexOf(args, "-gateSuite");
+            string gate = gateArg >= 0 && gateArg + 1 < args.Length ? args[gateArg + 1] : "13_1";
             bool success = false;
             try
             {
+                if (gate == "13_2")
+                {
+                    VerifyGate13_2();
+                    success = true;
+                    Debug.Log("[GATE 13.2 COMPLETE] All Gate 13.2 checks PASSED.");
+                    return;
+                }
                 Phase13Setup.SetupGate13_1();
                 var d4 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
                 var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
@@ -55,6 +65,27 @@ namespace DungeonRoguelite.Editor
                 if (Application.isBatchMode) EditorApplication.Exit(success ? 0 : 1);
             }
         }
+
+        private static void VerifyGate13_2()
+        {
+            Phase13Setup.SetupGate13_2();
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/Dungeons/Dungeon_04.unity", OpenSceneMode.Single);
+            var arena = GameObject.Find("ColonnadeArena");
+            Check(arena != null, "Colonnade arena root");
+            var floor = arena.transform.Find("Floor");
+            Check(floor != null && Approximately(floor.localScale, new Vector3(36f, 0.5f, 28f)), "36m x 28m floor containment");
+            Check(arena.transform.Find("NorthWall") != null && arena.transform.Find("SouthWall") != null && arena.transform.Find("EastWall") != null && arena.transform.Find("WestWall") != null, "four boundary walls");
+            Vector3[] expected = { new Vector3(-5.5f, 1.75f, 4.5f), new Vector3(5.5f, 1.75f, 4.5f), new Vector3(-5.5f, 1.75f, -4.5f), new Vector3(5.5f, 1.75f, -4.5f) };
+            for (int i = 0; i < expected.Length; i++) Check(arena.transform.Find("Pillar_0" + (i + 1)) != null && Approximately(arena.transform.Find("Pillar_0" + (i + 1)).position, expected[i]), "symmetric pillar " + (i + 1));
+            var playerSpawn = GameObject.Find("PlayerSpawnPoint");
+            Check(playerSpawn != null && Approximately(playerSpawn.transform.position, new Vector3(0f, 0f, -10.5f)) && Vector3.Dot(playerSpawn.transform.forward, Vector3.forward) > .99f, "south player spawn facing north");
+            var spawnRoot = GameObject.Find("SpawnPoints");
+            Check(spawnRoot != null && Enumerable.Range(1, 6).All(i => spawnRoot.transform.Find("SpawnPoint_0" + i) != null), "six tactical spawn points");
+            var colliders = arena.GetComponentsInChildren<Collider>();
+            Check(colliders.Length >= 9, "floor, wall, and pillar colliders for containment and projectile blocking");
+        }
+
+        private static bool Approximately(Vector3 left, Vector3 right) => Vector3.Distance(left, right) < 0.01f;
 
         private static void Check(bool value, string name)
         {
