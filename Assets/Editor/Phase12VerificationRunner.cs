@@ -48,5 +48,14 @@ namespace DungeonRoguelite.Editor
             SessionState.SetBool(Pending, true);
             EditorApplication.EnterPlaymode();
         }
+
+        [MenuItem("DungeonRoguelite/Phase 12/Run Gate 12.4 Verification")]
+        public static void RunGate12_4()
+        {
+            SessionState.SetString("Phase12.Suite", "12_4");
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            SessionState.SetBool(Pending, true);
+            EditorApplication.EnterPlaymode();
+        }
     }
 }

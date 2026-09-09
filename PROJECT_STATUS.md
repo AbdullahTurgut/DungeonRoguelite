@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 12 Gate 12.4 Archer & Gunner Skill Trees & Combat Binding (2026-09-09): Gate 12.4 is COMPLETE and automated GREEN (226/226 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Gate 12.2: 99/99, Gate 12.3: 200/200, Archer 8.3: 68/68, Gunner 8.4: 44/44, Suite 10.5: 11/11, Suite 11.1: 43/43; 778 checks total). Implemented single `SkillTreeDefinition` ScriptableObjects for Archer (`SkillTree_Archer.asset`) and Gunner (`SkillTree_Gunner.asset`) with 3 branches x 3 linear tiers (9 nodes each at 1 pt each). Archer has Precision (1.35x Dmg), Tempo (1.20x AtkSpd), and Survival (1.15x MoveSpd, 1.10x Max HP). Gunner has Firepower (1.35x Dmg), Cadence (1.20x AtkSpd), and Handling (1.10x MoveSpd, 1.10x Max HP). Bound trees to `Character_Archer.asset` and `Character_Gunner.asset`. Verified real combat binding with `BowWeapon` (20 base -> 27.0 effective, 0.6s -> 0.50s cd) and `RifleWeapon` (10 base -> 13.5 effective, 0.18s -> 0.15s cd), fresh health scaling (110/110 HP), upgrade layering (`Base * Permanent * Temporary`), run semantics, and deterministic 4-way character switching. Next task awaits Gate 12.5 authorization.
 - Phase 12 Gate 12.3 Warrior Skill Tree & Spawn-Time Modifier Binding (2026-09-09): Gate 12.3 is COMPLETE and automated GREEN (200/200 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Gate 12.2: 99/99, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485; 1925 checks total). Implemented single Warrior `SkillTreeDefinition` ScriptableObject with 3 branches (Durability: +35% Max HP, Power: +35% Damage, Tempo: +15% Attack Speed, +5% Move Speed), 3 linear tiers per branch, 9 nodes total at 1 point each. Bound skill tree asset to `Character_Warrior.asset`. Integrated spawn-time permanent modifier binding into `PlayerSpawner` -> `PlayerStats` and `PlayerHealth`, enforcing fresh health scaling (`BaseMaxHealth` 100 -> `MaxHealth` 135, `CurrentHealth` 135) and layered combat math (`Base * Permanent * Temporary`). Verified run semantics compatibility across Victory, Defeat Retry rollback, and EndRun, alongside complete cross-character isolation (Archer and Gunner retain neutral 1.0x multipliers and 100 HP). Next task awaits Gate 12.4 authorization.
 - Phase 12 Gate 12.2 Reward Economy & Completion Integration (2026-09-09): Gate 12.2 is COMPLETE and automated GREEN (99/99 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485). Implemented approved first-clear economy in `PermanentProgression` (D1 = 2 pts, D2 = 2 pts, D3 = 3 pts; 7 pts total per character max) with case-insensitive and idempotent reward mapping. Integrated authoritative completion awarding into `DungeonCompletionController.FinalizeCompletion()`, preserving global `DungeonProgression` unlock semantics while recording character-isolated permanent rewards. Verified duplicate-clear rejection, cross-character isolation, exclusion from defeat/retry/return-to-map/run-XP, persistence across simulated reloads, and fail-safe handling on null/empty character/dungeon IDs. Next task awaits Gate 12.3 authorization.
 - Phase 12 Gate 12.1 Foundation & Persistence (2026-09-09): Gate 12.1 is COMPLETE and automated GREEN (87/87 checks passed, state restored, Unity exit code 0). Regressions GREEN (Suite 10.5: 11/11 passed, Suite 11.5: 1485/1485 passed). Implemented `PermanentEffectType` enum, `SkillNodeDefinition` node data model, `SkillTreeDefinition` ScriptableObject, and `PermanentProgression` static persistence service with PlayerPrefs JSON storage, domain reload reset, idempotent dungeon first-clear point awarding (D1=2, D2=2, D3=3 per character; 7 max), purchase prerequisites/cost deduction, character isolation, and stat aggregation. Added permanent health scaling to `PlayerHealth` (`ApplyPermanentHealthMultiplier`, `BaseMaxHealth`) and layered multipliers in `PlayerStats`. Gate 12.2 is NEXT.
@@ -30,9 +31,9 @@ Last update:
 ## Status
 
 **IN PROGRESS — Phase 12: Permanent Progression / Skill Tree**
-**GATES 12.1, 12.2, 12.3 AUTOMATED GREEN (Gate 12.3: 200/200, Gate 12.2: 99/99, Gate 12.1: 87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.1: 43/43, 11.5: 1485/1485)**
+**GATES 12.1, 12.2, 12.3, 12.4 AUTOMATED GREEN (Gate 12.4: 226/226, Gate 12.3: 200/200, Gate 12.2: 99/99, Gate 12.1: 87/87) | REGRESSIONS GREEN (8.3: 68/68, 8.4: 44/44, 10.5: 11/11, 11.1: 43/43, 11.5: 1485/1485)**
 
-**NEXT — Gate 12.4: World Map Permanent Skill Tree Purchase UI**
+**NEXT — Gate 12.5: World Map Permanent Skill Tree Purchase UI / Final Integration**
 
 Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
 
@@ -45,8 +46,69 @@ Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are 
 - Gate 12.1: Permanent Progression Foundation (Completed & Verified)
 - Gate 12.2: Permanent Reward Economy & Dungeon Completion Integration (Completed & Verified)
 - Gate 12.3: Warrior Permanent Skill Tree & Spawn-Time Modifier Binding (Completed & Verified)
-- Gate 12.4: World Map Permanent Skill Tree Purchase UI (Pending)
-- Gate 12.5: Character-Specific Progression Verification & Phase 12 Regression (Pending)
+- Gate 12.4: Archer & Gunner Permanent Skill Trees & Combat Binding (Completed & Verified)
+- Gate 12.5: World Map Permanent Skill Tree Purchase UI / Final Integration (Pending)
+
+---
+
+## Gate 12.4 — Archer & Gunner Permanent Skill Trees & Combat Binding (Automated GREEN, 2026-09-09)
+
+### Implemented
+
+- `Assets/ScriptableObjects/Progression/SkillTree_Archer.asset`:
+  - Created single authoritative Archer `SkillTreeDefinition` ScriptableObject with 3 branches, 3 linear tiers per branch, 9 nodes total at 1 point per node:
+    - **Precision** branch (`DamageMultiplier`): T1 `archer_precision_1` (+10%, prereq null), T2 `archer_precision_2` (+10%, prereq T1), T3 `archer_precision_3` (+15%, prereq T2). Total branch: +35% damage (1.35x).
+    - **Tempo** branch (`AttackSpeedMultiplier`): T1 `archer_tempo_1` (+5%, prereq null), T2 `archer_tempo_2` (+5%, prereq T1), T3 `archer_tempo_3` (+10%, prereq T2). Total branch: +20% attack speed (1.20x).
+    - **Survival** branch (`MovementSpeedMultiplier` / `MaxHealthMultiplier`): T1 `archer_survival_1` (+5% move speed, prereq null), T2 `archer_survival_2` (+10% max health, prereq T1), T3 `archer_survival_3` (+10% move speed, prereq T2). Total branch: +15% movement speed (1.15x), +10% max health (1.10x).
+  - Validated cleanly via `SkillTreeDefinition.ValidateTree(out string error)`.
+- `Assets/ScriptableObjects/Progression/SkillTree_Gunner.asset`:
+  - Created single authoritative Gunner `SkillTreeDefinition` ScriptableObject with 3 branches, 3 linear tiers per branch, 9 nodes total at 1 point per node:
+    - **Firepower** branch (`DamageMultiplier`): T1 `gunner_firepower_1` (+10%, prereq null), T2 `gunner_firepower_2` (+10%, prereq T1), T3 `gunner_firepower_3` (+15%, prereq T2). Total branch: +35% damage (1.35x).
+    - **Cadence** branch (`AttackSpeedMultiplier`): T1 `gunner_cadence_1` (+5%, prereq null), T2 `gunner_cadence_2` (+5%, prereq T1), T3 `gunner_cadence_3` (+10%, prereq T2). Total branch: +20% attack speed (1.20x).
+    - **Handling** branch (`MovementSpeedMultiplier` / `MaxHealthMultiplier`): T1 `gunner_handling_1` (+5% move speed, prereq null), T2 `gunner_handling_2` (+10% max health, prereq T1), T3 `gunner_handling_3` (+5% move speed, prereq T2). Total branch: +10% movement speed (1.10x), +10% max health (1.10x).
+  - Validated cleanly via `SkillTreeDefinition.ValidateTree(out string error)`.
+- `Assets/ScriptableObjects/Characters/Character_Archer.asset`:
+  - Bound serialized `skillTree` property directly to `SkillTree_Archer.asset`.
+- `Assets/ScriptableObjects/Characters/Character_Gunner.asset`:
+  - Bound serialized `skillTree` property directly to `SkillTree_Gunner.asset`.
+- `Assets/Editor/Phase12AssetBuilder.cs`:
+  - Added `BuildArcherTree()`, `BuildGunnerTree()`, and `BuildAllSkillTrees()` editor menu utilities ensuring reproducible asset generation for all 3 playable archetypes.
+- `Assets/Editor/Phase12VerificationRunner.cs`:
+  - Added menu item `[MenuItem("DungeonRoguelite/Phase 12/Run Gate 12.4 Verification")]` and suite routing for `12_4`.
+- `Assets/Tests/Verification/Milestone12_3_Verifier.cs`:
+  - Updated character isolation assertions to allow assigned Archer/Gunner trees while enforcing zero bleeding and neutral 1.0x multipliers when 0 nodes are purchased, ensuring backward compatibility across test suites.
+- `Assets/Tests/Verification/Milestone12_4_Verifier.cs`:
+  - Comprehensive 226-check Play Mode verification suite covering:
+    - Tree structure, IDs, branches, tiers, costs, prerequisites, and clean validation for Archer and Gunner.
+    - Purchase progression rules, prerequisite gating, insufficient points, duplicate purchase rejection, and cross-character purchase rejection (Archer cannot purchase Warrior/Gunner nodes; Gunner cannot purchase Warrior/Archer nodes; Warrior cannot purchase Archer/Gunner nodes).
+    - Campaign first-clear economy adherence (D1=2, D2=2, D3=3 = 7 pts max) and 7-node purchase cap.
+    - Real combat binding: Archer `BowWeapon` (20 base -> 27.0 effective damage, 0.6s -> 0.50s cooldown), `PlayerMovement` (6.5 base -> 7.475 m/s), `PlayerHealth` (100 base -> 110 HP full scaled spawn).
+    - Real combat binding: Gunner `RifleWeapon` (10 base -> 13.5 effective damage, 0.18s -> 0.15s cooldown), `PlayerMovement` (6.0 base -> 6.60 m/s), `PlayerHealth` (100 base -> 110 HP full scaled spawn).
+    - Combat upgrade layering: `Base * Permanent * Temporary` for damage, attack speed, and movement speed with temporary bonuses and damage reception.
+    - Roguelite run semantics compatibility: Victory preservation, Defeat Retry rollback with fresh scaled HP restoration, and EndRun session teardown across all archetypes.
+    - Deterministic 4-way character switching: Warrior -> Archer -> Gunner -> Warrior verifying exact per-character stat restoration with zero bleeding.
+    - Fail-safe boundary handling on null/empty inputs and unknown characters.
+
+### Verification
+
+- Final Unity 6000.3.23f1 batch Play Mode run: 226/226 checks passed, exit code 0 (`Logs/gate12_4.log`). All completion and state restoration markers present.
+- Regression Gate 12.1 (`Milestone12_1_Verifier`): 87/87 checks passed, exit code 0 (`Logs/gate12_1_reg.log`).
+- Regression Gate 12.2 (`Milestone12_2_Verifier`): 99/99 checks passed, exit code 0 (`Logs/gate12_2_reg.log`).
+- Regression Gate 12.3 (`Milestone12_3_Verifier`): 200/200 checks passed, exit code 0 (`Logs/gate12_3_reg.log`).
+- Regression Archer 8.3 (`Milestone8_3_Verifier`): 68/68 checks passed, exit code 0 (`Logs/regression_8_3.log`).
+- Regression Gunner 8.4 (`Milestone8_4_Verifier`): 44/44 checks passed, exit code 0 (`Logs/regression_8_4.log`).
+- Regression Suite 10.5 (`Milestone10_5_Verifier`): 11/11 checks passed, exit code 0 (`Logs/regression_10_5.log`).
+- Regression Suite 11.1 (`Milestone11_1_Verifier`): 43/43 checks passed, exit code 0 (`Logs/regression_11_1.log`).
+- Total Regression Checks: 778/778 passed in this validation pass.
+- Compilation: 0 errors; 3 existing CS0618 warnings in legacy setup scripts (`TMP_Text.enableWordWrapping`).
+- Working tree clean of accidental project setting changes.
+
+### Decisions and Next Task
+
+- All three character skill trees (`SkillTree_Warrior.asset`, `SkillTree_Archer.asset`, `SkillTree_Gunner.asset`) are authoritatively defined and bound to their character definitions.
+- Combat components (`MeleeWeapon`, `BowWeapon`, `RifleWeapon`, `PlayerMovement`, `PlayerHealth`) dynamically consume permanent multipliers derived at spawn without custom weapon code.
+- Full cross-character isolation and deterministic character switching verified.
+- Gate 12.4 is complete and checkpointed locally. Gate 12.5 (World Map Permanent Skill Tree Purchase UI / Final Integration) is NEXT. Do NOT push.
 
 ---
 

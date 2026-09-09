@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Character_Archer
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: archer
-  displayName: Okçu
-  description: "Uzaktan savaşır. Okları hedefe ulaşana kadar fiziksel olarak yol alır."
+  displayName: "Ok\xE7u"
+  description: "Uzaktan sava\u015F\u0131r. Oklar\u0131 hedefe ula\u015Fana kadar
+    fiziksel olarak yol al\u0131r."
   characterPrefab: {fileID: 7248876810619821317, guid: 2d90432d89b9f2f4384d57ff02bf3257, type: 3}
+  skillTree: {fileID: 11400000, guid: 9af8014fcab7fe74bb0b37d85c057c90, type: 2}

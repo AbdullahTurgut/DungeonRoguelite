@@ -528,7 +528,7 @@ namespace DungeonRoguelite.Tests
             // Archer isolation check
             var archerDef = LoadArcherDefinition();
             Check(archerDef != null, "Character_Archer.asset loaded");
-            Check(archerDef.SkillTree == null, "Archer SkillTree is currently null (unassigned)");
+            Check(archerDef.SkillTree == null || archerDef.SkillTree.CharacterId == "archer", "Archer SkillTree is either null or valid archer tree");
 
             // Archer permanent modifiers must be strictly 1.0 (neutral)
             var archerModsDefault = PermanentProgression.GetPermanentModifiers("archer", null);
@@ -564,7 +564,7 @@ namespace DungeonRoguelite.Tests
             // Gunner isolation check
             var gunnerDef = LoadGunnerDefinition();
             Check(gunnerDef != null, "Character_Gunner.asset loaded");
-            Check(gunnerDef.SkillTree == null, "Gunner SkillTree is currently null (unassigned)");
+            Check(gunnerDef.SkillTree == null || gunnerDef.SkillTree.CharacterId == "gunner", "Gunner SkillTree is either null or valid gunner tree");
 
             var gunnerMods = PermanentProgression.GetPermanentModifiers("gunner", null);
             Check(Mathf.Approximately(gunnerMods.damageMultiplier, 1.0f), "Gunner neutral permanent damage multiplier is 1.0");

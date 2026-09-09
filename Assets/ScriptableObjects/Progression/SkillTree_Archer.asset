@@ -1,0 +1,106 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eebf0e6b1cfc70548b312499b79ba989, type: 3}
+  m_Name: SkillTree_Archer
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Progression.SkillTreeDefinition
+  characterId: archer
+  nodes:
+  - id: archer_precision_1
+    characterId: archer
+    branchId: precision
+    tier: 1
+    displayName: "Keskin Ni\u015Fan I"
+    description: +10% Hasar
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 1
+    effectMagnitude: 0.1
+  - id: archer_precision_2
+    characterId: archer
+    branchId: precision
+    tier: 2
+    displayName: "Keskin Ni\u015Fan II"
+    description: +10% Hasar
+    cost: 1
+    prerequisiteNodeId: archer_precision_1
+    effectType: 1
+    effectMagnitude: 0.1
+  - id: archer_precision_3
+    characterId: archer
+    branchId: precision
+    tier: 3
+    displayName: "Keskin Ni\u015Fan III"
+    description: +15% Hasar
+    cost: 1
+    prerequisiteNodeId: archer_precision_2
+    effectType: 1
+    effectMagnitude: 0.15
+  - id: archer_tempo_1
+    characterId: archer
+    branchId: tempo
+    tier: 1
+    displayName: "H\u0131zl\u0131 \xC7eki\u015F I"
+    description: "+5% Sald\u0131r\u0131 H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 2
+    effectMagnitude: 0.05
+  - id: archer_tempo_2
+    characterId: archer
+    branchId: tempo
+    tier: 2
+    displayName: "H\u0131zl\u0131 \xC7eki\u015F II"
+    description: "+5% Sald\u0131r\u0131 H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: archer_tempo_1
+    effectType: 2
+    effectMagnitude: 0.05
+  - id: archer_tempo_3
+    characterId: archer
+    branchId: tempo
+    tier: 3
+    displayName: "H\u0131zl\u0131 \xC7eki\u015F III"
+    description: "+10% Sald\u0131r\u0131 H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: archer_tempo_2
+    effectType: 2
+    effectMagnitude: 0.1
+  - id: archer_survival_1
+    characterId: archer
+    branchId: survival
+    tier: 1
+    displayName: "R\xFCzgar Ad\u0131m\u0131 I"
+    description: "+5% Hareket H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: 
+    effectType: 3
+    effectMagnitude: 0.05
+  - id: archer_survival_2
+    characterId: archer
+    branchId: survival
+    tier: 2
+    displayName: "Avc\u0131 \xC7evikli\u011Fi II"
+    description: +10% Azami Can
+    cost: 1
+    prerequisiteNodeId: archer_survival_1
+    effectType: 0
+    effectMagnitude: 0.1
+  - id: archer_survival_3
+    characterId: archer
+    branchId: survival
+    tier: 3
+    displayName: "R\xFCzgar Ad\u0131m\u0131 III"
+    description: "+10% Hareket H\u0131z\u0131"
+    cost: 1
+    prerequisiteNodeId: archer_survival_2
+    effectType: 3
+    effectMagnitude: 0.1

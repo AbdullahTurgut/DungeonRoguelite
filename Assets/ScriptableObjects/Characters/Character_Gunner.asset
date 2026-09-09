@@ -13,6 +13,8 @@ MonoBehaviour:
   m_Name: Character_Gunner
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Characters.CharacterDefinition
   id: gunner
-  displayName: Nişancı
-  description: "Hızlı menzilli saldırılar yapar. Tüfek atışları hedefe anında ulaşır."
+  displayName: "Ni\u015Fanc\u0131"
+  description: "H\u0131zl\u0131 menzilli sald\u0131r\u0131lar yapar. T\xFCfek at\u0131\u015Flar\u0131
+    hedefe an\u0131nda ula\u015F\u0131r."
   characterPrefab: {fileID: 6062601603027749612, guid: 45783dbdbf6b32349bc69daaf73343e8, type: 3}
+  skillTree: {fileID: 11400000, guid: 91b93661bccd2c44dab70c93c60e8c02, type: 2}
