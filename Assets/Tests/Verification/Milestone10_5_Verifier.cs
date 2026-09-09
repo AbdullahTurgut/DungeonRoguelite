@@ -272,13 +272,13 @@ namespace DungeonRoguelite.Tests
             }
 
             // -------------------------------------------------------------
-            // CHECK 8: Campaign Catalog Exactly 3 Dungeons (No D4/D5)
+            // CHECK 8: Campaign Catalog preserves D1-D3 and includes D4.
             // -------------------------------------------------------------
             var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
-            bool c8 = catalog != null && catalog.Dungeons != null && catalog.Dungeons.Count == 3;
+            bool c8 = catalog != null && catalog.Dungeons != null && catalog.Dungeons.Count == 4;
             if (c8)
             {
-                Debug.Log("[CHECK 8 PASSED] DungeonCatalog contains exactly 3 playable dungeons: D1, D2, D3.");
+                Debug.Log("[CHECK 8 PASSED] DungeonCatalog contains four playable dungeons and preserves D1-D3.");
             }
             else
             {
@@ -287,13 +287,13 @@ namespace DungeonRoguelite.Tests
             }
 
             // -------------------------------------------------------------
-            // CHECK 9: Build Settings Has Exactly 5 Scenes
+            // CHECK 9: Build Settings Has Exactly 6 Scenes
             // -------------------------------------------------------------
             var buildScenes = EditorBuildSettings.scenes;
-            bool c9 = buildScenes != null && buildScenes.Length == 5;
+            bool c9 = buildScenes != null && buildScenes.Length == 6;
             if (c9)
             {
-                Debug.Log("[CHECK 9 PASSED] Build Settings contains exactly 5 playable campaign scenes.");
+                Debug.Log("[CHECK 9 PASSED] Build Settings contains exactly 6 playable campaign scenes.");
             }
             else
             {

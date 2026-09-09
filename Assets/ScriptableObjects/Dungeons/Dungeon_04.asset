@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_04
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_4
+  displayName: "B\xF6l\xFCm 4: S\xFCtunlu Salon"
+  description: "Geni\u015F s\xFCtunlar ve dar ge\xE7itlerle \xE7evrili b\xFCy\xFCk
+    salon. 4 dalga hayatta kal."
+  sceneName: Dungeon_04
+  requiredDungeonId: dungeon_3
+  waves: []
+  enemyHealthMultiplier: 1.3
+  enemyDamageMultiplier: 1.2
+  dungeonType: 0

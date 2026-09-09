@@ -133,19 +133,20 @@ namespace DungeonRoguelite.Tests
             }
 
             // -------------------------------------------------------------
-            // CHECK 2: Dungeon Catalog Exactly 3 Dungeons (D1, D2, D3)
+            // CHECK 2: Dungeon Catalog preserves D1-D3 and includes D4.
             // -------------------------------------------------------------
             var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
             bool c2 = catalog != null &&
                       catalog.Dungeons != null &&
-                      catalog.Dungeons.Count == 3 &&
+                      catalog.Dungeons.Count == 4 &&
                       catalog.Dungeons[0] != null && catalog.Dungeons[0].Id == "dungeon_1" &&
                       catalog.Dungeons[1] != null && catalog.Dungeons[1].Id == "dungeon_2" &&
-                      catalog.Dungeons[2] != null && catalog.Dungeons[2].Id == "dungeon_3";
+                      catalog.Dungeons[2] != null && catalog.Dungeons[2].Id == "dungeon_3" &&
+                      catalog.Dungeons[3] != null && catalog.Dungeons[3].Id == "dungeon_4";
 
             if (c2)
             {
-                Debug.Log("[CHECK 2 PASSED] DungeonCatalog contains exactly 3 valid campaign dungeons: [dungeon_1, dungeon_2, dungeon_3]. No placeholder D4/D5.");
+                Debug.Log("[CHECK 2 PASSED] DungeonCatalog preserves D1-D3 and registers Dungeon 4.");
             }
             else
             {
@@ -154,19 +155,20 @@ namespace DungeonRoguelite.Tests
             }
 
             // -------------------------------------------------------------
-            // CHECK 3: Build Settings Order (5 Scenes)
+            // CHECK 3: Build Settings Order (6 Scenes)
             // -------------------------------------------------------------
             var buildScenes = EditorBuildSettings.scenes;
-            bool c3 = buildScenes != null && buildScenes.Length == 5 &&
+            bool c3 = buildScenes != null && buildScenes.Length == 6 &&
                       buildScenes[0].path.EndsWith("CharacterSelection.unity") &&
                       buildScenes[1].path.EndsWith("WorldMap.unity") &&
                       buildScenes[2].path.EndsWith("Dungeon_Prototype.unity") &&
                       buildScenes[3].path.EndsWith("Dungeon_02.unity") &&
-                      buildScenes[4].path.EndsWith("Dungeon_03.unity");
+                      buildScenes[4].path.EndsWith("Dungeon_03.unity") &&
+                      buildScenes[5].path.EndsWith("Dungeon_04.unity");
 
             if (c3)
             {
-                Debug.Log("[CHECK 3 PASSED] Build Settings contains exactly 5 scenes in correct order: CharacterSelection (0), WorldMap (1), Dungeon_Prototype (2), Dungeon_02 (3), Dungeon_03 (4).");
+                Debug.Log("[CHECK 3 PASSED] Build Settings preserves D1-D3 order and registers Dungeon_04 at index 5.");
             }
             else
             {

@@ -137,12 +137,13 @@ namespace DungeonRoguelite.Tests
         {
             // Build Settings registration and order
             var scenes = EditorBuildSettings.scenes;
-            Check(scenes != null && scenes.Length >= 5, "Build Settings contains at least 5 scenes");
+            Check(scenes != null && scenes.Length >= 6, "Build Settings contains at least 6 scenes");
             Check(scenes[0].path.EndsWith("CharacterSelection.unity"), "Scene 0 is CharacterSelection");
             Check(scenes[1].path.EndsWith("WorldMap.unity"), "Scene 1 is WorldMap");
             Check(scenes[2].path.EndsWith("Dungeon_Prototype.unity"), "Scene 2 is Dungeon_Prototype");
             Check(scenes[3].path.EndsWith("Dungeon_02.unity"), "Scene 3 is Dungeon_02");
             Check(scenes[4].path.EndsWith("Dungeon_03.unity"), "Scene 4 is Dungeon_03");
+            Check(scenes[5].path.EndsWith("Dungeon_04.unity"), "Scene 5 is Dungeon_04");
 
             // WorldMap.unity disk integrity
             Check(File.Exists(WorldMapScenePath), "WorldMap.unity scene file exists on disk");
@@ -164,10 +165,10 @@ namespace DungeonRoguelite.Tests
 
             var mapController = FindFirstObjectByType<WorldMapController>();
             Check(mapController != null, "WorldMapController found in WorldMap scene");
-            Check(mapController.DungeonCatalog != null && mapController.DungeonCatalog.Count == 3,
-                "WorldMapController has 3 dungeons in catalog");
-            Check(mapController.Cards != null && mapController.Cards.Count == 3,
-                "WorldMapController has 3 cards wired");
+            Check(mapController.DungeonCatalog != null && mapController.DungeonCatalog.Count == 4,
+                "WorldMapController has 4 dungeons in catalog");
+            Check(mapController.Cards != null && mapController.Cards.Count == 4,
+                "WorldMapController has 4 cards wired");
 
             // SkillTreeButton
             var skillTreeBtn = mapController.SkillTreeButton;

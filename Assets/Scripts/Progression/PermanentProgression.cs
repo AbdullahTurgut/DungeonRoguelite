@@ -287,6 +287,8 @@ namespace DungeonRoguelite.Progression
                     return 2;
                 case "dungeon_3":
                     return 3;
+                case "dungeon_4":
+                    return 3;
                 default:
                     return 0;
             }

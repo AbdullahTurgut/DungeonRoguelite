@@ -370,11 +370,12 @@ namespace DungeonRoguelite.UI
             if (activeCount == 0) return;
 
             // Spacing calculations for 1920 reference resolution (scaled cleanly to 1280x720)
+            // For 4 cards: width = 380, spacing = 420, positions: -630, -210, +210, +630
             // For 3 cards: width = 440, spacing = 500, positions: -500, 0, +500
             // For 2 cards: width = 460, spacing = 560, positions: -280, +280
             // For 1 card: width = 460, position: 0
-            float cardWidth = activeCount >= 3 ? 440f : 460f;
-            float spacing = activeCount >= 3 ? 500f : (activeCount == 2 ? 560f : 0f);
+            float cardWidth = activeCount >= 4 ? 380f : (activeCount == 3 ? 440f : 460f);
+            float spacing = activeCount >= 4 ? 420f : (activeCount == 3 ? 500f : (activeCount == 2 ? 560f : 0f));
             float startX = -((activeCount - 1) * spacing) / 2f;
 
             int currentIndex = 0;
