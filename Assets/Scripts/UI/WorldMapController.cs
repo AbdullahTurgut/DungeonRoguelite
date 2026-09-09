@@ -37,6 +37,13 @@ namespace DungeonRoguelite.UI
         [Tooltip("Header title text for the world map.")]
         [SerializeField] private TextMeshProUGUI titleText;
 
+        [Header("Skill Tree UI")]
+        [Tooltip("Button to open the permanent skill tree overlay.")]
+        [SerializeField] private Button skillTreeButton;
+
+        [Tooltip("Overlay controller for the permanent skill tree.")]
+        [SerializeField] private SkillTreeUI skillTreePanel;
+
         private DungeonDefinition selectedDungeon;
         private bool isTransitioning = false;
 
@@ -47,6 +54,8 @@ namespace DungeonRoguelite.UI
         public Button BackButton => backButton;
         public TextMeshProUGUI ActiveHeroText => activeHeroText;
         public TextMeshProUGUI TitleText => titleText;
+        public Button SkillTreeButton => skillTreeButton;
+        public SkillTreeUI SkillTreePanel => skillTreePanel;
 
         private void Awake()
         {
@@ -75,6 +84,11 @@ namespace DungeonRoguelite.UI
                     dungeonCatalog = UnityEditor.AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
                 }
 #endif
+            }
+
+            if (skillTreePanel == null)
+            {
+                skillTreePanel = GetComponentInChildren<SkillTreeUI>(true);
             }
         }
 
@@ -161,6 +175,17 @@ namespace DungeonRoguelite.UI
                 backButton.onClick.RemoveListener(HandleBackClicked);
                 backButton.onClick.AddListener(HandleBackClicked);
             }
+
+            if (skillTreeButton != null)
+            {
+                skillTreeButton.onClick.RemoveListener(HandleSkillTreeClicked);
+                skillTreeButton.onClick.AddListener(HandleSkillTreeClicked);
+            }
+
+            if (skillTreePanel != null && skillTreePanel.IsOpen)
+            {
+                skillTreePanel.Close();
+            }
         }
 
         private void UnbindEvents()
@@ -184,6 +209,11 @@ namespace DungeonRoguelite.UI
             if (backButton != null)
             {
                 backButton.onClick.RemoveListener(HandleBackClicked);
+            }
+
+            if (skillTreeButton != null)
+            {
+                skillTreeButton.onClick.RemoveListener(HandleSkillTreeClicked);
             }
         }
 
@@ -265,6 +295,20 @@ namespace DungeonRoguelite.UI
 
             isTransitioning = true;
             SceneManager.LoadScene("CharacterSelection");
+        }
+
+        /// <summary>
+        /// Opens the permanent skill tree overlay for the active character without leaving the World Map.
+        /// </summary>
+        public void HandleSkillTreeClicked()
+        {
+            if (skillTreePanel != null)
+            {
+                CharacterDefinition hero = CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null
+                    ? CharacterSelectionSession.SelectedCharacter
+                    : null;
+                skillTreePanel.Open(hero);
+            }
         }
 
         private void EnsureCardsMatchCatalog()
@@ -363,6 +407,26 @@ namespace DungeonRoguelite.UI
             backButton = backBtn;
             activeHeroText = heroText;
             titleText = title;
+        }
+
+        public void SetReferences(
+            DungeonCatalog catalog,
+            WorldMapCard[] mapCards,
+            Button enterBtn,
+            Button backBtn,
+            TextMeshProUGUI heroText,
+            TextMeshProUGUI title,
+            Button skillBtn,
+            SkillTreeUI skillPanel)
+        {
+            dungeonCatalog = catalog;
+            cards = mapCards;
+            enterDungeonButton = enterBtn;
+            backButton = backBtn;
+            activeHeroText = heroText;
+            titleText = title;
+            skillTreeButton = skillBtn;
+            skillTreePanel = skillPanel;
         }
     }
 }
