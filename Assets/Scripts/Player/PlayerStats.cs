@@ -30,6 +30,9 @@ namespace DungeonRoguelite.Player
         [Tooltip("Permanent modifier foundation (default: 1.0).")]
         [SerializeField] private float permanentMovementSpeedMultiplier = 1.0f;
 
+        [Tooltip("Permanent max health modifier foundation (default: 1.0).")]
+        [SerializeField] private float permanentMaxHealthMultiplier = 1.0f;
+
         // Temporary Run Multipliers
         public float TemporaryDamageMultiplier => damageMultiplier;
         public float TemporaryAttackSpeedMultiplier => attackSpeedMultiplier;
@@ -39,6 +42,8 @@ namespace DungeonRoguelite.Player
         public float PermanentDamageMultiplier => permanentDamageMultiplier;
         public float PermanentAttackSpeedMultiplier => permanentAttackSpeedMultiplier;
         public float PermanentMovementSpeedMultiplier => permanentMovementSpeedMultiplier;
+        public float PermanentMaxHealthMultiplier => permanentMaxHealthMultiplier;
+        public float MaxHealthMultiplier => permanentMaxHealthMultiplier;
 
         // Effective Multipliers: Base * Permanent * Temporary
         public float DamageMultiplier => damageMultiplier * permanentDamageMultiplier;
@@ -68,16 +73,18 @@ namespace DungeonRoguelite.Player
             if (permanentDamageMultiplier < 0f) permanentDamageMultiplier = 1f;
             if (permanentAttackSpeedMultiplier < 0.01f) permanentAttackSpeedMultiplier = 1f;
             if (permanentMovementSpeedMultiplier < 0f) permanentMovementSpeedMultiplier = 1f;
+            if (permanentMaxHealthMultiplier < 0.01f) permanentMaxHealthMultiplier = 1f;
         }
 
         /// <summary>
         /// Configures permanent stat multiplier foundations.
         /// </summary>
-        public void SetPermanentMultipliers(float dmg = 1f, float atkSpd = 1f, float spd = 1f)
+        public void SetPermanentMultipliers(float dmg = 1f, float atkSpd = 1f, float spd = 1f, float maxHp = 1f)
         {
             permanentDamageMultiplier = dmg > 0f ? dmg : 1f;
             permanentAttackSpeedMultiplier = atkSpd > 0f ? atkSpd : 1f;
             permanentMovementSpeedMultiplier = spd > 0f ? spd : 1f;
+            permanentMaxHealthMultiplier = maxHp > 0f ? maxHp : 1f;
             OnStatsChanged?.Invoke();
         }
 

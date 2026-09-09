@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 12 Gate 12.1 Foundation & Persistence (2026-09-09): Gate 12.1 is COMPLETE and automated GREEN (87/87 checks passed, state restored, Unity exit code 0). Regressions GREEN (Suite 10.5: 11/11 passed, Suite 11.5: 1485/1485 passed). Implemented `PermanentEffectType` enum, `SkillNodeDefinition` node data model, `SkillTreeDefinition` ScriptableObject, and `PermanentProgression` static persistence service with PlayerPrefs JSON storage, domain reload reset, idempotent dungeon first-clear point awarding (D1=2, D2=2, D3=3 per character; 7 max), purchase prerequisites/cost deduction, character isolation, and stat aggregation. Added permanent health scaling to `PlayerHealth` (`ApplyPermanentHealthMultiplier`, `BaseMaxHealth`) and layered multipliers in `PlayerStats`. Gate 12.2 (Skill Trees & Purchase UI) is NEXT.
 - Phase 11 Final Sign-off (2026-09-09): Phase 11 is COMPLETE. Gates 11.1–11.5 automated GREEN (1485/1485 in Gate 11.5 suite, 2117/2117 total across all 13 regression suites). User manual gameplay QA is ALL GREEN. Four enemy archetypes implemented (Zombie, Runner, Tank, Ranged) using shared composition and minimal `IEnemyAttack`. Visual hit feedback and unscaled corpse cleanup active. Ranged projectiles use authoritative sweep collision and shooter-owned cancellation on death. Wave compositions verified: D1 (38 enemies / 410 XP), D2 (35 enemies / 430 XP), D3 (42 enemies / 540 XP), Campaign total (115 enemies / 1380 XP). Roguelite run semantics preserved across Victory, Defeat Retry rollback, and Defeat Return to Map. Phase 12 (Permanent Progression / Skill Tree) is NEXT.
 - Restart recovery (2026-09-09): recovered main at `2d489ac`, with intact uncommitted Gate 11.4 and partial Gate 11.5 work. Preserved the partial integration work separately, checkpointed Ranged as `1a0846b`, confirmed a clean tree, then restored and completed integration. Gate 11.5 focused verification is GREEN: 1485 checks, state restored, Unity exit 0. Full isolated regression is GREEN: 2117 passing checks across 13 suites.
 - Gate 11.1 implementation (2026-09-08): minimal `IEnemyAttack`, Zombie hit feedback and corpse cleanup are implemented on `codex-gate11-test`, based on Phase 10 commit `8f11ae7`. Verification results are recorded in the current gate section below; prior Phase 10 notes are historical.
@@ -26,10 +27,10 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 11: Combat & Enemy Variety**
-**PHASE 11 AUTOMATED GREEN (2117/2117) | USER MANUAL GAMEPLAY QA ALL GREEN**
+**IN PROGRESS — Phase 12: Permanent Progression / Skill Tree**
+**GATE 12.1 AUTOMATED GREEN (87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.5: 1485/1485)**
 
-**NEXT — Phase 12: Permanent Progression / Skill Tree**
+**NEXT — Gate 12.2: Character Skill Trees & World Map Purchase UI**
 
 Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
 
@@ -37,12 +38,52 @@ Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are 
 
 # Current Phase
 
-## PHASE 11 — Combat & Enemy Variety (COMPLETED)
+## PHASE 12 — Permanent Progression / Skill Tree (IN PROGRESS)
 
-- Gate 11.1: Enemy Attack Contract, Hit Feedback & Corpse Cleanup (Completed & Verified)
-- Gate 11.2: Runner Enemy Archetype (Completed & Verified)
-- Gate 11.3: Tank Enemy Archetype (Completed & Verified)
-- Gate 11.4: Ranged Enemy Archetype & Locally Owned Projectiles (Completed & Verified)
+- Gate 12.1: Permanent Progression Foundation (Completed & Verified)
+- Gate 12.2: Character Skill Trees & World Map Purchase UI (NEXT)
+- Gate 12.3: Dungeon Clear Skill Point Integration & Campaign Wiring (Pending)
+- Gate 12.4: Permanent Progression Save/Load System & Reset Safety (Pending)
+- Gate 12.5: Character-Specific Progression Verification & Phase 12 Regression (Pending)
+
+---
+
+## Gate 12.1 — Permanent Progression Foundation (Automated GREEN, 2026-09-09)
+
+### Implemented
+
+- `Assets/Scripts/Progression/PermanentEffectType.cs`: finite typed enum (`MaxHealthMultiplier`, `DamageMultiplier`, `AttackSpeedMultiplier`, `MovementSpeedMultiplier`).
+- `Assets/Scripts/Progression/SkillNodeDefinition.cs`: serializable data model containing Node ID, Character ID, Branch, Tier, Display Name, Cost, Prerequisite Node ID, Effect Type, and Magnitude.
+- `Assets/Scripts/Progression/SkillTreeDefinition.cs`: ScriptableObject container with `TryGetNode` lookup and `ValidateTree` (verifying character affinity, cost >= 1, prerequisite presence, branch/tier integrity, acyclic parent graph, non-zero magnitudes).
+- `Assets/Scripts/Progression/PermanentProgression.cs`: static persistence and progression service.
+  - Separate per-character permanent state from global `DungeonProgression` campaign unlocks.
+  - Idempotent first-clear reward claiming per character (Dungeon 1 = 2 pts, Dungeon 2 = 2 pts, Dungeon 3 = 3 pts; max 7 points per character).
+  - Purchase validation (character affinity, prerequisite purchased, sufficient unspent points, unpurchased state) and transactional purchase execution.
+  - Permanent stat modifier aggregation by character (`GetPermanentModifier(characterId, effectType)`).
+  - Robust JSON PlayerPrefs persistence with silent fallback/recovery on corrupt JSON.
+  - `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]` domain reload reset for clean test/playmode isolation.
+- `Assets/Scripts/Player/PlayerStats.cs`: added `permanentMaxHealthMultiplier`, `PermanentMaxHealthMultiplier`, `MaxHealthMultiplier` property, and updated `SetPermanentMultipliers(dmg, atkSpd, spd, maxHp)`.
+- `Assets/Scripts/Player/PlayerHealth.cs`: preserved `BaseMaxHealth` before multipliers; added `ApplyPermanentHealthMultiplier(float)` which scales `maxHealth` from base and resets `currentHealth` to full (preserving Phase 10 fresh-health dungeon-entry semantics).
+- `Assets/Tests/Verification/Phase12StateSnapshot.cs`: snapshot/restore utility isolating static session state and `PermanentProgression.PrefsKey` across tests.
+- `Assets/Tests/Verification/Milestone12_1_Verifier.cs`: comprehensive Play Mode verifier (87 checks: fresh profile, awarding points, tree validation, purchase rules, character isolation, save/load persistence, corrupt JSON recovery, reward idempotency, stat aggregation, PlayerStats layering, PlayerHealth scaling, domain reload cleanup).
+- `Tools/Run-Phase12Suite.ps1`: batch runner script with log filtering and exit code checking.
+
+### Verification
+
+- Final Unity 6000.3.23f1 batch Play Mode run: 87/87 checks passed, exit code 0 (`Logs/gate12_1.log`). All completion and state restoration markers present.
+- Focused regression 10.5 (`Milestone10_5_Verifier`): 11/11 checks passed, exit code 0 (`Logs/regression_10_5.log`).
+- Focused regression 11.5 (`Milestone11_5_Verifier`): 1485/1485 checks passed, exit code 0 (`Logs/regression_11_5.log`).
+- Compilation: 0 errors; 3 existing CS0618 warnings in legacy setup scripts (`TMP_Text.enableWordWrapping`).
+- Working tree clean of accidental project setting changes.
+
+### Decisions and Next Task
+
+- Permanent points are strictly character-specific and awarded per dungeon first-clear per character (D1: 2, D2: 2, D3: 3; max 7 points total). Global `DungeonProgression` remains separate.
+- Stat aggregation computes multiplicative modifiers (`1.0 + sum(magnitudes)` for each effect type).
+- PlayerHealth scales max health from its clean `BaseMaxHealth` and initializes to full on dungeon entry.
+- Gate 12.1 is complete and checkpointed locally. Gate 12.2 (Character Skill Trees & World Map Purchase UI) is NEXT. Do NOT push.
+
+---
 - Gate 11.5: Mixed Enemy Wave Compositions & Campaign Integration (Completed & Verified)
 
 ---

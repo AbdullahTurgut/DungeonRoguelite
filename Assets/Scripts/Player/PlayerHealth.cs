@@ -19,6 +19,13 @@ namespace DungeonRoguelite.Player
         [SerializeField] private float currentHealth;
         [SerializeField] private bool isDead;
 
+        private float baseMaxHealth = -1f;
+
+        /// <summary>
+        /// Base maximum health before permanent progression multipliers.
+        /// </summary>
+        public float BaseMaxHealth => baseMaxHealth >= 1f ? baseMaxHealth : maxHealth;
+
         /// <summary>
         /// Maximum health capacity.
         /// </summary>
@@ -52,8 +59,28 @@ namespace DungeonRoguelite.Player
         private void Awake()
         {
             ValidateMaxHealth();
+            if (baseMaxHealth < 1f) baseMaxHealth = maxHealth;
             currentHealth = maxHealth;
             isDead = false;
+        }
+
+        /// <summary>
+        /// Applies permanent max health multiplier for the character archetype.
+        /// Recalculates MaxHealth from BaseMaxHealth and initializes currentHealth to full.
+        /// </summary>
+        public void ApplyPermanentHealthMultiplier(float multiplier)
+        {
+            if (baseMaxHealth < 1f)
+            {
+                baseMaxHealth = maxHealth;
+            }
+
+            float mult = multiplier > 0f ? multiplier : 1f;
+            maxHealth = baseMaxHealth * mult;
+            ValidateMaxHealth();
+            currentHealth = maxHealth;
+            isDead = false;
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
         }
 
         private void OnValidate()
@@ -102,6 +129,7 @@ namespace DungeonRoguelite.Player
             if (newMaxHealth >= 1f)
             {
                 maxHealth = newMaxHealth;
+                baseMaxHealth = newMaxHealth;
             }
             ValidateMaxHealth();
             currentHealth = maxHealth;
