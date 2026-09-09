@@ -40,6 +40,11 @@ namespace DungeonRoguelite.Editor
                     VerifyGate13_4(); success = true;
                     Debug.Log("[GATE 13.4 COMPLETE] All Gate 13.4 checks PASSED."); return;
                 }
+                if (gate == "13_5")
+                {
+                    VerifyGate13_5(); success = true;
+                    Debug.Log("[GATE 13.5 COMPLETE] All Gate 13.5 checks PASSED."); return;
+                }
                 Phase13Setup.SetupGate13_1();
                 var d4 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
                 var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
@@ -142,6 +147,25 @@ namespace DungeonRoguelite.Editor
                 finally { UnityEngine.Object.DestroyImmediate(instance); }
             }
             Check(System.IO.File.ReadAllText("Assets/Scripts/Waves/WaveManager.cs").Contains("EnemyHealthMultiplier"), "WaveManager applies selected dungeon scaling without prefab mutation");
+        }
+
+        private static void VerifyGate13_5()
+        {
+            var d4 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
+            Check(d4 != null && d4.Waves.Length == 4 && d4.RequiredDungeonId == "dungeon_3", "D3 to D4 campaign route");
+            int xp = d4.Waves.SelectMany(w => w.EnemyEntries).Sum(e => e.Count * e.EnemyPrefab.GetComponent<DungeonRoguelite.Experience.ExperienceReward>().XPAmount);
+            Check(xp == 705, "D4 campaign XP is 705");
+            var experience = new GameObject("D4ProgressionVerifier").AddComponent<DungeonRoguelite.Experience.PlayerExperience>();
+            experience.RestoreState(6, 61, 1380);
+            experience.GainExperience(xp);
+            Check(experience.Level == 7 && experience.CurrentXP == 7 && experience.XPToNextLevel == 1139, "D4 entry Level 6 / 61 of 759 ends Level 7 / 7 of 1139");
+            UnityEngine.Object.DestroyImmediate(experience.gameObject);
+            string permanentKey = PermanentProgression.PrefsKey;
+            string old = PlayerPrefs.GetString(permanentKey, null); PermanentProgression.ResetAllProgression();
+            Check(PermanentProgression.TryAwardDungeonFirstClear("warrior", "dungeon_4", out int award) && award == 3, "D4 first clear awards Warrior 3 points");
+            Check(!PermanentProgression.TryAwardDungeonFirstClear("warrior", "dungeon_4", out int replay) && replay == 0, "D4 replay awards no points");
+            Check(PermanentProgression.TryAwardDungeonFirstClear("archer", "dungeon_4", out int other) && other == 3, "other character retains D4 reward");
+            PermanentProgression.ResetAllProgression(); if (old != null) { PlayerPrefs.SetString(permanentKey, old); PlayerPrefs.Save(); }
         }
 
         private static void Check(bool value, string name)

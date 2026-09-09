@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 13 Gate 13.5 (2026-09-09): Full D4 campaign progression is automated GREEN. D4 remains 45 enemies / 705 XP; campaign total is 2085 XP. It enters at Level 6, 61/759 and ends at Level 7, 7/1139 under the production `RoundToInt` curve. First-clear reward remains 3 points, replay is idempotent, and another character retains its reward. Gate verifier and Phase 10.5 campaign regression passed.
 - Phase 13 Gate 13.4 (2026-09-09): D4 combat scaling is automated GREEN. Runtime production rounding is verified as Zombie 65 HP/12 damage, Runner 32/7, Tank 195/26, and Ranged 46/10. The Gate verifier and the 43-check enemy combat regression passed with bounded exits. Gate 13.5 is next.
 - Phase 13 Gate 13.3 (2026-09-09): Dungeon 4 production encounters are automated GREEN. Four grouped sequential waves use only Zombie, Runner, Tank, and Ranged: 45 enemies / 705 XP exactly. The D4 verifier and the 1497-check Phase 11 mixed-wave/projectile regression passed with bounded Unity exits. Gate 13.4 is next.
 - Phase 13 Gate 13.2 (2026-09-09): The Colonnade arena is automated GREEN. `Dungeon_04.unity` now contains a 36m x 28m hall, south-facing-north player entry, four symmetric collision pillars at (-5.5, 4.5), (5.5, 4.5), (-5.5, -4.5), and (5.5, -4.5) on the horizontal plane, boundary walls, open central lane, flank routes, and six tactical spawn points. Bounded verifier passed with Unity exit code 0. Gate 13.3 is next.
