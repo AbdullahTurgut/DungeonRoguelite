@@ -86,6 +86,39 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[GATE 13.2 SETUP COMPLETE] Colonnade arena saved.");
         }
 
+        [MenuItem("DungeonRoguelite/Phase 13/Setup Gate 13.3 Waves")]
+        public static void SetupGate13_3()
+        {
+            SetupGate13_2();
+            var zombie = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Zombie.prefab");
+            var runner = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Runner.prefab");
+            var tank = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Tank.prefab");
+            var ranged = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Ranged.prefab");
+            var waves = new[]
+            {
+                CreateOrUpdateWave("Assets/ScriptableObjects/Waves/Wave_04_01.asset", new[] { new EnemySpawnEntry(zombie, 6), new EnemySpawnEntry(ranged, 3) }, .55f),
+                CreateOrUpdateWave("Assets/ScriptableObjects/Waves/Wave_04_02.asset", new[] { new EnemySpawnEntry(runner, 7), new EnemySpawnEntry(ranged, 4) }, .50f),
+                CreateOrUpdateWave("Assets/ScriptableObjects/Waves/Wave_04_03.asset", new[] { new EnemySpawnEntry(tank, 3), new EnemySpawnEntry(ranged, 4), new EnemySpawnEntry(zombie, 3) }, .60f),
+                CreateOrUpdateWave("Assets/ScriptableObjects/Waves/Wave_04_04.asset", new[] { new EnemySpawnEntry(tank, 3), new EnemySpawnEntry(ranged, 4), new EnemySpawnEntry(zombie, 4), new EnemySpawnEntry(runner, 4) }, .50f)
+            };
+            var dungeon = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(Dungeon04Path);
+            dungeon.SetConfiguration("dungeon_4", "Bölüm 4: Sütunlu Salon", "Geniş sütunlar ve dar geçitlerle çevrili büyük salon. 4 dalga hayatta kal.", "Dungeon_04", "dungeon_3", waves, 1.3f, 1.2f);
+            EditorUtility.SetDirty(dungeon);
+            var scene = EditorSceneManager.OpenScene(Dungeon04ScenePath, OpenSceneMode.Single);
+            var manager = Object.FindFirstObjectByType<WaveManager>();
+            if (manager != null) { manager.SetWaves(waves); EditorUtility.SetDirty(manager); }
+            EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets(); AssetDatabase.Refresh();
+            Debug.Log("[GATE 13.3 SETUP COMPLETE] Dungeon 4 production waves saved.");
+        }
+
+        private static WaveDefinition CreateOrUpdateWave(string path, EnemySpawnEntry[] entries, float interval)
+        {
+            var wave = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            if (wave == null) { wave = ScriptableObject.CreateInstance<WaveDefinition>(); AssetDatabase.CreateAsset(wave, path); }
+            wave.Initialize(entries, interval); EditorUtility.SetDirty(wave); return wave;
+        }
+
         private static void EnsureSpawnPoints(int count)
         {
             var root = GameObject.Find("SpawnPoints") ?? new GameObject("SpawnPoints");

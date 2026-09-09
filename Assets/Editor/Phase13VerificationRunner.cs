@@ -28,6 +28,13 @@ namespace DungeonRoguelite.Editor
                     Debug.Log("[GATE 13.2 COMPLETE] All Gate 13.2 checks PASSED.");
                     return;
                 }
+                if (gate == "13_3")
+                {
+                    VerifyGate13_3();
+                    success = true;
+                    Debug.Log("[GATE 13.3 COMPLETE] All Gate 13.3 checks PASSED.");
+                    return;
+                }
                 Phase13Setup.SetupGate13_1();
                 var d4 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
                 var catalog = AssetDatabase.LoadAssetAtPath<DungeonCatalog>("Assets/ScriptableObjects/Dungeons/DungeonCatalog.asset");
@@ -86,6 +93,26 @@ namespace DungeonRoguelite.Editor
         }
 
         private static bool Approximately(Vector3 left, Vector3 right) => Vector3.Distance(left, right) < 0.01f;
+
+        private static void VerifyGate13_3()
+        {
+            Phase13Setup.SetupGate13_3();
+            var dungeon = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_04.asset");
+            Check(dungeon != null && dungeon.Waves.Length == 4, "four production waves wired to D4");
+            int enemies = 0; int xp = 0; string[] expected = { "Zombie,Ranged", "Runner,Ranged", "Tank,Ranged,Zombie", "Tank,Ranged,Zombie,Runner" };
+            for (int i = 0; i < dungeon.Waves.Length; i++)
+            {
+                var wave = dungeon.Waves[i];
+                Check(wave != null && wave.SpawnInterval > 0f && wave.EnemyEntries.Count > 0, "wave " + (i + 1) + " pacing and entries");
+                string order = string.Join(",", wave.EnemyEntries.Select(e => e.EnemyPrefab.name));
+                Check(order == expected[i] && wave.EnemyEntries.All(e => e.EnemyPrefab != null && e.Count > 0), "wave " + (i + 1) + " grouped entry order");
+                foreach (var entry in wave.EnemyEntries) { enemies += entry.Count; xp += entry.Count * entry.EnemyPrefab.GetComponent<DungeonRoguelite.Experience.ExperienceReward>().XPAmount; }
+            }
+            Check(enemies == 45 && xp == 705, "exact D4 production total: 45 enemies / 705 XP");
+            var scene = EditorSceneManager.OpenScene("Assets/Scenes/Dungeons/Dungeon_04.unity", OpenSceneMode.Single);
+            var manager = UnityEngine.Object.FindFirstObjectByType<WaveManager>();
+            Check(manager != null && manager.TotalWaves == 4, "WaveManager final-enemy completion foundation has four waves");
+        }
 
         private static void Check(bool value, string name)
         {
