@@ -194,6 +194,9 @@ namespace DungeonRoguelite.UI
             if (panelRoot != null)
             {
                 panelRoot.SetActive(true);
+                // World Map cards can be cloned after this panel at runtime.
+                // Keep the modal above every map child whenever it is opened.
+                panelRoot.transform.SetAsLastSibling();
             }
 
             RefreshUI();

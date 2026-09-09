@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 13 final manual-QA UI recovery (2026-09-09): Skill Tree overlay layering is automated GREEN. Opening the panel now moves its full-screen root to the final Canvas sibling position, ensuring dynamically created D4 World Map cards cannot render above it; close returns the unchanged map. Phase 12.5 Skill Tree UI regression passed 128 checks and Phase 10 QA World Map regression passed 10 checks.
 - Phase 13 Gate 13.5 (2026-09-09): Full D4 campaign progression is automated GREEN. D4 remains 45 enemies / 705 XP; campaign total is 2085 XP. It enters at Level 6, 61/759 and ends at Level 7, 7/1139 under the production `RoundToInt` curve. First-clear reward remains 3 points, replay is idempotent, and another character retains its reward. Gate verifier and Phase 10.5 campaign regression passed.
 - Phase 13 Gate 13.4 (2026-09-09): D4 combat scaling is automated GREEN. Runtime production rounding is verified as Zombie 65 HP/12 damage, Runner 32/7, Tank 195/26, and Ranged 46/10. The Gate verifier and the 43-check enemy combat regression passed with bounded exits. Gate 13.5 is next.
 - Phase 13 Gate 13.3 (2026-09-09): Dungeon 4 production encounters are automated GREEN. Four grouped sequential waves use only Zombie, Runner, Tank, and Ranged: 45 enemies / 705 XP exactly. The D4 verifier and the 1497-check Phase 11 mixed-wave/projectile regression passed with bounded Unity exits. Gate 13.4 is next.
