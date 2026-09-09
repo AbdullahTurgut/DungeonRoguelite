@@ -393,7 +393,7 @@ Behavior:
 - Moderate health.
 - Slow movement.
 
-Phase 11 adds Runner (25 HP / 10 XP), Tank (150 HP / 40 XP), and Ranged (35 HP / 15 XP) through shared components and prefab configuration. Combat readability and balance await combined manual QA.
+Phase 11 adds Runner (25 HP / 10 XP), Tank (150 HP / 40 XP), and Ranged (35 HP / 15 XP) through shared components and prefab configuration. Combat readability, archetype pacing, and balance are fully verified and approved (User Manual Gameplay QA ALL GREEN).
 
 Future enemy examples:
 

@@ -290,20 +290,20 @@ Implemented:
 
 ---
 
-# PHASE 11 — Combat & Enemy Variety
+# PHASE 11 — Combat & Enemy Variety (COMPLETE)
 
 - Gate 11.1: Enemy attack contract, hit feedback, corpse cleanup — automated and user manual QA GREEN.
 - Gate 11.2: Runner — automated GREEN; 41 focused checks and 170 focused regression checks.
 - Gate 11.3: Tank — automated GREEN; 273 focused checks and 211 focused regression checks.
 - Gate 11.4: Ranged enemy and locally owned projectiles — automated GREEN, 106 checks; local checkpoint `1a0846b`.
-- Gate 11.5: Approved mixed waves and campaign integration — automated GREEN, 1485 focused checks; full 13-suite regression GREEN (2117 checks). Awaiting user manual gameplay QA.
-
-Sequential automated gates and local checkpoints; manual gameplay/balance QA after 11.5.
-No physical knockback, pooling, enemy hierarchy, or enemy-definition migration.
+- Gate 11.5: Approved mixed waves and campaign integration — automated GREEN, 1485 focused checks; full 13-suite regression GREEN (2117 checks). User manual gameplay QA ALL GREEN.
+- Archetypes implemented: Zombie, Runner, Tank, Ranged.
+- Wave compositions & totals: D1 (38 enemies / 410 XP), D2 (35 enemies / 430 XP), D3 (42 enemies / 540 XP), Campaign (115 enemies / 1380 XP).
+- Phase 11 signed off.
 
 ---
 
-# PHASE 12 — Permanent Progression / Skill Tree
+# PHASE 12 — Permanent Progression / Skill Tree (NEXT)
 
 - Permanent progression and character skill trees.
 - Permanent upgrades and save/load integration.
@@ -348,9 +348,11 @@ Phase 9 (Dungeon Progression)                 -> COMPLETED
     ↓
 Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
     ↓
-Phase 11 (Combat & Enemy Variety)           -> CURRENT (see PROJECT_STATUS.md)
+Phase 11 (Combat & Enemy Variety)             -> COMPLETED (Manual QA ALL GREEN)
+    ↓
+Phase 12 (Permanent Progression / Skill Tree) -> NEXT
 ```
 
-Milestones 0 through 10 are fully implemented, automated-verified, and manual-QA-verified.
-Phase 10 is complete and signed off.
-Gates 11.1 through 11.5 and the full regression matrix are automated GREEN. Current next task: user manual gameplay QA. No push or Phase 12 work is authorized.
+Milestones 0 through 11 are fully implemented, automated-verified, and manual-QA-verified.
+Phase 11 is complete and signed off.
+Next task: Phase 12 (Permanent Progression / Skill Tree).

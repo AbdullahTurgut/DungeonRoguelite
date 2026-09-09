@@ -3,7 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Restart recovery (2026-09-09): recovered main at `2d489ac`, with intact uncommitted Gate 11.4 and partial Gate 11.5 work. Preserved the partial integration work separately, checkpointed Ranged as `1a0846b`, confirmed a clean tree, then restored and completed integration. Gate 11.5 focused verification is GREEN: 1485 checks, state restored, Unity exit 0. Full isolated regression is GREEN: 2117 passing checks across 13 suites. Next: user manual gameplay QA only.
+- Phase 11 Final Sign-off (2026-09-09): Phase 11 is COMPLETE. Gates 11.1–11.5 automated GREEN (1485/1485 in Gate 11.5 suite, 2117/2117 total across all 13 regression suites). User manual gameplay QA is ALL GREEN. Four enemy archetypes implemented (Zombie, Runner, Tank, Ranged) using shared composition and minimal `IEnemyAttack`. Visual hit feedback and unscaled corpse cleanup active. Ranged projectiles use authoritative sweep collision and shooter-owned cancellation on death. Wave compositions verified: D1 (38 enemies / 410 XP), D2 (35 enemies / 430 XP), D3 (42 enemies / 540 XP), Campaign total (115 enemies / 1380 XP). Roguelite run semantics preserved across Victory, Defeat Retry rollback, and Defeat Return to Map. Phase 12 (Permanent Progression / Skill Tree) is NEXT.
+- Restart recovery (2026-09-09): recovered main at `2d489ac`, with intact uncommitted Gate 11.4 and partial Gate 11.5 work. Preserved the partial integration work separately, checkpointed Ranged as `1a0846b`, confirmed a clean tree, then restored and completed integration. Gate 11.5 focused verification is GREEN: 1485 checks, state restored, Unity exit 0. Full isolated regression is GREEN: 2117 passing checks across 13 suites.
 - Gate 11.1 implementation (2026-09-08): minimal `IEnemyAttack`, Zombie hit feedback and corpse cleanup are implemented on `codex-gate11-test`, based on Phase 10 commit `8f11ae7`. Verification results are recorded in the current gate section below; prior Phase 10 notes are historical.
 - Phase 10 Final Manual QA is GREEN & Approved:
   - Architecture Audit complete: explicit serialized bindings confirmed across production scenes; Editor-only asset lookups cleanly isolated behind `#if UNITY_EDITOR`; standalone builds decoupled from AssetDatabase; discrete state ownership confirmed across `CharacterSelectionSession`, `DungeonRunSession`, `RunProgressionSession`, and `DungeonProgression`; World Map 3-card catalog layout verified.
@@ -25,24 +26,24 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
-**PHASE 10 AUTOMATED GREEN | PHASE 10 MANUAL QA GREEN**
+**COMPLETED — Phase 11: Combat & Enemy Variety**
+**PHASE 11 AUTOMATED GREEN (2117/2117) | USER MANUAL GAMEPLAY QA ALL GREEN**
 
-**CURRENT — Phase 11: Combat & Enemy Variety; Gates 11.1–11.5 and full final regression automated GREEN; awaiting user manual gameplay QA**
+**NEXT — Phase 12: Permanent Progression / Skill Tree**
 
-Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
+Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
 
 ---
 
 # Current Phase
 
-## PHASE 10 — Campaign Run Progression & Scaling (COMPLETED)
+## PHASE 11 — Combat & Enemy Variety (COMPLETED)
 
-- Milestone 10.1: Campaign Run Progression Checkpoints (Completed)
-- Milestone 10.2: Data-Driven Enemy Scaling (Completed)
-- Milestone 10.3: Run Lifecycle & End-Run Semantics (Completed)
-- Milestone 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity (Completed)
-- Milestone 10.5: Progression Foundations & Architecture Invariants (Completed)
+- Gate 11.1: Enemy Attack Contract, Hit Feedback & Corpse Cleanup (Completed & Verified)
+- Gate 11.2: Runner Enemy Archetype (Completed & Verified)
+- Gate 11.3: Tank Enemy Archetype (Completed & Verified)
+- Gate 11.4: Ranged Enemy Archetype & Locally Owned Projectiles (Completed & Verified)
+- Gate 11.5: Mixed Enemy Wave Compositions & Campaign Integration (Completed & Verified)
 
 ---
 
@@ -115,7 +116,7 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Added a 180-second real-time deadline to the legacy regression runner. Gate 11.5 cleans scene/test objects and restores sessions, PlayerPrefs, and time scale on completion or failure.
 - Implementation-time verifier issues: corrected CS1061 (`EnemyEntries.Count`, not Length); corrected an accelerated campaign harness wait that allowed an XP choice to pause spawning. The failed harness run emitted STATE RESTORED and exited 1 after 264 passing checks. Pickup collection now uses the public TryCollect API before the next wait and checks duplicate rejection. No production balance changes were made to satisfy tests.
 - Final focused run: 0 compiler errors and 0 gameplay/runtime exceptions. A previous compilation emitted the three existing CS0618 TMP enableWordWrapping warnings. Full final regression results are recorded below.
-- Gate 11.1 manual gameplay QA remains GREEN. Combined Phase 11 manual balance/readability QA is pending; no Phase 12 work or push is authorized.
+- Gate 11.1 manual gameplay QA remains GREEN. User manual gameplay QA for Phase 11 is ALL GREEN across all archetypes, encounters, and dungeons.
 
 ### Final isolated regression matrix — GREEN (2026-09-09)
 
@@ -140,8 +141,8 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Final matrix logs: **0 compiler errors, 0 emitted compiler warnings, 0 gameplay/runtime exceptions**. Compilation earlier in this session emitted the **3 pre-existing CS0618 warnings** for TMP_Text.enableWordWrapping in Milestone6_1_Setup, Milestone8_5_Setup, and Milestone9_Setup; those warnings have not been fixed or claimed resolved.
 - Separate environment evidence: the first sandboxed regression launch stalled before licensing initialization, was terminated before tests, and was rerun with approved licensing access. Successful launches report an unavailable licensing access token during refresh, then license successfully, and emit normal ADB shutdown messages. No Search exception appeared in the final matrix. Historical Search exceptions above remain historical.
 - Restored unrelated Unity-generated LiberationSans fallback font and TimeManager changes. No production scenes, DungeonCatalog, prefab baselines, or production C# changed during Gate 11.5. No logs are tracked and no push occurred.
-- Phase 11 local checkpoints: `72817f6` attack/feedback foundation; `8d0a718` Runner; `2d489ac` Tank; `1a0846b` Ranged; integration checkpoint uses `feat: integrate mixed enemy wave compositions` (this checkpoint contains these results; discover its hash from Git).
-- **STOP: awaiting user manual gameplay QA.** Gate 11.1 manual gameplay QA is already GREEN. No Phase 12 work, push, subjective balance automation, or extra combat feedback was performed.
+- Phase 11 local checkpoints: `72817f6` attack/feedback foundation; `8d0a718` Runner; `2d489ac` Tank; `1a0846b` Ranged; `5dc3d6d` mixed wave integration (`feat: integrate mixed enemy wave compositions`).
+- **Phase 11 sign-off complete:** Gates 11.1–11.5 automated GREEN (2117/2117 checks). User manual gameplay QA is ALL GREEN. Phase 12 is NEXT.
 
 # Completed
 
@@ -601,7 +602,12 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
 
 # Next Task
 
-Phase 11: Combat & Enemy Variety. All automated work is complete. Wait for user manual gameplay QA; balance and readability remain for the user to judge. No push; do not begin Phase 12.
+Phase 12: Permanent Progression / Skill Tree — NEXT.
+Phase 11 (Combat & Enemy Variety) is COMPLETE.
+- Gates 11.1–11.5 automated GREEN (2117/2117 regression checks).
+- User manual gameplay QA ALL GREEN.
+- Four archetypes implemented: Zombie, Runner, Tank, Ranged.
+- Wave totals confirmed: D1 = 38 enemies / 410 XP, D2 = 35 enemies / 430 XP, D3 = 42 enemies / 540 XP, Campaign = 115 enemies / 1380 XP.
 
 Future roadmap: Phase 12 Permanent Progression / Skill Tree; Phase 13 Dungeon 4 + Encounter Design; Phase 14 Dungeon 5 + First Boss.
 
@@ -1063,21 +1069,22 @@ When switching between agents:
 ## Known Issues
 
 ```text
-Gate 11.1: graphical/manual QA and standalone build remain unverified.
 Unity Editor Search.SearchDatabase throws a startup indexing ArgumentOutOfRangeException in this worktree before tests begin.
-Three legacy setup scripts emit obsolete TMP_Text.enableWordWrapping warnings; no C# compilation errors or Gate 11.1 gameplay errors were observed.
+Three legacy setup scripts emit obsolete TMP_Text.enableWordWrapping warnings; no C# compilation errors or gameplay errors observed.
 ```
 
 ## Next Task
 
 ```text
-Gate 11.1 manual visual QA: verify Warrior/Archer/Gunner hit readability, corpse disappearance during pauses, and normal dungeon completion in D1/D2/D3. Phase 10 manual QA was already approved. Await the user's next gate selection after Gate 11.1 acceptance.
+Phase 12: Permanent Progression / Skill Tree.
+Phase 11 is complete and signed off (Gates 11.1–11.5 automated GREEN, 2117/2117 regression checks, user manual gameplay QA ALL GREEN).
+Awaiting Phase 12 kickoff.
 ```
 
 ## Latest Verified Commit
 
 ```text
-8f11ae7 docs: record Phase 10 manual QA green and approved roguelite run semantics
-Gate 11.1 local checkpoint on codex-gate11-test: feat: establish enemy attack abstraction and combat feedback foundation
-Manual gameplay QA pending; no push authorized.
+5dc3d6d feat: integrate mixed enemy wave compositions
+Phase 11 automated verification GREEN (2117/2117); user manual gameplay QA ALL GREEN.
+Phase 11 complete and signed off.
 ```
