@@ -303,14 +303,19 @@ Implemented:
 
 ---
 
-# PHASE 12 — Permanent Progression / Skill Tree (NEXT)
+# PHASE 12 — Permanent Progression / Skill Tree (COMPLETE)
 
-- Permanent progression and character skill trees.
-- Permanent upgrades and save/load integration.
+- Gate 12.1: Permanent progression foundation, data model, PlayerPrefs persistence, and stat multipliers — automated GREEN (87 checks).
+- Gate 12.2: First-clear reward economy (D1=2, D2=2, D3=3; 7 pts max per character) and authoritative dungeon completion integration — automated GREEN (99 checks).
+- Gate 12.3: Warrior permanent skill tree (`SkillTree_Warrior.asset`, 3 branches x 3 tiers = 9 nodes) and spawn-time modifier binding with fresh health scaling (135/135 HP) — automated GREEN (200 checks).
+- Gate 12.4: Archer and Gunner permanent skill trees (`SkillTree_Archer.asset`, `SkillTree_Gunner.asset`), real combat binding, and upgrade layering — automated GREEN (226 checks).
+- Gate 12.5: World Map permanent Skill Tree purchase UI ("YETENEKLER" overlay with 4 deterministic node states) and final integration — automated GREEN (127 checks).
+- Full 15-suite regression matrix: 2432/2432 checks PASSED. User manual gameplay QA ALL GREEN.
+- Phase 12 signed off.
 
 ---
 
-# PHASE 13 — Dungeon 4 + Encounter Design
+# PHASE 13 — Dungeon 4 + Encounter Design (NEXT)
 
 - Dungeon 4 and encounter design.
 
@@ -350,9 +355,11 @@ Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
     ↓
 Phase 11 (Combat & Enemy Variety)             -> COMPLETED (Manual QA ALL GREEN)
     ↓
-Phase 12 (Permanent Progression / Skill Tree) -> NEXT
+Phase 12 (Permanent Progression / Skill Tree) -> COMPLETED (Manual QA ALL GREEN)
+    ↓
+Phase 13 (Dungeon 4 + Encounter Design)       -> NEXT
 ```
 
-Milestones 0 through 11 are fully implemented, automated-verified, and manual-QA-verified.
-Phase 11 is complete and signed off.
-Next task: Phase 12 (Permanent Progression / Skill Tree).
+Milestones 0 through 12 are fully implemented, automated-verified, and manual-QA-verified.
+Phase 12 is complete and signed off.
+Next task: Phase 13 (Dungeon 4 + Encounter Design).

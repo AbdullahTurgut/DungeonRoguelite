@@ -3,7 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 12 Gate 12.5 World Map Permanent Skill Tree Purchase UI & Final Integration (2026-09-09): Gate 12.5 is COMPLETE and automated GREEN (127/127 checks passed, state restored, Unity exit code 0). Full regression matrix is 100% GREEN across all 15 suites: Gate 12.1 (87/87), Gate 12.2 (99/99), Gate 12.3 (200/200), Gate 12.4 (226/226), Gate 12.5 (127/127), Suite 10.1 (11/11), Suite 10.2 (15/15), Suite 10.3 (5/5), Suite 10.4 (5/5), Suite 10.5 (11/11), Phase 10 QA (10/10), Archer 8.3 (68/68), Gunner 8.4 (PASSED), Suite 11.1 (43/43), Suite 11.5 (1485/1485); 2432 checks total. Implemented `SkillTreeNodeUI` card presenter with 4 deterministic states (`PURCHASED`, `AVAILABLE`, `INSUFFICIENT POINTS`, `LOCKED`), `SkillTreeUI` overlay controller in `WorldMap.unity` with character name, available points, 3 branches x 3 tier cards (9 nodes), and "KAPAT" close button, and wired dedicated "YETENEKLER" button on `WorldMapController` without leaving `WorldMap.unity`. Verified character switching isolation (Warrior -> Archer -> Gunner -> Warrior), spawn-time fresh health scaling (135/135 HP), combat stat layering (`Base * Permanent * Temporary`), campaign economy cap (7 pts max), session invariants, and fail-safe handling. Phase 12 automated implementation is complete; stopping for user manual QA.
+- Phase 12 Final Sign-off (2026-09-09): Phase 12 is COMPLETE. Gates 12.1–12.5 automated GREEN (2432/2432 checks total across all 15 suites in the full regression matrix: Gate 12.1: 87/87, Gate 12.2: 99/99, Gate 12.3: 200/200, Gate 12.4: 226/226, Gate 12.5: 127/127, Suite 10.1: 11/11, Suite 10.2: 15/15, Suite 10.3: 5/5, Suite 10.4: 5/5, Suite 10.5: 11/11, Phase 10 QA: 10/10, Archer 8.3: 68/68, Gunner 8.4: 44/44, Suite 11.1: 43/43, Suite 11.5: 1485/1485). User manual gameplay QA is ALL GREEN. Implemented and verified character-specific permanent progression persistence (`PermanentProgression`), first-clear campaign economy (D1=2, D2=2, D3=3; 7 points max per character) with strict idempotency, 3-branch / 9-node ScriptableObject skill trees for Warrior, Archer, and Gunner, spawn-time fresh health scaling (135/135 HP), combat stat layering (`Base * Permanent * Temporary`), and the World Map Skill Tree purchase UI ("YETENEKLER" overlay with 4 deterministic node states). Phase 13 (Dungeon 4 + Encounter Design) is NEXT.
+- Phase 12 Gate 12.5 World Map Permanent Skill Tree Purchase UI & Final Integration (2026-09-09): Gate 12.5 is COMPLETE and automated GREEN (127/127 checks passed, state restored, Unity exit code 0). Full regression matrix is 100% GREEN across all 15 suites. Implemented `SkillTreeNodeUI` card presenter with 4 deterministic states (`PURCHASED`, `AVAILABLE`, `INSUFFICIENT POINTS`, `LOCKED`), `SkillTreeUI` overlay controller in `WorldMap.unity` with character name, available points, 3 branches x 3 tier cards (9 nodes), and "KAPAT" close button, and wired dedicated "YETENEKLER" button on `WorldMapController` without leaving `WorldMap.unity`. Verified character switching isolation (Warrior -> Archer -> Gunner -> Warrior), spawn-time fresh health scaling (135/135 HP), combat stat layering (`Base * Permanent * Temporary`), campaign economy cap (7 pts max), session invariants, and fail-safe handling.
 - Phase 12 Gate 12.4 Archer & Gunner Skill Trees & Combat Binding (2026-09-09): Gate 12.4 is COMPLETE and automated GREEN (226/226 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Gate 12.2: 99/99, Gate 12.3: 200/200, Archer 8.3: 68/68, Gunner 8.4: 44/44, Suite 10.5: 11/11, Suite 11.1: 43/43; 778 checks total). Implemented single `SkillTreeDefinition` ScriptableObjects for Archer (`SkillTree_Archer.asset`) and Gunner (`SkillTree_Gunner.asset`) with 3 branches x 3 linear tiers (9 nodes each at 1 pt each). Archer has Precision (1.35x Dmg), Tempo (1.20x AtkSpd), and Survival (1.15x MoveSpd, 1.10x Max HP). Gunner has Firepower (1.35x Dmg), Cadence (1.20x AtkSpd), and Handling (1.10x MoveSpd, 1.10x Max HP). Bound trees to `Character_Archer.asset` and `Character_Gunner.asset`. Verified real combat binding with `BowWeapon` (20 base -> 27.0 effective, 0.6s -> 0.50s cd) and `RifleWeapon` (10 base -> 13.5 effective, 0.18s -> 0.15s cd), fresh health scaling (110/110 HP), upgrade layering (`Base * Permanent * Temporary`), run semantics, and deterministic 4-way character switching. Next task awaits Gate 12.5 authorization.
 - Phase 12 Gate 12.3 Warrior Skill Tree & Spawn-Time Modifier Binding (2026-09-09): Gate 12.3 is COMPLETE and automated GREEN (200/200 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Gate 12.2: 99/99, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485; 1925 checks total). Implemented single Warrior `SkillTreeDefinition` ScriptableObject with 3 branches (Durability: +35% Max HP, Power: +35% Damage, Tempo: +15% Attack Speed, +5% Move Speed), 3 linear tiers per branch, 9 nodes total at 1 point each. Bound skill tree asset to `Character_Warrior.asset`. Integrated spawn-time permanent modifier binding into `PlayerSpawner` -> `PlayerStats` and `PlayerHealth`, enforcing fresh health scaling (`BaseMaxHealth` 100 -> `MaxHealth` 135, `CurrentHealth` 135) and layered combat math (`Base * Permanent * Temporary`). Verified run semantics compatibility across Victory, Defeat Retry rollback, and EndRun, alongside complete cross-character isolation (Archer and Gunner retain neutral 1.0x multipliers and 100 HP). Next task awaits Gate 12.4 authorization.
 - Phase 12 Gate 12.2 Reward Economy & Completion Integration (2026-09-09): Gate 12.2 is COMPLETE and automated GREEN (99/99 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485). Implemented approved first-clear economy in `PermanentProgression` (D1 = 2 pts, D2 = 2 pts, D3 = 3 pts; 7 pts total per character max) with case-insensitive and idempotent reward mapping. Integrated authoritative completion awarding into `DungeonCompletionController.FinalizeCompletion()`, preserving global `DungeonProgression` unlock semantics while recording character-isolated permanent rewards. Verified duplicate-clear rejection, cross-character isolation, exclusion from defeat/retry/return-to-map/run-XP, persistence across simulated reloads, and fail-safe handling on null/empty character/dungeon IDs. Next task awaits Gate 12.3 authorization.
@@ -31,27 +32,25 @@ Last update:
 
 ## Status
 
-**IN PROGRESS — Phase 12: Permanent Progression / Skill Tree**
-**ALL GATES 12.1 THROUGH 12.5 AUTOMATED GREEN | FULL REGRESSION MATRIX GREEN (2432 CHECKS TOTAL)**
+**COMPLETED — Phase 12: Permanent Progression / Skill Tree**
+**ALL GATES 12.1 THROUGH 12.5 AUTOMATED GREEN (2432/2432 CHECKS TOTAL) | USER MANUAL GAMEPLAY QA ALL GREEN**
 - Gate 12.1: 87/87 checks PASSED
 - Gate 12.2: 99/99 checks PASSED
 - Gate 12.3: 200/200 checks PASSED
 - Gate 12.4: 226/226 checks PASSED
 - Gate 12.5: 127/127 checks PASSED
 - Full Regression Matrix (10 suites): Suite 10.1 (11/11), Suite 10.2 (15/15), Suite 10.3 (5/5), Suite 10.4 (5/5), Suite 10.5 (11/11), Phase 10 QA (10/10), Archer 8.3 (68/68), Gunner 8.4 (PASSED), Suite 11.1 (43/43), Suite 11.5 (1485/1485).
+- User Manual Gameplay QA: ALL GREEN.
 
-**CURRENT ACTION — AWAITING USER MANUAL QA SIGN-OFF FOR PHASE 12**
-- Do NOT begin Phase 13.
-- Do NOT push to remote repository.
-- Do NOT mark manual QA as complete until user verifies gameplay in Unity Editor.
+**NEXT — Phase 13: Dungeon 4 + Encounter Design**
 
-Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
+Milestones 1.1 through 12.5, Phase 9 Polish Pass, and Phase 10/11/12 Manual QA are fully implemented, verified, and signed off.
 
 ---
 
 # Current Phase
 
-## PHASE 12 — Permanent Progression / Skill Tree (Automated Implementation COMPLETE)
+## PHASE 12 — Permanent Progression / Skill Tree (COMPLETE)
 
 - Gate 12.1: Permanent Progression Foundation (Completed & Verified)
 - Gate 12.2: Permanent Reward Economy & Dungeon Completion Integration (Completed & Verified)
@@ -131,6 +130,8 @@ Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are 
   - Suite 11.1 (`Milestone11_1_Verifier`): 43/43 checks passed, exit code 0.
   - Suite 11.5 (`Milestone11_5_Verifier`): 1485/1485 checks passed, exit code 0.
 - Total checks passed in Gate 12.5 sign-off: 2432 checks passed with zero errors, zero warnings.
+- User Manual Gameplay QA: ALL GREEN. Verified opening "YETENEKLER" overlay from World Map, purchasing nodes across branches, character switching, 4-state node visual feedback, non-combat UI isolation, and successful transition into dungeon with active permanent multipliers.
+- Phase 12 Final Sign-Off: COMPLETE. Next milestone is Phase 13 (Dungeon 4 + Encounter Design).
 
 ---
 
