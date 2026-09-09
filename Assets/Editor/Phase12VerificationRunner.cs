@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
@@ -26,6 +26,15 @@ namespace DungeonRoguelite.Editor
             string[] args = System.Environment.GetCommandLineArgs();
             int index = System.Array.IndexOf(args, "-gateSuite");
             SessionState.SetString("Phase12.Suite", index >= 0 ? args[index + 1] : "12_1");
+            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            SessionState.SetBool(Pending, true);
+            EditorApplication.EnterPlaymode();
+        }
+
+        [MenuItem("DungeonRoguelite/Phase 12/Run Gate 12.2 Verification")]
+        public static void RunGate12_2()
+        {
+            SessionState.SetString("Phase12.Suite", "12_2");
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             SessionState.SetBool(Pending, true);
             EditorApplication.EnterPlaymode();

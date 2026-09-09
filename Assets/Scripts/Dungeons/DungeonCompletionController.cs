@@ -5,6 +5,7 @@ using DungeonRoguelite.Experience;
 using DungeonRoguelite.Upgrades;
 using DungeonRoguelite.Waves;
 using DungeonRoguelite.Characters;
+using DungeonRoguelite.Progression;
 
 namespace DungeonRoguelite.Dungeons
 {
@@ -25,6 +26,9 @@ namespace DungeonRoguelite.Dungeons
         [Tooltip("Optional reference to the PlayerSpawner for explicit runtime binding.")]
         [SerializeField] private PlayerSpawner playerSpawner;
 
+        [Tooltip("Optional reference to the active PlayableCharacter.")]
+        [SerializeField] private PlayableCharacter activeCharacter;
+
         [Tooltip("Optional reference to the PlayerDefeatController for mutual exclusion.")]
         [SerializeField] private PlayerDefeatController playerDefeatController;
 
@@ -38,6 +42,7 @@ namespace DungeonRoguelite.Dungeons
         public bool IsCompletionFinished => isCompletionFinished;
         public DungeonRunSummary FinalSummary => finalSummary;
         public PlayerSpawner PlayerSpawner => playerSpawner;
+        public PlayableCharacter ActiveCharacter => activeCharacter;
         public PlayerExperience PlayerExperience => playerExperience;
         public PlayerDefeatController PlayerDefeatController => playerDefeatController;
 
@@ -137,6 +142,11 @@ namespace DungeonRoguelite.Dungeons
             if (playerDefeatController == null)
             {
                 playerDefeatController = FindFirstObjectByType<PlayerDefeatController>();
+            }
+
+            if (activeCharacter == null)
+            {
+                activeCharacter = FindFirstObjectByType<PlayableCharacter>();
             }
         }
 
@@ -252,6 +262,42 @@ namespace DungeonRoguelite.Dungeons
                 DungeonProgression.RecordDungeonCompleted(completedDungeonId);
             }
 
+            // Award permanent progression skill points for first-clear per character
+            string completedCharacterId = null;
+            if (activeCharacter != null && activeCharacter.CharacterDefinition != null && !string.IsNullOrEmpty(activeCharacter.CharacterDefinition.Id))
+            {
+                completedCharacterId = activeCharacter.CharacterDefinition.Id;
+            }
+            else if (playerSpawner != null && playerSpawner.ActiveCharacter != null && playerSpawner.ActiveCharacter.CharacterDefinition != null && !string.IsNullOrEmpty(playerSpawner.ActiveCharacter.CharacterDefinition.Id))
+            {
+                completedCharacterId = playerSpawner.ActiveCharacter.CharacterDefinition.Id;
+            }
+            else if (CharacterSelectionSession.HasSelection && !string.IsNullOrEmpty(CharacterSelectionSession.SelectedCharacterId))
+            {
+                completedCharacterId = CharacterSelectionSession.SelectedCharacterId;
+            }
+            else if (CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null && !string.IsNullOrEmpty(CharacterSelectionSession.SelectedCharacter.Id))
+            {
+                completedCharacterId = CharacterSelectionSession.SelectedCharacter.Id;
+            }
+            else if (playerSpawner != null && playerSpawner.DefaultCharacter != null && !string.IsNullOrEmpty(playerSpawner.DefaultCharacter.Id))
+            {
+                completedCharacterId = playerSpawner.DefaultCharacter.Id;
+            }
+
+            if (!string.IsNullOrEmpty(completedCharacterId) && !string.IsNullOrEmpty(completedDungeonId))
+            {
+                PermanentProgression.TryAwardDungeonFirstClear(completedCharacterId, completedDungeonId, out int awardedPoints);
+                if (awardedPoints > 0)
+                {
+                    Debug.Log($"[DungeonCompletionController] Awarded {awardedPoints} permanent skill points to '{completedCharacterId}' for first clear of '{completedDungeonId}'.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning($"[DungeonCompletionController] Permanent skill points not awarded: Character='{completedCharacterId}', Dungeon='{completedDungeonId}'.");
+            }
+
             // Ensure component references are resolved before reading final run state
             if (playerExperience == null)
             {
@@ -292,6 +338,23 @@ namespace DungeonRoguelite.Dungeons
         public void BindPlayer(PlayerExperience experience)
         {
             playerExperience = experience;
+            if (activeCharacter == null && experience != null)
+            {
+                activeCharacter = experience.GetComponent<PlayableCharacter>();
+            }
+        }
+
+        /// <summary>
+        /// Explicitly binds the runtime PlayableCharacter instance for completion resolution.
+        /// </summary>
+        public void BindCharacter(PlayableCharacter character)
+        {
+            activeCharacter = character;
+            if (character != null && playerExperience == null)
+            {
+                var exp = character.GetComponent<PlayerExperience>();
+                if (exp != null) BindPlayer(exp);
+            }
         }
 
         /// <summary>
@@ -322,6 +385,7 @@ namespace DungeonRoguelite.Dungeons
         {
             if (character != null)
             {
+                activeCharacter = character;
                 var exp = character.GetComponent<PlayerExperience>();
                 BindPlayer(exp);
             }
@@ -347,7 +411,7 @@ namespace DungeonRoguelite.Dungeons
             SceneManager.LoadScene(targetScene);
         }
 
-        public void SetReferences(WaveManager wave, UpgradeManager upgrade, DungeonRunStats stats, PlayerExperience exp, PlayerDefeatController defeat = null)
+        public void SetReferences(WaveManager wave, UpgradeManager upgrade, DungeonRunStats stats, PlayerExperience exp, PlayerDefeatController defeat = null, PlayableCharacter character = null)
         {
             waveManager = wave;
             upgradeManager = upgrade;
@@ -356,6 +420,10 @@ namespace DungeonRoguelite.Dungeons
             if (defeat != null)
             {
                 playerDefeatController = defeat;
+            }
+            if (character != null)
+            {
+                activeCharacter = character;
             }
         }
 
@@ -369,6 +437,7 @@ namespace DungeonRoguelite.Dungeons
             isCompletionFinished = false;
             isWaitingForUpgrades = false;
             finalSummary = default;
+            activeCharacter = null;
         }
 #endif
     }

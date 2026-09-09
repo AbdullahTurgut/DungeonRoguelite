@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -261,8 +261,55 @@ namespace DungeonRoguelite.Progression
 
             if (characterCache.TryGetValue(characterId, out var data) && data.rewardedDungeonIds != null)
             {
-                return data.rewardedDungeonIds.Contains(dungeonId);
+                for (int i = 0; i < data.rewardedDungeonIds.Count; i++)
+                {
+                    if (string.Equals(data.rewardedDungeonIds[i], dungeonId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
             }
+            return false;
+        }
+
+        /// <summary>
+        /// Maps canonical dungeon IDs to their first-clear permanent skill point values.
+        /// D1 = 2, D2 = 2, D3 = 3. Returns 0 for unknown dungeons.
+        /// </summary>
+        public static int GetDungeonFirstClearPoints(string dungeonId)
+        {
+            if (string.IsNullOrEmpty(dungeonId)) return 0;
+            switch (dungeonId.Trim().ToLowerInvariant())
+            {
+                case "dungeon_1":
+                    return 2;
+                case "dungeon_2":
+                    return 2;
+                case "dungeon_3":
+                    return 3;
+                default:
+                    return 0;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to award the first-clear permanent reward for a dungeon to the specified character.
+        /// Validates economy point mapping and enforces strict idempotency (duplicate clears award 0 points).
+        /// </summary>
+        public static bool TryAwardDungeonFirstClear(string characterId, string dungeonId, out int pointsAwarded)
+        {
+            pointsAwarded = 0;
+            if (string.IsNullOrEmpty(characterId) || string.IsNullOrEmpty(dungeonId)) return false;
+
+            int points = GetDungeonFirstClearPoints(dungeonId);
+            if (points <= 0) return false;
+
+            if (AwardDungeonClearReward(characterId, dungeonId, points))
+            {
+                pointsAwarded = points;
+                return true;
+            }
+
             return false;
         }
 
@@ -278,14 +325,15 @@ namespace DungeonRoguelite.Progression
             var data = GetOrAddCharacterData(characterId);
             if (data == null) return false;
 
-            data.rewardedDungeonIds.Add(dungeonId);
+            string normalizedDungeonId = dungeonId.Trim().ToLowerInvariant();
+            data.rewardedDungeonIds.Add(normalizedDungeonId);
             if (points > 0)
             {
                 data.availableSkillPoints += points;
             }
 
             SaveToPrefs();
-            OnDungeonRewardAwarded?.Invoke(characterId, dungeonId, points);
+            OnDungeonRewardAwarded?.Invoke(characterId, normalizedDungeonId, points);
             if (points > 0)
             {
                 OnSkillPointsChanged?.Invoke(characterId, data.availableSkillPoints);

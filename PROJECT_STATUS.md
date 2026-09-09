@@ -3,7 +3,8 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 12 Gate 12.1 Foundation & Persistence (2026-09-09): Gate 12.1 is COMPLETE and automated GREEN (87/87 checks passed, state restored, Unity exit code 0). Regressions GREEN (Suite 10.5: 11/11 passed, Suite 11.5: 1485/1485 passed). Implemented `PermanentEffectType` enum, `SkillNodeDefinition` node data model, `SkillTreeDefinition` ScriptableObject, and `PermanentProgression` static persistence service with PlayerPrefs JSON storage, domain reload reset, idempotent dungeon first-clear point awarding (D1=2, D2=2, D3=3 per character; 7 max), purchase prerequisites/cost deduction, character isolation, and stat aggregation. Added permanent health scaling to `PlayerHealth` (`ApplyPermanentHealthMultiplier`, `BaseMaxHealth`) and layered multipliers in `PlayerStats`. Gate 12.2 (Skill Trees & Purchase UI) is NEXT.
+- Phase 12 Gate 12.2 Reward Economy & Completion Integration (2026-09-09): Gate 12.2 is COMPLETE and automated GREEN (99/99 checks passed, state restored, Unity exit code 0). Regressions GREEN (Gate 12.1: 87/87, Suite 10.5: 11/11, Suite 11.1: 43/43, Suite 11.5: 1485/1485). Implemented approved first-clear economy in `PermanentProgression` (D1 = 2 pts, D2 = 2 pts, D3 = 3 pts; 7 pts total per character max) with case-insensitive and idempotent reward mapping. Integrated authoritative completion awarding into `DungeonCompletionController.FinalizeCompletion()`, preserving global `DungeonProgression` unlock semantics while recording character-isolated permanent rewards. Verified duplicate-clear rejection, cross-character isolation, exclusion from defeat/retry/return-to-map/run-XP, persistence across simulated reloads, and fail-safe handling on null/empty character/dungeon IDs. Next task awaits Gate 12.3 authorization.
+- Phase 12 Gate 12.1 Foundation & Persistence (2026-09-09): Gate 12.1 is COMPLETE and automated GREEN (87/87 checks passed, state restored, Unity exit code 0). Regressions GREEN (Suite 10.5: 11/11 passed, Suite 11.5: 1485/1485 passed). Implemented `PermanentEffectType` enum, `SkillNodeDefinition` node data model, `SkillTreeDefinition` ScriptableObject, and `PermanentProgression` static persistence service with PlayerPrefs JSON storage, domain reload reset, idempotent dungeon first-clear point awarding (D1=2, D2=2, D3=3 per character; 7 max), purchase prerequisites/cost deduction, character isolation, and stat aggregation. Added permanent health scaling to `PlayerHealth` (`ApplyPermanentHealthMultiplier`, `BaseMaxHealth`) and layered multipliers in `PlayerStats`. Gate 12.2 is NEXT.
 - Phase 11 Final Sign-off (2026-09-09): Phase 11 is COMPLETE. Gates 11.1–11.5 automated GREEN (1485/1485 in Gate 11.5 suite, 2117/2117 total across all 13 regression suites). User manual gameplay QA is ALL GREEN. Four enemy archetypes implemented (Zombie, Runner, Tank, Ranged) using shared composition and minimal `IEnemyAttack`. Visual hit feedback and unscaled corpse cleanup active. Ranged projectiles use authoritative sweep collision and shooter-owned cancellation on death. Wave compositions verified: D1 (38 enemies / 410 XP), D2 (35 enemies / 430 XP), D3 (42 enemies / 540 XP), Campaign total (115 enemies / 1380 XP). Roguelite run semantics preserved across Victory, Defeat Retry rollback, and Defeat Return to Map. Phase 12 (Permanent Progression / Skill Tree) is NEXT.
 - Restart recovery (2026-09-09): recovered main at `2d489ac`, with intact uncommitted Gate 11.4 and partial Gate 11.5 work. Preserved the partial integration work separately, checkpointed Ranged as `1a0846b`, confirmed a clean tree, then restored and completed integration. Gate 11.5 focused verification is GREEN: 1485 checks, state restored, Unity exit 0. Full isolated regression is GREEN: 2117 passing checks across 13 suites.
 - Gate 11.1 implementation (2026-09-08): minimal `IEnemyAttack`, Zombie hit feedback and corpse cleanup are implemented on `codex-gate11-test`, based on Phase 10 commit `8f11ae7`. Verification results are recorded in the current gate section below; prior Phase 10 notes are historical.
@@ -28,9 +29,9 @@ Last update:
 ## Status
 
 **IN PROGRESS — Phase 12: Permanent Progression / Skill Tree**
-**GATE 12.1 AUTOMATED GREEN (87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.5: 1485/1485)**
+**GATES 12.1 & 12.2 AUTOMATED GREEN (Gate 12.2: 99/99, Gate 12.1: 87/87) | REGRESSIONS GREEN (10.5: 11/11, 11.1: 43/43, 11.5: 1485/1485)**
 
-**NEXT — Gate 12.2: Character Skill Trees & World Map Purchase UI**
+**NEXT — Gate 12.3: Character Skill Trees & World Map Purchase UI**
 
 Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are fully implemented, verified, and signed off.
 
@@ -41,10 +42,51 @@ Milestones 1.1 through 11.5, Phase 9 Polish Pass, and Phase 10/11 Manual QA are 
 ## PHASE 12 — Permanent Progression / Skill Tree (IN PROGRESS)
 
 - Gate 12.1: Permanent Progression Foundation (Completed & Verified)
-- Gate 12.2: Character Skill Trees & World Map Purchase UI (NEXT)
-- Gate 12.3: Dungeon Clear Skill Point Integration & Campaign Wiring (Pending)
+- Gate 12.2: Permanent Reward Economy & Dungeon Completion Integration (Completed & Verified)
+- Gate 12.3: Character Skill Trees & World Map Purchase UI (Pending)
 - Gate 12.4: Permanent Progression Save/Load System & Reset Safety (Pending)
 - Gate 12.5: Character-Specific Progression Verification & Phase 12 Regression (Pending)
+
+---
+
+## Gate 12.2 — Permanent Reward Economy & Dungeon Completion Integration (Automated GREEN, 2026-09-09)
+
+### Implemented
+
+- `Assets/Scripts/Progression/PermanentProgression.cs`:
+  - Added `GetDungeonFirstClearPoints(string dungeonId)` implementing the approved economy: `dungeon_1` = 2 points, `dungeon_2` = 2 points, `dungeon_3` = 3 points (7 points total per character max; unknown dungeons = 0).
+  - Added `TryAwardDungeonFirstClear(string characterId, string dungeonId, out int pointsAwarded)` validating character/dungeon strings, economy values, and invoking `AwardDungeonClearReward`.
+  - Updated `IsDungeonRewardClaimed(string characterId, string dungeonId)` and `AwardDungeonClearReward` to perform case-insensitive checking and normalized lowercase storage, guaranteeing robustness against casing differences.
+- `Assets/Scripts/Dungeons/DungeonCompletionController.cs`:
+  - Added `PlayableCharacter activeCharacter` reference and `ActiveCharacter` property.
+  - Added `BindCharacter(PlayableCharacter character)` and updated `BindPlayer`, `HandlePlayerSpawned`, `ResolveReferences`, and `SetReferences` for complete character binding across all runtime scenarios and test fixtures.
+  - In `FinalizeCompletion()`: resolved character identity with cascading fallbacks (`activeCharacter`, `playerSpawner.ActiveCharacter`, `CharacterSelectionSession.SelectedCharacterId`, `playerSpawner.DefaultCharacter.Id`). Awarded first-clear points via `PermanentProgression.TryAwardDungeonFirstClear` immediately alongside `DungeonProgression.RecordDungeonCompleted`.
+  - Maintained complete separation between character-specific permanent rewards and global `DungeonProgression` campaign unlocks.
+  - Maintained zero coupling with `RunProgressionSession` (runs, checkpoints, retries, and temporary XP remain strictly decoupled from permanent points).
+  - Added graceful fail-safe handling: invalid/empty character or dungeon IDs emit warnings without throwing or crashing.
+- `Assets/Editor/Phase12VerificationRunner.cs`:
+  - Added `[MenuItem("DungeonRoguelite/Phase 12/Run Gate 12.2 Verification")]` entrypoint and dynamic runner support for Suite 12_2.
+- `Assets/Tests/Verification/Milestone12_2_Verifier.cs`:
+  - Comprehensive 99-check Play Mode verification suite testing economy points (2/2/3), duplicate clear rejection, cross-character isolation, authoritative victory awarding, defeat exclusion, retry exclusion, return-to-map exclusion, temporary run XP decoupling, PlayerPrefs reload persistence, global dungeon unlock independence, and fail-safe handling.
+
+### Verification
+
+- Final Unity 6000.3.23f1 batch Play Mode run: 99/99 checks passed, exit code 0 (`Logs/gate12_2.log`). All completion and state restoration markers present.
+- Regression Gate 12.1 (`Milestone12_1_Verifier`): 87/87 checks passed, exit code 0 (`Logs/gate12_1_reg.log`).
+- Regression Suite 10.5 (`Milestone10_5_Verifier`): 11/11 checks passed, exit code 0 (`Logs/regression_10_5_after12_2.log`).
+- Regression Suite 11.1 (`Milestone11_1_Verifier`): 43/43 checks passed, exit code 0 (`Logs/regression_11_1_after12_2.log`).
+- Regression Suite 11.5 (`Milestone11_5_Verifier`): 1485/1485 checks passed, exit code 0 (`Logs/regression_11_5_after12_2.log`).
+- Compilation: 0 errors; 3 existing CS0618 warnings in legacy setup scripts (`TMP_Text.enableWordWrapping`).
+- Working tree clean of accidental project setting changes.
+
+### Decisions and Next Task
+
+- Global `DungeonProgression` unlock semantics remain unchanged.
+- Permanent skill points are awarded strictly on authoritative dungeon victory in `DungeonCompletionController`. Defeat, retry, and return to map award 0 points.
+- Character isolation is verified: Warrior first clears do not affect Archer or Gunner rewards.
+- Gate 12.2 is complete and checkpointed locally. Gate 12.3 (Character Skill Trees & World Map Purchase UI) is NEXT. Do NOT push.
+
+---
 
 ---
 
