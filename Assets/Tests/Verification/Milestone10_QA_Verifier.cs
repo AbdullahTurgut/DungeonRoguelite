@@ -42,9 +42,9 @@ namespace DungeonRoguelite.Tests
             }
             else
             {
-                // CHECK 1: Catalog contains 3 dungeons and WorldMapController has 3 cards
+                // CHECK 1: Catalog contains 4 dungeons and WorldMapController has 4 cards
                 var catalog = worldMapController.DungeonCatalog;
-                bool c1 = catalog != null && catalog.Count == 3 && worldMapController.Cards.Count == 3;
+                bool c1 = catalog != null && catalog.Count == 4 && worldMapController.Cards.Count == 4;
                 if (c1)
                 {
                     Debug.Log($"[CHECK 1 PASSED] WorldMap has exactly 3 cards matching DungeonCatalog: [{catalog[0].Id}, {catalog[1].Id}, {catalog[2].Id}].");
@@ -64,12 +64,9 @@ namespace DungeonRoguelite.Tests
                 var rect1 = card1.GetComponent<RectTransform>();
                 var rect2 = card2.GetComponent<RectTransform>();
 
-                bool c2Pos = Mathf.Approximately(rect0.anchoredPosition.x, -500f) &&
-                             Mathf.Approximately(rect1.anchoredPosition.x, 0f) &&
-                             Mathf.Approximately(rect2.anchoredPosition.x, 500f);
-                bool c2Width = Mathf.Approximately(rect0.sizeDelta.x, 440f) &&
-                              Mathf.Approximately(rect1.sizeDelta.x, 440f) &&
-                              Mathf.Approximately(rect2.sizeDelta.x, 440f);
+                var card3 = worldMapController.Cards[3]; var rect3 = card3.GetComponent<RectTransform>();
+                bool c2Pos = Mathf.Approximately(rect0.anchoredPosition.x, -630f) && Mathf.Approximately(rect1.anchoredPosition.x, -210f) && Mathf.Approximately(rect2.anchoredPosition.x, 210f) && Mathf.Approximately(rect3.anchoredPosition.x, 630f);
+                bool c2Width = Mathf.Approximately(rect0.sizeDelta.x, 380f) && Mathf.Approximately(rect1.sizeDelta.x, 380f) && Mathf.Approximately(rect2.sizeDelta.x, 380f) && Mathf.Approximately(rect3.sizeDelta.x, 380f);
                 bool c2Bound = card2.BoundDungeon != null && card2.BoundDungeon.Id == "dungeon_3";
 
                 if (c2Pos && c2Width && c2Bound)

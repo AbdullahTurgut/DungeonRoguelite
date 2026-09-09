@@ -14,6 +14,7 @@ using DungeonRoguelite.Dungeons;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Player;
+using DungeonRoguelite.Progression;
 using DungeonRoguelite.UI;
 using DungeonRoguelite.Upgrades;
 using DungeonRoguelite.Waves;
@@ -46,26 +47,25 @@ namespace DungeonRoguelite.Tests
 
         private IEnumerator RunVerificationSafe()
         {
-            IEnumerator routine = TargetedCheck33Only ? RunTargetedCheck33Routine() : RunVerificationRoutine();
-            while (true)
+            using (var permanentSnapshot = new Phase12StateSnapshot())
             {
-                object current = null;
-                try
+                PermanentProgression.ResetAllProgression();
+                IEnumerator routine = TargetedCheck33Only ? RunTargetedCheck33Routine() : RunVerificationRoutine();
+                while (true)
                 {
-                    if (!routine.MoveNext())
+                    object current = null;
+                    try
                     {
-                        break;
+                        if (!routine.MoveNext()) break;
+                        current = routine.Current;
                     }
-                    current = routine.Current;
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"[M8.3 TEST EXCEPTION] Unexpected exception during verification: {ex}");
+                        ExitBatch(1); yield break;
+                    }
+                    yield return current;
                 }
-                catch (Exception ex)
-                {
-                    Debug.LogError($"[M8.3 TEST EXCEPTION] Unexpected exception during verification: {ex}");
-                    ExitBatch(1);
-                    yield break;
-                }
-
-                yield return current;
             }
         }
 
