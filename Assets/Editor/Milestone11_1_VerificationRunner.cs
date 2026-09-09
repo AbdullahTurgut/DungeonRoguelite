@@ -11,11 +11,23 @@ namespace DungeonRoguelite.Editor
         private const string Suite = "DungeonRoguelite.Gate11.1.Suite";
         private const string SaveBackup = "DungeonRoguelite.Gate11.1.SaveBackup";
         private static Tests.Phase11StateSnapshot stateSnapshot;
+        private static double deadline;
+        private static bool guarding;
 
         static Milestone11_1_VerificationRunner()
         {
             EditorApplication.playModeStateChanged += HandlePlayMode;
             EditorApplication.quitting += () => { stateSnapshot?.Dispose(); RestoreSave(); };
+            EditorApplication.update += () =>
+            {
+                if (!guarding || EditorApplication.timeSinceStartup < deadline) return;
+                guarding = false;
+                Debug.LogError("[REGRESSION TIMEOUT FAILED] Bounded real-time suite deadline reached.");
+                stateSnapshot?.Dispose();
+                RestoreSave();
+                if (Application.isBatchMode) EditorApplication.Exit(1);
+                else EditorApplication.isPlaying = false;
+            };
         }
 
         [MenuItem("DungeonRoguelite/Phase 11/Run Gate 11.1 Verification")]
@@ -81,11 +93,13 @@ namespace DungeonRoguelite.Editor
 
         private static void HandlePlayMode(PlayModeStateChange state)
         {
-            if (state == PlayModeStateChange.EnteredEditMode) RestoreSave();
+            if (state == PlayModeStateChange.EnteredEditMode) { guarding = false; stateSnapshot?.Dispose(); RestoreSave(); }
             if (state != PlayModeStateChange.EnteredPlayMode || !SessionState.GetBool(Pending, false)) return;
             SessionState.EraseBool(Pending);
             string suite = SessionState.GetString(Suite, "11_1");
             stateSnapshot = new Tests.Phase11StateSnapshot();
+            guarding = true;
+            deadline = EditorApplication.timeSinceStartup + 180;
             var type = System.Type.GetType($"DungeonRoguelite.Tests.Milestone{suite}_Verifier, Assembly-CSharp", true);
             new GameObject("Gate_Verifier_" + suite).AddComponent(type);
         }

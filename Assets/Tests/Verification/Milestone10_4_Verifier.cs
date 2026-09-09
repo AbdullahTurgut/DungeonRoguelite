@@ -17,7 +17,7 @@ namespace DungeonRoguelite.Tests
     /// <summary>
     /// Automated Play Mode verification suite for Milestone 10.4: Playable Dungeon 3 & Multi-Dungeon Continuity.
     /// Verifies:
-    /// 1. Dungeon 3 asset properties (scaling, prerequisite, 4 waves, 50 enemies).
+    /// 1. Dungeon 3 asset properties (scaling, prerequisite, 4 waves, 42 enemies / 540 XP).
     /// 2. Dungeon catalog integrity (exactly 3 dungeons: D1, D2, D3; no D4/D5).
     /// 3. Build Settings scene list (5 scenes in exact order).
     /// 4. Dungeon 3 enemy difficulty scaling (60 HP, 11 Dmg).
@@ -98,7 +98,7 @@ namespace DungeonRoguelite.Tests
             // CHECK 1: Dungeon 3 Asset Configuration
             // -------------------------------------------------------------
             var d3 = AssetDatabase.LoadAssetAtPath<DungeonDefinition>("Assets/ScriptableObjects/Dungeons/Dungeon_03.asset");
-            int totalEnemiesD3 = 0;
+            int totalEnemiesD3 = 0; int totalXPD3 = 0;
             if (d3 != null && d3.Waves != null)
             {
                 foreach (var w in d3.Waves)
@@ -107,7 +107,7 @@ namespace DungeonRoguelite.Tests
                     {
                         foreach (var e in w.EnemyEntries)
                         {
-                            totalEnemiesD3 += e.Count;
+                            totalEnemiesD3 += e.Count; totalXPD3 += e.Count * e.EnemyPrefab.GetComponent<ExperienceReward>().XPAmount;
                         }
                     }
                 }
@@ -120,7 +120,7 @@ namespace DungeonRoguelite.Tests
                       Mathf.Approximately(d3.EnemyHealthMultiplier, 1.2f) &&
                       Mathf.Approximately(d3.EnemyDamageMultiplier, 1.1f) &&
                       d3.Waves != null && d3.Waves.Length == 4 &&
-                      totalEnemiesD3 == 50;
+                      totalEnemiesD3 == 42 && totalXPD3 == 540;
 
             if (c1)
             {
@@ -184,13 +184,17 @@ namespace DungeonRoguelite.Tests
             bool c4EnemyScaled = false;
             if (c4WaveMgr && zombiePrefab != null && d3 != null)
             {
-                waveMgr.ConfigureFromDungeon(d3);
-                var spawnMethod = typeof(WaveManager).GetMethod("SpawnEnemy", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (spawnMethod != null)
+                var fixture = new GameObject("D3_PublicSpawnFixture");
+                var publicManager = fixture.AddComponent<WaveManager>();
+                var wave = ScriptableObject.CreateInstance<WaveDefinition>();
+                wave.Initialize(new[] { new EnemySpawnEntry(zombiePrefab, 1) }, 0.01f);
+                publicManager.ConfigureFromDungeon(d3);
+                publicManager.SetWaves(new[] { wave });
+                publicManager.BindPlayer(waveMgr.PlayerTarget);
+                publicManager.SetSpawnPoints(new[] { fixture.transform });
+                publicManager.BeginDungeon();
                 {
-                    spawnMethod.Invoke(waveMgr, new object[] { zombiePrefab });
-
-                    foreach (var living in waveMgr.ActiveEnemies)
+                    foreach (var living in publicManager.ActiveEnemies)
                     {
                         if (living != null)
                         {
@@ -205,6 +209,9 @@ namespace DungeonRoguelite.Tests
                         }
                     }
                 }
+                publicManager.HaltDungeon();
+                DestroyImmediate(fixture);
+                DestroyImmediate(wave);
             }
 
             if (c4EnemyScaled)

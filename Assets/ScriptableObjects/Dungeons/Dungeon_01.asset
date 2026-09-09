@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
   id: dungeon_1
   displayName: "B\xF6l\xFCm 1: Unutulmu\u015F Mezarl\u0131k"
-  description: "Zombilerin kol gezdi\u011Fi kadim mezarl\u0131k. 3 dalga hayatta
-    kal."
+  description: "Zombiler ve hızlı koşucular. Son dalgada ağır bir düşman. 3 dalga hayatta kal."
   sceneName: Dungeon_Prototype
   requiredDungeonId: 
   enemyHealthMultiplier: 1

@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Restart recovery (2026-09-09): recovered main at `2d489ac`, with intact uncommitted Gate 11.4 and partial Gate 11.5 work. Preserved the partial integration work separately, checkpointed Ranged as `1a0846b`, confirmed a clean tree, then restored and completed integration. Gate 11.5 focused verification is GREEN: 1485 checks, state restored, Unity exit 0. Full isolated regression is GREEN: 2117 passing checks across 13 suites. Next: user manual gameplay QA only.
 - Gate 11.1 implementation (2026-09-08): minimal `IEnemyAttack`, Zombie hit feedback and corpse cleanup are implemented on `codex-gate11-test`, based on Phase 10 commit `8f11ae7`. Verification results are recorded in the current gate section below; prior Phase 10 notes are historical.
 - Phase 10 Final Manual QA is GREEN & Approved:
   - Architecture Audit complete: explicit serialized bindings confirmed across production scenes; Editor-only asset lookups cleanly isolated behind `#if UNITY_EDITOR`; standalone builds decoupled from AssetDatabase; discrete state ownership confirmed across `CharacterSelectionSession`, `DungeonRunSession`, `RunProgressionSession`, and `DungeonProgression`; World Map 3-card catalog layout verified.
@@ -27,7 +28,7 @@ Last update:
 **COMPLETED — Phase 10: Campaign Run Progression & Scaling**  
 **PHASE 10 AUTOMATED GREEN | PHASE 10 MANUAL QA GREEN**
 
-**CURRENT — Phase 11: Combat & Enemy Variety; Gates 11.2 and 11.3 automated GREEN**
+**CURRENT — Phase 11: Combat & Enemy Variety; Gates 11.1–11.5 and full final regression automated GREEN; awaiting user manual gameplay QA**
 
 Milestones 1.1 through 10.5, Phase 9 Polish Pass, and Phase 10 Manual QA Blocking Fixes are fully implemented, verified, and signed off.
 
@@ -66,7 +67,7 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Phase 10.1–10.5 regression: 47/47 checks passed; Phase 10 QA regression: 10/10 passed. Archer 8.3: 68/68 passed; Gunner 8.4: 44/44 passed, including Warrior and XP/completion integration checks. Logs: `Logs/regression_10_1.log` through `regression_10_5.log`, `regression_10_QA.log`, `regression_8_3.log`, and `regression_8_4.log`. Total final gate plus regression coverage: 212 passing checks.
 - Unity compilation succeeded with no C# errors. Existing obsolete `TMP_Text.enableWordWrapping` warnings are emitted from `Milestone6_1_Setup`, `Milestone8_5_Setup`, and `Milestone9_Setup`.
 - Editor startup emits `ArgumentOutOfRangeException` from `UnityEditor.Search.SearchDatabase` before the verifier starts; this is not a gameplay exception. It is not fixed in this gate.
-- Graphical/manual QA and a standalone player build have not been performed. Headless checks validate property blocks and lifetime behavior, not visual readability in dungeon lighting.
+- Gate 11.1 manual gameplay QA is GREEN by user approval. A standalone player build has not been performed. Combined Phase 11 balance/readability QA follows Gate 11.5.
 - Run the gate from `DungeonRoguelite/Phase 11/Run Gate 11.1 Verification`, or batch `-executeMethod DungeonRoguelite.Editor.Milestone11_1_VerificationRunner.Run`. The regression entrypoint is `RunRegression -gateSuite 10_2` (also supports 10_1, 10_3, 10_4, 10_5, 10_QA, 8_3 and 8_4).
 
 ### Decisions and next task
@@ -89,7 +90,7 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Gate 10.2 verifier corrected to existing 20/10 ranged weapon damage and 20% upgrade math; private SpawnEnemy reflection replaced with public wave configuration/start. Production balance unchanged.
 - Added test-only exact static state snapshot/restore, bounded coroutine waits, timeout guard, and Windows process wrapper. Intentional assertion and timeout probes both emitted STATE RESTORED and FAILED, then exited 1. Logs remain local under Logs; legacy root result log is ignored.
 - Compilation: 0 errors; 3 existing CS0618 warnings (TMP_Text.enableWordWrapping in Milestone6_1_Setup, Milestone8_5_Setup, Milestone9_Setup). No gameplay/runtime exceptions in successful suites. Initial sandbox launch stalled before licensing; terminated and rerun with approved licensing access. Successful launches had Editor shutdown Curl error 42/ADB messages; no Search exception observed in these runs.
-- Next: Gate 11.3 Tank after local Runner checkpoint and clean-tree confirmation. No push. Combined manual gameplay/balance QA remains pending after Gate 11.5.
+- Historical next step at the Runner checkpoint: Gate 11.3 Tank (now complete). No push. Combined manual gameplay/balance QA remains pending after Gate 11.5.
 ## Gate 11.3 — Tank (automated GREEN, 2026-09-08)
 
 - Added Tank prefab and charcoal URP material with shared composition only: HP 150, speed/stop 1.8, melee range 2, damage 22, cooldown 1.8, XP 40. Visual scale 1.4; controller height 2.8, radius 0.7, center Y 1.4. No armor, mitigation, resistance, shield, or invulnerability.
@@ -97,7 +98,51 @@ The user explicitly replaced the previous 11.1 meta-currency/skill-tree scope wi
 - Actual unupgraded hits D1/D2/D3: Warrior 6/7/8, Archer 8/9/9, Gunner 15/17/18. With the production UpgradeManager 20% damage upgrade: Warrior 5/6/6, Archer 7/7/8, Gunner 13/14/15. Every hit checks full damage; added nonlethal child collider verifies deduplication. Production prefab has only its controller; corpse collision shutdown, nonfinal wave transition, XP once, feedback, final upgrade/victory ordering, pause and cleanup verified.
 - Required regressions: 11.1 43/43, 11.2 41/41, 10.2 15/15, 8.3 68/68, 8.4 44/44. All completion/restoration markers present, bounded exits 0. Total focused plus regressions: 484 passing checks.
 - One implementation-time verifier compiler error CS1061 was corrected: PlayerExperience uses GainExperience, not AddExperience. Final compilation has 0 errors and the same 3 existing CS0618 warnings. Successful suites contain no gameplay/runtime exceptions or Search exceptions. Unity-generated font/TimeManager changes restored before checkpoint.
-- Runner checkpoint: 8d0a718 feat: add runner enemy archetype. Next: local Tank checkpoint, clean tree, then Gate 11.4. No push; manual QA remains after integration.
+- Runner checkpoint: 8d0a718 feat: add runner enemy archetype. Tank checkpoint is 2d489ac; Gate 11.4 is now checkpointed as 1a0846b. No push; manual QA remains after integration.
+## Gate 11.4 — Ranged (automated GREEN, recovered 2026-09-09)
+
+- Recovered the exact `[GATE 11.4 COMPLETE] PASSED: 106 checks passed.` marker in `Logs/gate11_4_final.log`, plus state restoration and normal Unity shutdown. Implementation matched the approved baseline and was checkpointed without recreation as `1a0846b feat: add ranged enemy archetype`.
+- HP 35, speed 2.8, stopping distance 7, range 9, damage 8, cooldown 1.6, projectile speed 10, hard lifetime 3 unscaled seconds, XP 15. Deep violet body and child orb marker.
+- One authoritative swept projectile query, hierarchy exclusions, player-only damage, solid obstacle blocking, exactly-once resolution, and shooter-owned cancellation. No friendly-fire, Rigidbody callback authority, projectile manager, or knockback.
+
+## Gate 11.5 — Mixed Waves & Integration (focused automated GREEN, 2026-09-09)
+
+- Recovered partial waves used stale counts and ordering; corrected them to the user's approved 11 compositions. D1: 38 enemies / 410 XP. D2: 35 / 430. D3: 42 / 540. Campaign: 115 enemies / 1380 XP, +2.2% versus Phase 10. Full compositions are recorded in GAME_DESIGN.md.
+- Updated all three approved Turkish dungeon descriptions. DungeonCatalog, production scenes, spawn intervals, enemy baselines, and combat feedback remain unchanged.
+- Focused verifier: **1485/1485 PASSED**, `Logs/gate11_5_final.log`, state restored, bounded process exit 0. Checks independently assert asset compositions/references/order/counts/XP; spawn all archetypes under all three dungeon multipliers; test each archetype as the final survivor; and run real production D1 -> D2 -> D3 scenes for Warrior, Archer, and Gunner, including victory/map continuity, retry rollback, defeat EndRun, upgrades, persistent unlocks, corpse cleanup and projectile cancellation.
+- Successful ends: D1 Level 3 / 160 of 225 XP; D2 and D3 entry Level 5 / 27 of 506 XP; D3 Level 6 / 61 of 759 XP.
+- Gate 10.2 was already corrected to production Archer 20 / Gunner 10 / Damage +20%. Gate 10.4 now expects 42 enemies and 540 XP, preserving identity/catalog/build/scaling/continuity checks and replacing private SpawnEnemy reflection with public wave APIs.
+- Added a 180-second real-time deadline to the legacy regression runner. Gate 11.5 cleans scene/test objects and restores sessions, PlayerPrefs, and time scale on completion or failure.
+- Implementation-time verifier issues: corrected CS1061 (`EnemyEntries.Count`, not Length); corrected an accelerated campaign harness wait that allowed an XP choice to pause spawning. The failed harness run emitted STATE RESTORED and exited 1 after 264 passing checks. Pickup collection now uses the public TryCollect API before the next wait and checks duplicate rejection. No production balance changes were made to satisfy tests.
+- Final focused run: 0 compiler errors and 0 gameplay/runtime exceptions. A previous compilation emitted the three existing CS0618 TMP enableWordWrapping warnings. Full final regression results are recorded below.
+- Gate 11.1 manual gameplay QA remains GREEN. Combined Phase 11 manual balance/readability QA is pending; no Phase 12 work or push is authorized.
+
+### Final isolated regression matrix — GREEN (2026-09-09)
+
+| Suite | Passed checks | Unity exit |
+| --- | ---: | ---: |
+| 11.1 | 43 | 0 |
+| 11.2 | 41 | 0 |
+| 11.3 | 273 | 0 |
+| 11.4 | 106 | 0 |
+| 11.5 | 1485 | 0 |
+| 10.1 | 11 | 0 |
+| 10.2 | 15 | 0 |
+| 10.3 | 5 | 0 |
+| 10.4 | 5 | 0 |
+| 10.5 | 11 | 0 |
+| Phase 10 QA | 10 | 0 |
+| 8.3 Archer | 68 | 0 |
+| 8.4 Gunner | 44 | 0 |
+| **Total** | **2117** | |
+
+- Every isolated suite has an explicit COMPLETE/PASSED success marker (Gunner's canonical marker is M8.4 TEST SUCCESS / ALL 44 VERIFICATION CHECKS PASSED), STATE RESTORED, no failed assertions, and a bounded Unity process exit 0. The enclosing regression process also exited 0. Logs are local ignored `Logs/phase11_final_<suite>.log` files, never tracked. Warrior remains covered by combat and campaign suites.
+- Final matrix logs: **0 compiler errors, 0 emitted compiler warnings, 0 gameplay/runtime exceptions**. Compilation earlier in this session emitted the **3 pre-existing CS0618 warnings** for TMP_Text.enableWordWrapping in Milestone6_1_Setup, Milestone8_5_Setup, and Milestone9_Setup; those warnings have not been fixed or claimed resolved.
+- Separate environment evidence: the first sandboxed regression launch stalled before licensing initialization, was terminated before tests, and was rerun with approved licensing access. Successful launches report an unavailable licensing access token during refresh, then license successfully, and emit normal ADB shutdown messages. No Search exception appeared in the final matrix. Historical Search exceptions above remain historical.
+- Restored unrelated Unity-generated LiberationSans fallback font and TimeManager changes. No production scenes, DungeonCatalog, prefab baselines, or production C# changed during Gate 11.5. No logs are tracked and no push occurred.
+- Phase 11 local checkpoints: `72817f6` attack/feedback foundation; `8d0a718` Runner; `2d489ac` Tank; `1a0846b` Ranged; integration checkpoint uses `feat: integrate mixed enemy wave compositions` (this checkpoint contains these results; discover its hash from Git).
+- **STOP: awaiting user manual gameplay QA.** Gate 11.1 manual gameplay QA is already GREEN. No Phase 12 work, push, subjective balance automation, or extra combat feedback was performed.
+
 # Completed
 
 - Core game concept defined.
@@ -556,24 +601,9 @@ Phase 9 (Dungeon Progression & Campaign Flow) was executed and verified via an i
 
 # Next Task
 
-**Phase 11: Permanent Progression & Meta Trees**
+Phase 11: Combat & Enemy Variety. All automated work is complete. Wait for user manual gameplay QA; balance and readability remain for the user to judge. No push; do not begin Phase 12.
 
-Deferred Work (Post-Milestone 10 / Future Phases):
-- **Permanent Meta Progression & Skill Trees (Phase 11)**:
-  - Meta currency earned across runs.
-  - Character-specific skill trees utilizing `PlayerStats` permanent multiplier foundations.
-  - Disk persistence for skill points and purchased nodes.
-- **Enemy Expansion (Phase 12)**:
-  - Runner, Brute, Ranged, and Elite variants.
-- **Boss Framework & First Boss (Phase 13)**:
-  - Boss health UI, telegraphs, and multi-phase combat.
-- **Enemy Corpse Cleanup (Phase 14)**:
-  - Intentionally deferred until character animation pipeline is introduced.
-- **Localization & Settings (Phase 15)**:
-  - Settings menu, audio sliders, and multi-language support (TR/EN).
-
-Do NOT start:
-- Phase 11 until instructed.
+Future roadmap: Phase 12 Permanent Progression / Skill Tree; Phase 13 Dungeon 4 + Encounter Design; Phase 14 Dungeon 5 + First Boss.
 
 ---
 
@@ -593,7 +623,7 @@ Do NOT start:
 - Character Roster Architecture: Data catalog `CharacterRoster.cs` ScriptableObject holding ordered `List<CharacterDefinition> [Warrior, Archer, Gunner]`. Pure catalog with validation against null entries and duplicate references/IDs. Zero stats, progression, or selection state.
 - Character Selection Session Architecture: Pure static runtime carrier `CharacterSelectionSession.cs` passing active `CharacterDefinition` across scene transitions. Local UI selection in `CharacterSelectionController` remains decoupled until Start button is clicked. Reset on domain reload via `[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]` and upon entering `CharacterSelection.unity`. Survives `Dungeon_Prototype` scene reloads on dungeon restart.
 - PlayerSpawner Runtime Selection & Fallback: Authoritative character factory resolves `(CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null) ? CharacterSelectionSession.SelectedCharacter : defaultCharacter` with zero character-type branching. Serialized `defaultCharacter` remains `Character_Warrior` on disk; direct launch safely defaults to Warrior.
-- Scene Flow & Build Settings: Scene 0 = `Assets/Scenes/CharacterSelect/CharacterSelection.unity`, Scene 1 = `Assets/Scenes/Dungeons/Dungeon_Prototype.unity`, with `SampleScene.unity` disabled. Zero gameplay entities or input interference in selection scene.
+- Scene Flow & Build Settings: five enabled scenes in order: CharacterSelection, WorldMap, Dungeon_Prototype, Dungeon_02, Dungeon_03. Zero gameplay entities or input interference in selection scene.
 - Health Architecture: `PlayerHealth.cs` and `EnemyHealth.cs` both implement `IDamageable` independently with clamped health and single-fire death events
 - Enemy Architecture: Modular components (`EnemyHealth`, `EnemyMovement`, `EnemyAttack`) communicating via clean C# events without monolithic controllers
 - Wave Architecture: Data-driven `WaveDefinition` ScriptableObjects sequenced by `WaveManager.cs` using round-robin perimeter spawn points

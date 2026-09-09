@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
   id: dungeon_3
   displayName: "B\xF6l\xFCm 3: Mahzenin Derinlikleri"
-  description: "Mahzenin en karanl\u0131k k\xF6\u015Fesi. 4 dalga h\u0131zl\u0131
-    zombi ak\u0131n\u0131."
+  description: "Dört düşman türüne karşı savaş. 4 dalga hayatta kal."
   sceneName: Dungeon_03
   requiredDungeonId: dungeon_2
   waves:

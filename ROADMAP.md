@@ -295,8 +295,8 @@ Implemented:
 - Gate 11.1: Enemy attack contract, hit feedback, corpse cleanup — automated and user manual QA GREEN.
 - Gate 11.2: Runner — automated GREEN; 41 focused checks and 170 focused regression checks.
 - Gate 11.3: Tank — automated GREEN; 273 focused checks and 211 focused regression checks.
-- Gate 11.4: Ranged enemy and locally owned projectiles.
-- Gate 11.5: Approved mixed waves and campaign integration.
+- Gate 11.4: Ranged enemy and locally owned projectiles — automated GREEN, 106 checks; local checkpoint `1a0846b`.
+- Gate 11.5: Approved mixed waves and campaign integration — automated GREEN, 1485 focused checks; full 13-suite regression GREEN (2117 checks). Awaiting user manual gameplay QA.
 
 Sequential automated gates and local checkpoints; manual gameplay/balance QA after 11.5.
 No physical knockback, pooling, enemy hierarchy, or enemy-definition migration.
@@ -353,4 +353,4 @@ Phase 11 (Combat & Enemy Variety)           -> CURRENT (see PROJECT_STATUS.md)
 
 Milestones 0 through 10 are fully implemented, automated-verified, and manual-QA-verified.
 Phase 10 is complete and signed off.
-Current authorized work is sequential Gates 11.2 through 11.5, followed by full regression and user manual QA. No push or Phase 12 work is authorized.
+Gates 11.1 through 11.5 and the full regression matrix are automated GREEN. Current next task: user manual gameplay QA. No push or Phase 12 work is authorized.

@@ -206,10 +206,13 @@ Wave 1:
 - 10 Zombies
 
 Wave 2:
-- 15 Zombies
+- 10 Zombies
+- 3 Runners
 
 Wave 3:
-- 20 Zombies
+- 7 Zombies
+- 1 Tank
+- 7 Runners
 
 Future boss:
 - Gravekeeper
@@ -346,11 +349,30 @@ Enemy health and damage scale per dungeon via `DungeonDefinition` multipliers wi
 
 | Dungeon | Display Name | Waves | Enemies | Total XP | HP Multiplier | Zombie HP | Damage Multiplier | Zombie Damage |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **Dungeon 1** | Bölüm 1: Giriş | 3 | 45 | 450 XP | 1.0x | 50 HP | 1.0x | 10 Dmg |
-| **Dungeon 2** | Bölüm 2: Karanlık Koridor | 4 | 40 | 400 XP | 1.1x | 55 HP | 1.0x | 10 Dmg |
-| **Dungeon 3** | Bölüm 3: Mahzenin Derinlikleri | 4 | 50 | 500 XP | 1.2x | 60 HP | 1.1x | 11 Dmg |
+| **Dungeon 1** | Bölüm 1: Giriş | 3 | 38 | 410 XP | 1.0x | 50 HP | 1.0x | 10 Dmg |
+| **Dungeon 2** | Bölüm 2: Karanlık Koridor | 4 | 35 | 430 XP | 1.1x | 55 HP | 1.0x | 10 Dmg |
+| **Dungeon 3** | Bölüm 3: Mahzenin Derinlikleri | 4 | 42 | 540 XP | 1.2x | 60 HP | 1.1x | 11 Dmg |
 
 ### Combat Breakpoint Philosophy
+
+Phase 11 approved production encounters (Z = Zombie, R = Runner, T = Tank, A = Ranged):
+
+| Dungeon / wave | Composition | Enemies | XP |
+| --- | --- | ---: | ---: |
+| D1 / 1 | 10 Z | 10 | 100 |
+| D1 / 2 | 10 Z, 3 R | 13 | 130 |
+| D1 / 3 | 7 Z, 1 T, 7 R | 15 | 180 |
+| D2 / 1 | 1 T, 5 Z, 2 R | 8 | 110 |
+| D2 / 2 | 1 A, 5 Z, 2 R | 8 | 85 |
+| D2 / 3 | 1 A, 4 Z, 4 R | 9 | 95 |
+| D2 / 4 | 1 T, 2 A, 4 Z, 3 R | 10 | 140 |
+| D3 / 1 | 1 T, 5 Z, 4 R | 10 | 130 |
+| D3 / 2 | 2 A, 5 Z, 4 R | 11 | 120 |
+| D3 / 3 | 1 T, 2 A, 4 Z, 3 R | 10 | 140 |
+| D3 / 4 | 1 T, 2 A, 5 Z, 3 R | 11 | 150 |
+
+Entries spawn in the listed order. Campaign totals: 115 enemies, 1380 XP (+2.2% versus Phase 10's 1350 XP). Successful dungeon ends: D1 Level 3 / 160 of 225 XP; D2 Level 5 / 27 of 506 XP; D3 Level 6 / 61 of 759 XP. Dungeon 3 entry preserves the manually accepted approximate Level 5 pacing.
+
 - Player power growth via level-up upgrades (+20% damage, +15% attack speed) outpaces the subtle enemy HP scaling (10-20%), creating a sense of increasing mastery rather than a bullet-sponge grind.
 - Weapon breakpoints against 50/55/60 HP zombies remain smooth:
   - **Warrior** (25 base dmg): 2 hits (D1) -> 3 hits (D2) -> drops back to 2 hits with one Damage upgrade.
@@ -371,11 +393,10 @@ Behavior:
 - Moderate health.
 - Slow movement.
 
+Phase 11 adds Runner (25 HP / 10 XP), Tank (150 HP / 40 XP), and Ranged (35 HP / 15 XP) through shared components and prefab configuration. Combat readability and balance await combined manual QA.
+
 Future enemy examples:
 
-- Runner Zombie
-- Brute
-- Ranged Cultist
 - Shield Enemy
 - Exploding Enemy
 - Elite variants

@@ -274,10 +274,12 @@ Phase 11 uses prefab configuration with shared components. `EnemyDefinition` mig
 - Zombie: baseline 50 HP, 3m/s, 10 melee damage, 10 XP.
 - Runner: 25 HP, 5.5m/s, 6 melee damage, 10 XP; 0.85 visual silhouette.
 - Tank: 150 HP, 1.8m/s, 22 melee damage, 40 XP; 1.4 visual silhouette. Durability is HP only.
+- Ranged: 35 HP, 2.8m/s, stop 7m, range 9m, damage 8, cooldown 1.6s, XP 15; deep violet body and child orb.
+- `EnemyRangedAttack` implements `IEnemyAttack` and owns its outstanding projectiles locally. Shooter death cancels all shots. `EnemyProjectile` uses one distance-sorted `SphereCastAll`, ignores owner/enemy hierarchies, damages `PlayerHealth` once, and is blocked by solid obstacles. Generic `IDamageable` alone is not a player target. No Rigidbody/collision callback authority or projectile manager. Travel pauses with gameplay; the hard 3-second lifetime uses unscaled time.
 
 The root stays at unit scale; visual scale and CharacterController dimensions match each silhouette.
 `WaveManager` uses prefab references and `IEnemyAttack`, with no archetype-name branches.
-Production wave compositions remain unchanged until Gate 11.5.
+Gate 11.5 production waves total D1 38 enemies / 410 XP, D2 35 / 430, D3 42 / 540. Campaign XP is 1380 (+2.2% from Phase 10). D1 entries are Zombie, Tank, Runner; D2/D3 entries are Tank, Ranged, Zombie, Runner, omitting absent types. Scenes and DungeonCatalog retain their existing configuration.
 
 ---
 # Experience

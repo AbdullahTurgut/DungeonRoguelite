@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
   id: dungeon_2
   displayName: "B\xF6l\xFCm 2: Karanl\u0131k Mahzen"
-  description: "Daha yo\u011Fun zombi ak\u0131nlar\u0131. 4 dalga hayatta kal."
+  description: "Ağır düşmanlar ve menzilli tehditler. 4 dalga hayatta kal."
   sceneName: Dungeon_02
   requiredDungeonId: dungeon_1
   enemyHealthMultiplier: 1.1
