@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_05
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_5
+  displayName: "B\xF6l\xFCm 5: K\xFCl Mabedi"
+  description: "K\xFCl Muhaf\u0131z\u0131n\u0131n h\xFCk\xFCm s\xFCrd\xFC\u011F\xFC
+    kadim mabedi temizle."
+  sceneName: Dungeon_05
+  requiredDungeonId: dungeon_4
+  waves:
+  - {fileID: 11400000, guid: 23974f8af7477864bb1f9107a2950631, type: 2}
+  - {fileID: 11400000, guid: d50714e77b5520e428733f6c8d9577d2, type: 2}
+  - {fileID: 11400000, guid: 69b784da46256904aa4d1001cbf169b0, type: 2}
+  enemyHealthMultiplier: 1.4
+  enemyDamageMultiplier: 1.3
+  dungeonType: 1

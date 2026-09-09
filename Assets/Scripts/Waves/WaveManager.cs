@@ -106,6 +106,12 @@ namespace DungeonRoguelite.Waves
         public event Action<EnemyHealth> OnEnemyDefeated;
 
         /// <summary>
+        /// Fired after an enemy has been instantiated, scaled, targeted, and registered.
+        /// Scene presentation can bind to special spawned enemies without polling.
+        /// </summary>
+        public event Action<EnemyHealth> OnEnemySpawned;
+
+        /// <summary>
         /// Fired exactly once after the final wave is cleared.
         /// </summary>
         public event Action OnDungeonCompleted;
@@ -429,6 +435,7 @@ namespace DungeonRoguelite.Waves
                 Action deathHandler = () => HandleEnemyDied(health);
                 deathCallbacks[health] = deathHandler;
                 health.OnDied += deathHandler;
+                OnEnemySpawned?.Invoke(health);
             }
             else
             {
