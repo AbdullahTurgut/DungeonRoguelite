@@ -89,8 +89,9 @@ namespace DungeonRoguelite.Editor
             var scene = EditorSceneManager.OpenScene("Assets/Scenes/Dungeons/Dungeon_04.unity", OpenSceneMode.Single);
             var arena = GameObject.Find("ColonnadeArena");
             Check(arena != null, "Colonnade arena root");
+            Check(!HasRoot("Floor") && !HasRoot("Environment_Obstacles") && !HasRoot("Wall_North") && !HasRoot("Wall_South") && !HasRoot("Wall_East") && !HasRoot("Wall_West"), "no copied D3 root geometry remains");
             var floor = arena.transform.Find("Floor");
-            Check(floor != null && Approximately(floor.localScale, new Vector3(36f, 0.5f, 28f)), "36m x 28m floor containment");
+            Check(floor != null && floor.GetComponent<Renderer>() != null && floor.GetComponent<Collider>() != null && Approximately(floor.localScale, new Vector3(36f, 0.5f, 28f)), "authoritative 36m x 28m Colonnade floor");
             Check(arena.transform.Find("NorthWall") != null && arena.transform.Find("SouthWall") != null && arena.transform.Find("EastWall") != null && arena.transform.Find("WestWall") != null, "four boundary walls");
             Vector3[] expected = { new Vector3(-5.5f, 1.75f, 4.5f), new Vector3(5.5f, 1.75f, 4.5f), new Vector3(-5.5f, 1.75f, -4.5f), new Vector3(5.5f, 1.75f, -4.5f) };
             for (int i = 0; i < expected.Length; i++) Check(arena.transform.Find("Pillar_0" + (i + 1)) != null && Approximately(arena.transform.Find("Pillar_0" + (i + 1)).position, expected[i]), "symmetric pillar " + (i + 1));
@@ -103,6 +104,8 @@ namespace DungeonRoguelite.Editor
         }
 
         private static bool Approximately(Vector3 left, Vector3 right) => Vector3.Distance(left, right) < 0.01f;
+
+        private static bool HasRoot(string name) => UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects().Any(root => root.name == name);
 
         private static void VerifyGate13_3()
         {

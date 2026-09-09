@@ -64,8 +64,21 @@ namespace DungeonRoguelite.Editor
         [MenuItem("DungeonRoguelite/Phase 13/Setup Gate 13.2 Arena")]
         public static void SetupGate13_2()
         {
-            SetupGate13_1();
+            // Geometry authoring must not reset production wave assets or the
+            // serialized WaveManager configuration established by Gate 13.3.
+            if (!File.Exists(Dungeon04ScenePath))
+            {
+                SetupGate13_1();
+            }
             var scene = EditorSceneManager.OpenScene(Dungeon04ScenePath, OpenSceneMode.Single);
+            // Dungeon_04 began as a D3 scene copy. Remove its copied arena roots so
+            // the Colonnade is the sole authoritative collision and visual layout.
+            string[] obsoleteGeometry = { "Floor", "Wall_North", "Wall_South", "Wall_East", "Wall_West", "Environment_Obstacles" };
+            foreach (string name in obsoleteGeometry)
+            {
+                var obsolete = FindRootObject(name);
+                if (obsolete != null) Object.DestroyImmediate(obsolete);
+            }
             var root = GameObject.Find("ColonnadeArena") ?? new GameObject("ColonnadeArena");
             ClearChildren(root.transform);
             CreateBlock(root.transform, "Floor", new Vector3(0f, -0.3f, 0f), new Vector3(36f, 0.5f, 28f), new Color(0.18f, 0.16f, 0.14f));
@@ -149,6 +162,15 @@ namespace DungeonRoguelite.Editor
         private static void ClearChildren(Transform root)
         {
             while (root.childCount > 0) Object.DestroyImmediate(root.GetChild(0).gameObject);
+        }
+
+        private static GameObject FindRootObject(string name)
+        {
+            foreach (GameObject root in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                if (root.name == name) return root;
+            }
+            return null;
         }
     }
 }
