@@ -15,9 +15,9 @@ namespace DungeonRoguelite.UI
         [SerializeField] private TMP_Text nameLabel;
         [SerializeField] private TMP_Text phaseLabel;
         private EnemyHealth boundHealth;
-        private BossWardenController boss;
+        private IBossPresentation boss;
         public EnemyHealth BoundHealth => boundHealth;
-        public BossWardenController BoundBoss => boss;
+        public IBossPresentation BoundBoss => boss;
         public float DisplayedHealthRatio => fill != null ? Mathf.Clamp01(fill.rectTransform.anchorMax.x) : 0f;
         public bool IsVisible => panelRoot != null && panelRoot.activeSelf;
         public bool IsPhasePresentationHidden => phaseLabel == null || !phaseLabel.gameObject.activeSelf || string.IsNullOrEmpty(phaseLabel.text);
@@ -38,7 +38,7 @@ namespace DungeonRoguelite.UI
         private void OnDisable() { if (waveManager != null) waveManager.OnEnemySpawned -= TryBind; Unbind(); }
         private void TryBind(EnemyHealth health)
         {
-            var candidate = health != null ? health.GetComponent<BossWardenController>() : null;
+            var candidate = health != null ? health.GetComponent<IBossPresentation>() : null;
             if (candidate == null) return;
             Unbind(); boundHealth = health; boss = candidate; EnsureFillConfiguration(); boundHealth.OnHealthChanged += UpdateHealth; boundHealth.OnDied += HandleBossDied;
             if (nameLabel != null) nameLabel.text = boss.BossName;

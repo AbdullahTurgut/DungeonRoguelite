@@ -13,6 +13,8 @@ namespace DungeonRoguelite.Dungeons
     public static class DungeonProgression
     {
         public const string PrefsKey = "DungeonProgression_CompletedDungeons";
+        // The existing idempotent completed-dungeon save is the campaign milestone authority.
+        public static bool IsFirstCampaignCompleted => IsDungeonCompleted("dungeon_10");
 
         [Serializable]
         private class ProgressionData

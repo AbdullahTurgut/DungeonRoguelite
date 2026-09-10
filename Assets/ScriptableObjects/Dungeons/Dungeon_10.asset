@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_10
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_10
+  displayName: "B\xF6l\xFCm 10: Y\u0131ld\u0131zs\u0131z Taht"
+  description: "The Starless Throne \u2014 Bo\u015F Kalenin Muhaf\u0131z\u0131 ile
+    y\xFCzle\u015F."
+  sceneName: Dungeon_10
+  requiredDungeonId: dungeon_9
+  waves:
+  - {fileID: 11400000, guid: ce0bd5f84b1796f4986a658416b81227, type: 2}
+  - {fileID: 11400000, guid: 0cc5531fd03d6b144910dd046cffd11b, type: 2}
+  - {fileID: 11400000, guid: 241ff161e4de8224c84bf2ea1865e410, type: 2}
+  - {fileID: 11400000, guid: 65ba4f6abe3c02646938188fcb3fb019, type: 2}
+  enemyHealthMultiplier: 1.9
+  enemyDamageMultiplier: 1.55
+  dungeonType: 1

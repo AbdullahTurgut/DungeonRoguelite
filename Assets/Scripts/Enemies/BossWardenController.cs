@@ -9,7 +9,7 @@ namespace DungeonRoguelite.Enemies
 
     /// <summary>Focused first-boss controller. It deliberately reuses EnemyHealth and EnemyProjectile.</summary>
     [RequireComponent(typeof(EnemyHealth), typeof(CharacterController))]
-    public sealed class BossWardenController : MonoBehaviour, IEnemyAttack
+    public sealed class BossWardenController : MonoBehaviour, IEnemyAttack, IBossPresentation
     {
         [Header("Identity")]
         [SerializeField] private string bossName = "Kül Muhafızı";
