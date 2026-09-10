@@ -113,6 +113,11 @@ namespace DungeonRoguelite.UI
         /// </summary>
         public void HandleDungeonCompleted(DungeonRunSummary summary)
         {
+            if (returnToMapButton != null && completionController != null && completionController.OffersBlacksmithIntro)
+            {
+                var label = returnToMapButton.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.text = "DEMİRCİYE GİT";
+            }
             if (timeText != null)
             {
                 timeText.text = $"Time: {summary.FormattedTime}";

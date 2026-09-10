@@ -36,6 +36,7 @@ namespace DungeonRoguelite.Progression
         public class PermanentSaveData
         {
             public int version = 3;
+            public bool firstBlacksmithIntroSeen;
             public List<CharacterProgressionData> characters = new List<CharacterProgressionData>();
         }
 
@@ -55,6 +56,24 @@ namespace DungeonRoguelite.Progression
             new Dictionary<string, CharacterProgressionData>(StringComparer.OrdinalIgnoreCase);
 
         private static bool isLoaded = false;
+        private static bool firstBlacksmithIntroSeen;
+
+        public static bool NeedsBlacksmithIntro
+        {
+            get { EnsureLoaded(); return !firstBlacksmithIntroSeen && Dungeons.DungeonProgression.IsDungeonCompleted("dungeon_5"); }
+        }
+
+        // One save commits the introduction reward, equipped slot and global completion flag.
+        public static bool CompleteBlacksmithIntro(string characterId, Weapons.WeaponDefinition weapon)
+        {
+            if (!NeedsBlacksmithIntro || weapon == null || weapon.Tier != 1 || !CanClaimWeapon(characterId, weapon)) return false;
+            var data = GetOrAddCharacterData(characterId);
+            if (!IsWeaponClaimed(characterId, weapon.Id)) data.claimedWeaponIds.Add(weapon.Id);
+            data.equippedWeaponId = weapon.Id;
+            firstBlacksmithIntroSeen = true;
+            SaveToPrefs();
+            return true;
+        }
 
         /// <summary>
         /// Fired whenever a skill node is successfully purchased for a character (characterId, nodeId).
@@ -76,6 +95,7 @@ namespace DungeonRoguelite.Progression
         {
             characterCache.Clear();
             isLoaded = false;
+            firstBlacksmithIntroSeen = false;
             OnSkillPurchased = null;
             OnDungeonRewardAwarded = null;
             OnSkillPointsChanged = null;
@@ -95,6 +115,7 @@ namespace DungeonRoguelite.Progression
                     try
                     {
                         var data = JsonUtility.FromJson<PermanentSaveData>(json);
+                        if (data != null) firstBlacksmithIntroSeen = data.firstBlacksmithIntroSeen;
                         if (data != null && data.characters != null)
                         {
                             foreach (var charData in data.characters)
@@ -125,6 +146,7 @@ namespace DungeonRoguelite.Progression
         private static void SaveToPrefs()
         {
             var data = new PermanentSaveData();
+            data.firstBlacksmithIntroSeen = firstBlacksmithIntroSeen;
             data.characters.AddRange(characterCache.Values);
             string json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString(PrefsKey, json);
@@ -461,6 +483,7 @@ namespace DungeonRoguelite.Progression
         {
             characterCache.Clear();
             isLoaded = true;
+            firstBlacksmithIntroSeen = false;
 
             if (PlayerPrefs.HasKey(PrefsKey))
             {

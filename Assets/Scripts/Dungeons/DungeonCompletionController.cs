@@ -40,6 +40,8 @@ namespace DungeonRoguelite.Dungeons
         public bool HasCompleted => hasCompleted;
         public bool IsWaitingForUpgrades => isWaitingForUpgrades;
         public bool IsCompletionFinished => isCompletionFinished;
+        public bool OffersBlacksmithIntro => isCompletionFinished && PermanentProgression.NeedsBlacksmithIntro &&
+            (waveManager != null && waveManager.ActiveDungeon != null ? waveManager.ActiveDungeon.Id : DungeonRunSession.SelectedDungeon?.Id) == "dungeon_5";
         public DungeonRunSummary FinalSummary => finalSummary;
         public PlayerSpawner PlayerSpawner => playerSpawner;
         public PlayableCharacter ActiveCharacter => activeCharacter;
@@ -407,6 +409,12 @@ namespace DungeonRoguelite.Dungeons
         public void ReturnToWorldMap()
         {
             Time.timeScale = 1f;
+            if (OffersBlacksmithIntro)
+            {
+                if (activeCharacter != null) CharacterSelectionSession.SetSelection(activeCharacter.CharacterDefinition);
+                SceneManager.LoadScene("Hub_Armory");
+                return;
+            }
             string targetScene = Application.CanStreamedLevelBeLoaded("WorldMap") ? "WorldMap" : "CharacterSelection";
             SceneManager.LoadScene(targetScene);
         }

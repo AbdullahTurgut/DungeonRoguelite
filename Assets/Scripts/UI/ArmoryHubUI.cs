@@ -27,6 +27,7 @@ namespace DungeonRoguelite.UI
         [SerializeField] private Button closeButton;
         private int selectedIndex;
         private WeaponDefinition offeredWeapon;
+        private BlacksmithIntroSequence intro;
         public CharacterDefinition SelectedCharacter => characters[selectedIndex];
 
         private void Start()
@@ -46,10 +47,16 @@ namespace DungeonRoguelite.UI
             closeButton.onClick.AddListener(() => equipmentPanel.SetActive(false));
             equipmentPanel.SetActive(false);
             SelectCharacter(selectedIndex);
+            if (PermanentProgression.NeedsBlacksmithIntro)
+            {
+                intro = gameObject.AddComponent<BlacksmithIntroSequence>();
+                intro.Begin(SelectedCharacter, offeredWeapon, Refresh);
+            }
         }
 
         public void SelectCharacter(int index)
         {
+            if (intro != null && intro.IsRunning) return;
             if (index < 0 || index >= characters.Length) return;
             selectedIndex = index;
             // Switching heroes follows existing run ownership: a build cannot transfer to another hero.
@@ -58,7 +65,7 @@ namespace DungeonRoguelite.UI
             Refresh();
         }
 
-        public void OpenArmorer() { equipmentPanel.SetActive(true); Refresh(); }
+        public void OpenArmorer() { if (intro != null && intro.IsRunning) return; equipmentPanel.SetActive(true); Refresh(); }
         private void Claim() { PermanentProgression.TryClaimWeapon(SelectedCharacter.Id, offeredWeapon); Refresh(); }
         private void Equip() { PermanentProgression.TryEquipWeapon(SelectedCharacter.Id, offeredWeapon); Refresh(); }
 
@@ -67,7 +74,10 @@ namespace DungeonRoguelite.UI
             for (int i = 0; i < characters.Length; i++)
             {
                 var equipped = PermanentProgression.GetEquippedWeapon(characters[i].Id, characters[i].WeaponCatalog);
-                characterLabels[i].text = characters[i].DisplayName + (i == selectedIndex ? " • SEÇİLİ" : "") + "\n" + (equipped != null ? equipped.DisplayName : "Başlangıç silahı");
+                bool selected = i == selectedIndex;
+                characterLabels[i].text = characters[i].DisplayName + (selected ? "\n" + (equipped != null ? equipped.DisplayName + " • Tier " + (equipped.Tier == 1 ? "I" : "II") : "Başlangıç silahı") : "");
+                characterLabels[i].color = selected ? Color.white : new Color(.65f, .68f, .72f);
+                characterButtons[i].GetComponent<Image>().color = selected ? new Color(.22f,.32f,.4f,.9f) : new Color(.1f,.13f,.17f,.35f);
                 selectionMarkers[i].SetActive(i == selectedIndex);
             }
             offeredWeapon = null;
