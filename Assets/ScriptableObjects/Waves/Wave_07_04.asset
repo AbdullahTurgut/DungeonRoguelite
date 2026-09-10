@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 161dbe6fcaab05d4cb24c7f1c18443a4, type: 3}
+  m_Name: Wave_07_04
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Waves.WaveDefinition
+  enemyEntries:
+  - enemyPrefab: {fileID: 5307975493804608710, guid: a556b07d27064864a988d8d3a0c14f75, type: 3}
+    count: 3
+  - enemyPrefab: {fileID: 4059869343016366379, guid: 467b13cb11659f9489924a96df2d23ff, type: 3}
+    count: 3
+  - enemyPrefab: {fileID: 8062806540668609047, guid: c41f7ef9e520d6a4fb63ccc2d077a131, type: 3}
+    count: 4
+  - enemyPrefab: {fileID: 4468039391420646181, guid: 91ae13e66be93874aa4ce86c52d8ce02, type: 3}
+    count: 3
+  spawnInterval: 0.5

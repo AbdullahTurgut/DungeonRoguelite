@@ -29,6 +29,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Hub_Armory.unity
     guid: 4755fdf988c617047916cc38cbd155a0
+  - enabled: 1
+    path: Assets/Scenes/Dungeons/Dungeon_06.unity
+    guid: 6fbf4788f965c464fbf79c14f256a503
+  - enabled: 1
+    path: Assets/Scenes/Dungeons/Dungeon_07.unity
+    guid: 98663f0318399af449be3db2dd89639e
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
