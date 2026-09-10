@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using DungeonRoguelite.Combat;
 
@@ -20,6 +21,10 @@ namespace DungeonRoguelite.Enemies
 
         [Tooltip("Cooldown period in seconds between attacks.")]
         [SerializeField] private float attackCooldown = 1.0f;
+        [SerializeField, Min(0.05f)] private float windupDuration = 0.4f;
+        [SerializeField, Min(0.01f)] private float activeDuration = 0.12f;
+        [SerializeField, Min(0f)] private float recoveryDuration = 0.18f;
+        [SerializeField, Range(1f,180f)] private float attackArc = 120f;
 
         [Header("Targeting")]
         [Tooltip("The target Transform to attack. Auto-discovers tag 'Player' if unassigned.")]
@@ -29,21 +34,24 @@ namespace DungeonRoguelite.Enemies
         private IDamageable targetDamageable;
         private float nextAttackTime = 0f;
         private bool isDead;
+        private EnemyVisualFeedback feedback;
+        public bool IsAttacking { get; private set; }
 
         public float Damage => damage;
         public float AttackRange => attackRange;
         public float AttackCooldown => attackCooldown;
-        public bool CanAttack => !isDead && Time.time >= nextAttackTime;
+        public bool CanAttack => isActiveAndEnabled && !isDead && !IsAttacking && Time.time >= nextAttackTime;
         public Transform Target => target;
 
         /// <summary>
-        /// Fired whenever an attack is successfully performed.
+        /// Fired when the committed swing executes, including a swing that misses.
         /// </summary>
         public event Action OnAttack;
 
         private void Awake()
         {
             health = GetComponent<EnemyHealth>();
+            feedback = GetComponent<EnemyVisualFeedback>();
             ResolveTarget();
         }
 
@@ -66,6 +74,7 @@ namespace DungeonRoguelite.Enemies
 
         private void OnDisable()
         {
+            CancelAttack();
             if (health != null)
             {
                 health.OnDied -= HandleDied;
@@ -122,12 +131,12 @@ namespace DungeonRoguelite.Enemies
         }
 
         /// <summary>
-        /// Attempts to execute an attack against the current target if cooldown and range conditions are met.
+        /// Begins a committed wind-up if cooldown and range conditions are met.
         /// </summary>
-        /// <returns>True if the attack succeeded; false otherwise.</returns>
+        /// <returns>True if the attack started; damage is resolved only in its active window.</returns>
         public bool TryAttack()
         {
-            if (isDead || Time.timeScale <= 0f || Time.time < nextAttackTime)
+            if (!CanAttack || Time.timeScale <= 0f)
             {
                 return false;
             }
@@ -148,19 +157,42 @@ namespace DungeonRoguelite.Enemies
             }
 
             nextAttackTime = Time.time + attackCooldown;
-
-            if (targetDamageable == null)
-            {
-                ResolveTarget();
-            }
-
-            if (targetDamageable != null)
-            {
-                targetDamageable.TakeDamage(damage);
-            }
-
-            OnAttack?.Invoke();
+            Vector3 direction = distance > 0.001f ? toTarget / distance : transform.forward;
+            IsAttacking = true;
+            transform.rotation = Quaternion.LookRotation(direction, Vector3.up);
+            StartCoroutine(PerformAttack(transform.position, direction));
             return true;
+        }
+
+        private IEnumerator PerformAttack(Vector3 origin, Vector3 direction)
+        {
+            feedback?.ShowAttackCue(origin, direction, attackRange, attackArc, false);
+            yield return new WaitForSeconds(windupDuration);
+            feedback?.ShowAttackCue(origin, direction, attackRange, attackArc, true);
+            OnAttack?.Invoke();
+            float endsAt = Time.time + activeDuration;
+            bool hit = false;
+            while (Time.time < endsAt)
+            {
+                if (Time.timeScale > 0f && !hit && target != null && targetDamageable != null)
+                {
+                    Vector3 delta = target.position - origin; delta.y = 0f;
+                    if (delta.sqrMagnitude <= attackRange * attackRange && Vector3.Angle(direction,delta) <= attackArc * 0.5f)
+                    {
+                        hit = true;
+                        targetDamageable.TakeDamage(damage);
+                    }
+                }
+                yield return null;
+            }
+            feedback?.HideAttackCue();
+            yield return new WaitForSeconds(recoveryDuration);
+            IsAttacking = false;
+        }
+
+        private void CancelAttack()
+        {
+            StopAllCoroutines(); IsAttacking = false; feedback?.HideAttackCue();
         }
 
         private void HandleDied()
@@ -174,6 +206,7 @@ namespace DungeonRoguelite.Enemies
         /// </summary>
         public void SetTarget(Transform newTarget)
         {
+            if (target != newTarget) CancelAttack();
             target = newTarget;
             targetDamageable = null;
             ResolveTarget();

@@ -201,6 +201,10 @@ MonoBehaviour:
   damage: 6
   attackRange: 1.3
   attackCooldown: 0.65
+  windupDuration: 0.28
+  activeDuration: 0.12
+  recoveryDuration: 0.18
+  attackArc: 120
   target: {fileID: 0}
 --- !u!114 &6272512758076210508
 MonoBehaviour:

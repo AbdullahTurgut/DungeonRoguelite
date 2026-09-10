@@ -19,6 +19,43 @@ namespace DungeonRoguelite.Enemies
         private float previousHealth;
         private float flashEndsAt;
         private bool flashing;
+        private LineRenderer attackCue;
+
+        // Fixed world-space telegraph, separate from the body's damage flash.
+        public void ShowAttackCue(Vector3 origin, Vector3 direction, float range, float arc, bool active)
+        {
+            if (attackCue == null)
+            {
+                var root = new GameObject("EnemyAttackCue"); root.transform.SetParent(transform,false);
+                attackCue = root.AddComponent<LineRenderer>();
+                attackCue.useWorldSpace = true;
+                attackCue.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                attackCue.receiveShadows = false;
+                foreach (var renderer in targetRenderers)
+                    if (renderer != null && renderer.sharedMaterial != null) { attackCue.sharedMaterial = renderer.sharedMaterial; break; }
+            }
+            attackCue.enabled = true;
+            attackCue.widthMultiplier = active ? 0.12f : 0.07f;
+            var color = active ? new Color(1f,0.15f,0.05f) : new Color(1f,0.7f,0.1f);
+            var block = new MaterialPropertyBlock(); block.SetColor(BaseColor,color); attackCue.SetPropertyBlock(block);
+            origin += Vector3.up * 0.12f;
+            if (arc <= 0f)
+            {
+                attackCue.positionCount = 2;
+                attackCue.SetPosition(0,origin); attackCue.SetPosition(1,origin+direction*range);
+            }
+            else
+            {
+                const int segments = 16;
+                attackCue.positionCount = segments+3;
+                attackCue.SetPosition(0,origin);
+                for (int i=0;i<=segments;i++)
+                    attackCue.SetPosition(i+1,origin+Quaternion.AngleAxis(Mathf.Lerp(-arc/2,arc/2,i/(float)segments),Vector3.up)*direction*range);
+                attackCue.SetPosition(segments+2,origin);
+            }
+        }
+
+        public void HideAttackCue() { if (attackCue != null) attackCue.enabled = false; }
 
         private void Awake()
         {
@@ -46,6 +83,7 @@ namespace DungeonRoguelite.Enemies
 
         private void OnDisable()
         {
+            HideAttackCue();
             health.OnHealthChanged -= HandleHealthChanged;
             Restore();
         }

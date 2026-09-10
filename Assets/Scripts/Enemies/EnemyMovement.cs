@@ -32,6 +32,8 @@ namespace DungeonRoguelite.Enemies
         private EnemyHealth health;
         private bool isDead;
         private bool isMoving;
+        private EnemyAttack meleeAttack;
+        private EnemyRangedAttack rangedAttack;
 
         public float MoveSpeed => moveSpeed;
         public float StoppingDistance => stoppingDistance;
@@ -42,6 +44,8 @@ namespace DungeonRoguelite.Enemies
         {
             characterController = GetComponent<CharacterController>();
             health = GetComponent<EnemyHealth>();
+            meleeAttack = GetComponent<EnemyAttack>();
+            rangedAttack = GetComponent<EnemyRangedAttack>();
             ResolveTarget();
         }
 
@@ -103,6 +107,13 @@ namespace DungeonRoguelite.Enemies
             if (Time.timeScale <= 0f || dt <= 0f || isDead || characterController == null || !characterController.enabled)
             {
                 isMoving = false;
+                return;
+            }
+
+            if ((meleeAttack != null && meleeAttack.IsAttacking) || (rangedAttack != null && rangedAttack.IsAttacking))
+            {
+                isMoving = false;
+                characterController.Move(Vector3.down * gravity * dt);
                 return;
             }
 

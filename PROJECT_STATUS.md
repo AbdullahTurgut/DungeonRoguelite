@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-11 — Phase 15–19 campaign milestone COMPLETE; final user manual QA GREEN, including D10 Blacksmith Tier II reward flow. D5 Warrior balance is accepted for now; further melee/boss tuning is deferred to Phase 20. Phase 20 is NOT STARTED. Await explicit user direction.
+Last update: 2026-09-11 — Phase 20 enemy attack fairness is implemented; focused verification PASSED, user manual QA pending. Phase 15–19 remains signed off at dca72d1. No push; no unrelated Phase 20 work.
 
 ## Historical update log
 
@@ -52,7 +52,16 @@ The entries below retain evidence and instructions from earlier checkpoints; the
 
 # Current Project State
 
-## Phase 15–19 campaign milestone — COMPLETE, manual QA GREEN
+## Active task — Phase 20 enemy attack fairness
+
+- Normal melee previously dealt instant range-only damage. EnemyAttack now commits its origin and direction at wind-up start, then checks a fixed 120-degree sector during a 0.12-second active window, at most one hit per attack. Recovery is 0.18 seconds. Serialized wind-ups preserve archetype cadence: Zombie 0.40s, Runner 0.28s, Tank 0.65s. Existing damage, range and cooldown values are unchanged.
+- EnemyRangedAttack now telegraphs a fixed firing direction for 0.45s and uses the existing straight swept-collision projectile; speed, damage and lifetime are unchanged. Its short 0.15s release recovery prevents immediate pursuit during firing.
+- EnemyMovement holds translation and facing during normal attacks while maintaining grounding. EnemyVisualFeedback draws an amber committed sector/aim line, with the melee sector turning red only during its active window; separate damage-flash behavior is retained. Disable/death cancels pending attacks and hides cues. No boss controller or EnemyProjectile changes.
+- HP, XP, difficulty scaling, campaign progression, equipment and player stats are unchanged. TryAttack now means wind-up accepted, not immediate damage. Historical tests expecting instant normal-enemy damage are no longer the acceptance contract; no broad matrix is requested.
+- Verification: compilation succeeded with the three known TMP CS0618 warnings. One focused real-prefab smoke PASSED: Zombie wind-up with no instant damage, committed facing/origin, lateral dodge inside radial range, cue/active-window cleanup, unchanged single-hit damage against a stationary player, Ranged fixed-direction projectile dodge and stationary hit, and death cancellation. Phase12StateSnapshot restored user state. No broad regressions or licensing retry. Runner/Tank timing and all-hero feel remain manual QA.
+- Manual QA required: play Warrior, Archer and Gunner against Zombie, Runner, Tank and Ranged. Check readable tells, outward/lateral dodges, danger when standing still, mixed-group pressure, and whether movement holds feel natural. Stop after this checkpoint; do not push or start unrelated stabilization work.
+
+## Phase 15–19 campaign milestone — COMPLETE, manual QA GREEN (accepted baseline)
 
 - Phase 15: existing nine-node trees cost 1/2/2 per branch, 15 points per character. D1–D10 first-clear rewards are 1/1/1/1/2/1/1/2/2/3, character-scoped and replay-idempotent. Save v1 -> v2 grandfathers points, purchases and reward history; legacy D5 receives one future claim.
 - Phase 16: Hub_Armory, selected-character presentation, free milestone weapon claims/equipment, and the once-only D5 Blacksmith Tier I introduction are accepted. Save v2 -> v3 adds per-character equipment. PlayerStats preserves Permanent Skill × Equipped Weapon × Temporary Run layering; Retry/EndRun retain equipment.
@@ -80,7 +89,7 @@ D10 campaign cumulative XP: 11,385. The full fresh-character permanent tree is f
 - Checkpoints: `84d2a5e` Phase 15; `cb48f63` Armory/Tier I; `04bf1a9` D5 Blacksmith; `0f5b9bb` D6/D7; `dfccc7e` D8/D9; `56d4972` D10/Castellan/Tier II; `3cd757c` D5 spacing; `4af5e5d` D10 Blacksmith.
 - Final sign-off changes documentation only. No new Unity execution or broad regression matrix is required for this documentation update.
 
-**NEXT: Phase 20 — First Campaign Stabilization, NOT STARTED. Stop and wait for explicit user direction.** Stabilization is evidence-driven; no automatic D11–D15 expansion or additional tuning in this sign-off.
+**NEXT: user manual QA of the Phase 20 enemy fairness checkpoint above.** No automatic further tuning or D11–D15 expansion. The following history retains the earlier sign-off state.
 
 ---
 
