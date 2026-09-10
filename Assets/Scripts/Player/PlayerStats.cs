@@ -45,9 +45,17 @@ namespace DungeonRoguelite.Player
         public float PermanentMaxHealthMultiplier => permanentMaxHealthMultiplier;
         public float MaxHealthMultiplier => permanentMaxHealthMultiplier;
 
-        // Effective Multipliers: Base * Permanent * Temporary
-        public float DamageMultiplier => damageMultiplier * permanentDamageMultiplier;
-        public float AttackSpeedMultiplier => attackSpeedMultiplier * permanentAttackSpeedMultiplier;
+        // Effective Multipliers: Base * Permanent Skill * Equipped Weapon * Temporary Run
+        private float weaponDamageMultiplier = 1f;
+        private float weaponAttackSpeedMultiplier = 1f;
+        public float DamageMultiplier => damageMultiplier * permanentDamageMultiplier * weaponDamageMultiplier;
+        public float AttackSpeedMultiplier => attackSpeedMultiplier * permanentAttackSpeedMultiplier * weaponAttackSpeedMultiplier;
+        public void ApplyEquippedWeapon(DungeonRoguelite.Weapons.WeaponDefinition weapon)
+        {
+            weaponDamageMultiplier = weapon != null ? weapon.DamageMultiplier : 1f;
+            weaponAttackSpeedMultiplier = weapon != null ? weapon.AttackSpeedMultiplier : 1f;
+            OnStatsChanged?.Invoke();
+        }
         public float MovementSpeedMultiplier => movementSpeedMultiplier * permanentMovementSpeedMultiplier;
 
         /// <summary>

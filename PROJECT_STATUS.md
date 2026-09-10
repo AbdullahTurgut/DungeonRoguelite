@@ -41,10 +41,21 @@ Last update:
 
 ## Status
 
-**COMPLETE — Phase 14: Dungeon 5 / The Ashen Sanctum and First Boss**
+**Phase 16 implemented — USER MANUAL QA REQUIRED before Phase 17**
+
+- Phase 15 checkpoint: `84d2a5e feat: rebalance permanent progression`. Existing nine nodes cost 1/2/2 per branch, 15 per tree. D1-D10 first-clear rewards are 1/1/1/1/2/1/1/2/2/3, character-scoped and replay-idempotent. D6-D10 content is not implemented yet.
+- Save v1 -> v2 grandfathers points, purchases and rewarded history, normalizes ID lists, and allows one future legacy D5 reward. Phase 16 adds v2 -> v3 claimed/equipped weapon IDs per character; no equipment fields were introduced in the v2 checkpoint.
+- `Hub_Armory` is a small passive 3D scene with three character displays and one Armorer. Global D5 completion reveals its World Map entry. World Map remains the dungeon launch screen. Selecting another hero ends an active run owned by the previous hero; equipment persists.
+- Tier I milestone blueprints are free to claim/equip per character. Warrior Emberfang Greatblade: damage x1.12 / speed x1.10; Archer Stormstring Recurve: x1.10 / x1.12; Gunner Coilburst Carbine: x1.08 / x1.15. Base weapon can be re-equipped. Optional reach/projectile-speed/range tuning is deferred; no currency or inventory system.
+- `PlayerStats` owns effective damage/attack-speed multipliers: Permanent Skill x Equipped Weapon x Temporary Run. Existing attacks consume these stats; base damage and cooldown are unchanged. `PlayerSpawner` resolves equipment at spawn, including Retry; temporary reset and EndRun do not erase equipment.
+- Verification: Phase15Smoke PASSED (migration/idempotency, affordability, isolation, 15-point reward total). Phase16Smoke PASSED in Unity batch, exit 0: additive v2 migration, D5 gating, claim/equip and affinity, reload/EndRun persistence, production prefab spawning with stat layering, temporary reset isolation, passive Hub hierarchy and serialized navigation references. These are focused Editor smoke checks, not a claim of runtime UI or subjective gameplay acceptance. Compilation succeeded with only the three accepted legacy TMP CS0618 warnings. Licensing did not block these new checks; historical Phase 14 blocked reruns remain unexecuted.
+- Manual QA next: after D5 completion enter CEPHANELİK; select all three heroes, open the Armorer, claim/equip and switch to base; verify selected marker and equipment text; return to Map and enter a dungeon with each hero; test weapon feel, Retry, Return Map and app restart persistence. Check Skill Tree costs and grandfathered progression. No push until user approval.
+- Exact resume point after Phase 16 manual QA GREEN: Phase 17, implement D6 fully before D7 using the locked wave tables. Do not start Phase 20 before D10 manual QA. No D6-D10 scenes, Tier II weapons or second boss have been created.
+
+**Historical accepted baseline — Phase 14 COMPLETE**
 
 - D5 / Kül Mabedi: three waves, 18 normal enemies plus The Ash Warden / Kül Muhafızı, 19 enemies, 1,200 XP, 1.4x enemy HP, and 1.3x enemy damage.
-- Campaign target is preserved: enter Level 7 at 7/1139; exit Level 8 at 68/1709; campaign cumulative XP is 3,285. D5 permanent first-clear reward remains 0.
+- Campaign XP target is preserved: enter Level 7 at 7/1139; exit Level 8 at 68/1709; campaign cumulative XP is 3,285. D5 permanent reward was 0 at Phase 14 sign-off and is now 2 under Phase 15.
 - The Ash Warden uses 1,200 base HP / 1,680 runtime HP with two phases, no adds, and no persistent hazards. Boss death, XP, retry, return-to-map, and completion ordering are accepted GREEN.
 - World Map uses the scalable three-card carousel: newest-unlocked initial focus, locked-card browsing, Enter gating, generic D6+ windows, bounded UI-arrow and Left/Right keyboard navigation, and Skill Tree modal-safe input/focus restoration.
 - Warrior attacks have a visual-only 120-degree slash feedback arc from the successful melee attack path; it lasts 0.12 seconds and does not change combat values.
@@ -53,16 +64,11 @@ Last update:
 - Focused automation: Boss Health Bar 9/9; Warrior Slash Feedback 8/8; World Map Carousel 525 checks; Phase 10 World Map QA 10/10; Gate 14.3 PASSED.
 - Final regression reruns blocked before verifier startup: Phase 12.5 Skill Tree UI, Gate 14.1, and D5 boss lifecycle. Unity batch reported `Connection to channel LicenseClient-Alcor refused`; this is an ENVIRONMENT BLOCKER, not production RED. Do not treat those three suites as passed.
 
-**NEXT — Phase 15: Permanent Progression Rebalance (planned, NOT STARTED)**
-
-- Keep the existing 9-node trees; apply planned costs 1 / 2 / 2, for 15 total points per character tree.
-- Add versioned save migration and revise the D1-D10 first-clear reward economy.
-
-Milestones 1.1 through 13.5 and Phases 9 through 14 are implemented and signed off. Phase 15 has not started.
+**NEXT — Phase 16 user manual QA, then Phase 17: Dungeons 6 and 7.**
 
 ---
 
-# Current Phase
+# Historical Phase Records
 
 ## PHASE 12 — Permanent Progression / Skill Tree (COMPLETE)
 

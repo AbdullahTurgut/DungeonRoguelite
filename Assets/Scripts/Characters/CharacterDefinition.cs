@@ -34,6 +34,8 @@ namespace DungeonRoguelite.Characters
         [SerializeField] private DungeonRoguelite.Progression.SkillTreeDefinition skillTree;
 
         public DungeonRoguelite.Progression.SkillTreeDefinition SkillTree => skillTree;
+        [SerializeField] private DungeonRoguelite.Weapons.WeaponCatalog weaponCatalog;
+        public DungeonRoguelite.Weapons.WeaponCatalog WeaponCatalog => weaponCatalog;
 
         /// <summary>
         /// Test or editor helper to configure the character prefab reference.

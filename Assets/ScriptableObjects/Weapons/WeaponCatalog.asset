@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b07e77782f874537bc5df62448bdf53f, type: 3}
+  m_Name: WeaponCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Weapons.WeaponCatalog
+  weapons:
+  - {fileID: 11400000, guid: d2390d8a0edf9124a9be22ab6ab93f82, type: 2}
+  - {fileID: 11400000, guid: 8a94485d8317a4545963c0cc1b87357d, type: 2}
+  - {fileID: 11400000, guid: f6238da7909887748aa08f35bda2739f, type: 2}

@@ -35,7 +35,7 @@ namespace DungeonRoguelite.Progression
         [Serializable]
         public class PermanentSaveData
         {
-            public int version = 2;
+            public int version = 3;
             public List<CharacterProgressionData> characters = new List<CharacterProgressionData>();
         }
 
@@ -47,6 +47,8 @@ namespace DungeonRoguelite.Progression
             public List<string> unlockedNodeIds = new List<string>();
             public List<string> rewardedDungeonIds = new List<string>();
             public bool legacyD5RewardPending;
+            public List<string> claimedWeaponIds = new List<string>();
+            public string equippedWeaponId = string.Empty;
         }
 
         private static readonly Dictionary<string, CharacterProgressionData> characterCache =
@@ -101,11 +103,13 @@ namespace DungeonRoguelite.Progression
                                 {
                                     charData.unlockedNodeIds = NormalizeIds(charData.unlockedNodeIds);
                                     charData.rewardedDungeonIds = NormalizeIds(charData.rewardedDungeonIds);
+                                    charData.claimedWeaponIds = NormalizeIds(charData.claimedWeaponIds);
+                                    if (charData.equippedWeaponId == null) charData.equippedWeaponId = string.Empty;
                                     if (data.version < 2) charData.legacyD5RewardPending = true;
                                     characterCache[charData.characterId] = charData;
                                 }
                             }
-                            if (data.version < 2) SaveToPrefs();
+                            if (data.version < 3) SaveToPrefs();
                         }
                     }
                     catch (Exception ex)
@@ -135,6 +139,42 @@ namespace DungeonRoguelite.Progression
                 foreach (var id in ids)
                     if (!string.IsNullOrWhiteSpace(id) && seen.Add(id.Trim())) result.Add(id.Trim());
             return result;
+        }
+
+        public static bool IsWeaponClaimed(string characterId, string weaponId)
+        {
+            EnsureLoaded();
+            return !string.IsNullOrEmpty(characterId) && characterCache.TryGetValue(characterId, out var data) &&
+                data.claimedWeaponIds.Exists(id => string.Equals(id, weaponId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public static bool CanClaimWeapon(string characterId, Weapons.WeaponDefinition weapon) => weapon != null &&
+            string.Equals(characterId, weapon.CharacterId, StringComparison.OrdinalIgnoreCase) &&
+            Dungeons.DungeonProgression.IsDungeonCompleted(weapon.RequiredDungeonId);
+
+        public static bool TryClaimWeapon(string characterId, Weapons.WeaponDefinition weapon)
+        {
+            if (!CanClaimWeapon(characterId, weapon) || IsWeaponClaimed(characterId, weapon.Id)) return false;
+            GetOrAddCharacterData(characterId).claimedWeaponIds.Add(weapon.Id);
+            SaveToPrefs();
+            return true;
+        }
+
+        public static bool TryEquipWeapon(string characterId, Weapons.WeaponDefinition weapon)
+        {
+            if (string.IsNullOrEmpty(characterId)) return false;
+            if (weapon != null && (!string.Equals(characterId, weapon.CharacterId, StringComparison.OrdinalIgnoreCase) || !IsWeaponClaimed(characterId, weapon.Id))) return false;
+            GetOrAddCharacterData(characterId).equippedWeaponId = weapon != null ? weapon.Id : string.Empty;
+            SaveToPrefs();
+            return true;
+        }
+
+        public static Weapons.WeaponDefinition GetEquippedWeapon(string characterId, Weapons.WeaponCatalog catalog)
+        {
+            EnsureLoaded();
+            if (string.IsNullOrEmpty(characterId) || catalog == null || !characterCache.TryGetValue(characterId, out var data)) return null;
+            var weapon = catalog.Find(data.equippedWeaponId);
+            return weapon != null && string.Equals(weapon.CharacterId, characterId, StringComparison.OrdinalIgnoreCase) && IsWeaponClaimed(characterId, weapon.Id) ? weapon : null;
         }
 
         private static CharacterProgressionData GetOrAddCharacterData(string characterId)

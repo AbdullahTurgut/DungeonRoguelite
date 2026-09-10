@@ -135,6 +135,7 @@ namespace DungeonRoguelite.Characters
 
             if (stats != null)
             {
+                stats.ApplyEquippedWeapon(DungeonRoguelite.Progression.PermanentProgression.GetEquippedWeapon(defToSpawn.Id, defToSpawn.WeaponCatalog));
                 stats.SetPermanentMultipliers(
                     permanentModifiers.damageMultiplier,
                     permanentModifiers.attackSpeedMultiplier,

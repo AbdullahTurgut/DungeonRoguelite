@@ -18,3 +18,4 @@ MonoBehaviour:
     fiziksel olarak yol al\u0131r."
   characterPrefab: {fileID: 7248876810619821317, guid: 2d90432d89b9f2f4384d57ff02bf3257, type: 3}
   skillTree: {fileID: 11400000, guid: 9af8014fcab7fe74bb0b37d85c057c90, type: 2}
+  weaponCatalog: {fileID: 11400000, guid: f1f1eefc41233b44889916834948a712, type: 2}

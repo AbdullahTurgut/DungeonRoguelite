@@ -18,3 +18,4 @@ MonoBehaviour:
     g\xFC\xE7l\xFC ve dayan\u0131kl\u0131 sald\u0131r\u0131lar yapar."
   characterPrefab: {fileID: 3441253740286043302, guid: 6f312a6b5127de248b5f102e81070d89, type: 3}
   skillTree: {fileID: 11400000, guid: 8852054bca0700342beae66fd11bda94, type: 2}
+  weaponCatalog: {fileID: 11400000, guid: f1f1eefc41233b44889916834948a712, type: 2}

@@ -41,6 +41,7 @@ namespace DungeonRoguelite.UI
         [Header("Skill Tree UI")]
         [Tooltip("Button to open the permanent skill tree overlay.")]
         [SerializeField] private Button skillTreeButton;
+        [SerializeField] private Button armoryButton;
 
         [Tooltip("Overlay controller for the permanent skill tree.")]
         [SerializeField] private SkillTreeUI skillTreePanel;
@@ -81,6 +82,18 @@ namespace DungeonRoguelite.UI
         private void Start()
         {
             InitializeMap();
+            if (armoryButton != null)
+            {
+                armoryButton.gameObject.SetActive(DungeonProgression.IsDungeonCompleted("dungeon_5"));
+                armoryButton.onClick.AddListener(HandleArmoryClicked);
+            }
+        }
+
+        public void HandleArmoryClicked()
+        {
+            if (IsInputBlocked || !DungeonProgression.IsDungeonCompleted("dungeon_5")) return;
+            isTransitioning = true;
+            SceneManager.LoadScene("Hub_Armory");
         }
 
         private void Update()
@@ -215,6 +228,7 @@ namespace DungeonRoguelite.UI
 
         private void UnbindEvents()
         {
+            if (armoryButton != null) armoryButton.onClick.RemoveListener(HandleArmoryClicked);
             if (leftNavigationButton != null) leftNavigationButton.onClick.RemoveListener(NavigateLeft);
             if (rightNavigationButton != null) rightNavigationButton.onClick.RemoveListener(NavigateRight);
             if (cards != null)
