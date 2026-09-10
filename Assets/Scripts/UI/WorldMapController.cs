@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 using TMPro;
 using DungeonRoguelite.Characters;
 using DungeonRoguelite.Dungeons;
@@ -80,6 +81,24 @@ namespace DungeonRoguelite.UI
         private void Start()
         {
             InitializeMap();
+        }
+
+        private void Update()
+        {
+            var keyboard = Keyboard.current;
+            if (keyboard == null || IsInputBlocked)
+            {
+                return;
+            }
+
+            if (keyboard.leftArrowKey.wasPressedThisFrame)
+            {
+                HandleKeyboardNavigation(Key.LeftArrow);
+            }
+            else if (keyboard.rightArrowKey.wasPressedThisFrame)
+            {
+                HandleKeyboardNavigation(Key.RightArrow);
+            }
         }
 
         private void OnDestroy()
@@ -248,6 +267,26 @@ namespace DungeonRoguelite.UI
 
         public void NavigateLeft() => MoveFocus(-1);
         public void NavigateRight() => MoveFocus(1);
+
+        /// <summary>
+        /// Routes supported keyboard input through the same navigation methods as the carousel buttons.
+        /// </summary>
+        public void HandleKeyboardNavigation(Key key)
+        {
+            if (!isActiveAndEnabled || IsInputBlocked)
+            {
+                return;
+            }
+
+            if (key == Key.LeftArrow)
+            {
+                NavigateLeft();
+            }
+            else if (key == Key.RightArrow)
+            {
+                NavigateRight();
+            }
+        }
 
         private void MoveFocus(int direction)
         {

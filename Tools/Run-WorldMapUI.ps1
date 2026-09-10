@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('setup', 'carousel', '10_QA', '12_5', '14_1', '14_2', '14_3', '14_4', '14_5')]
+    [ValidateSet('setup', 'carousel', 'boss_bar', '10_QA', '12_5', '14_1', '14_2', '14_3', '14_4', '14_5')]
     [string]$Suite = 'carousel',
     [int]$TimeoutSeconds = 240
 )
@@ -10,6 +10,7 @@ $log = Join-Path $project "Logs/carousel_$Suite.log"
 $method = switch ($Suite) {
     'setup' { 'DungeonRoguelite.Editor.WorldMapCarouselSetup.Run' }
     'carousel' { 'DungeonRoguelite.Editor.WorldMapCarouselVerificationRunner.Run' }
+    'boss_bar' { 'DungeonRoguelite.Editor.D5BossHealthBarRunner.Run' }
     '10_QA' { 'DungeonRoguelite.Editor.Milestone11_1_VerificationRunner.RunRegression' }
     '12_5' { 'DungeonRoguelite.Editor.Phase12VerificationRunner.Run' }
     default { 'DungeonRoguelite.Editor.Phase14VerificationRunner.Run' }
@@ -50,13 +51,14 @@ if ($newWarnings.Count -gt 0) {
 $pass = switch ($Suite) {
     'setup' { '\[WORLD MAP CAROUSEL SETUP COMPLETE\]' }
     'carousel' { '\[WORLD MAP CAROUSEL COMPLETE\] PASSED:' }
+    'boss_bar' { '\[D5 BOSS HEALTH BAR COMPLETE\] PASSED:' }
     '10_QA' { '\[MANUAL QA COMPLETE\] Verification PASSED\.' }
     '12_5' { '\[GATE 12.5 COMPLETE\] PASSED:' }
     default { "\[GATE $($Suite.Replace('_','.')) COMPLETE\] All checks PASSED\." }
 }
 if ($content -notmatch $pass) { Write-Output 'RED: missing PASS marker'; exit 2 }
 if ($Suite -ne 'setup') {
-    $restore = if ($Suite -match '^14_') { '\[PHASE 14 STATE RESTORED\]' } else { '\[PHASE 12 STATE RESTORED\]' }
+    $restore = if ($Suite -eq 'boss_bar') { '\[D5 BOSS HEALTH BAR STATE RESTORED\]' } elseif ($Suite -match '^14_') { '\[PHASE 14 STATE RESTORED\]' } else { '\[PHASE 12 STATE RESTORED\]' }
     if ($content -notmatch $restore) { Write-Output 'RED: missing state restoration'; exit 2 }
 }
 if ($Suite -eq 'carousel' -and $content -notmatch '\[WORLD MAP CAROUSEL STATE RESTORED\]') { exit 2 }

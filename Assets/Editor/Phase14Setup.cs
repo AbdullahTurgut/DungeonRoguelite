@@ -92,6 +92,17 @@ namespace DungeonRoguelite.Editor
             Debug.Log("[GATE 14.3 SETUP COMPLETE] Ash Warden and HUD saved.");
         }
 
+        [MenuItem("DungeonRoguelite/Phase 14/Apply Boss HUD Presentation")]
+        public static void ApplyBossHudPresentation()
+        {
+            var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            EnsureBossHud(scene);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[D5 BOSS HUD PRESENTATION COMPLETE]");
+        }
+
         [MenuItem("DungeonRoguelite/Phase 14/Setup Gate 14.4 Encounter")]
         public static void SetupGate14_4()
         {
@@ -121,13 +132,36 @@ namespace DungeonRoguelite.Editor
         private static void CreateBlock(Transform parent,string name,Vector3 pos,Vector3 scale,Color color) { var o=GameObject.CreatePrimitive(PrimitiveType.Cube);o.name=name;o.transform.SetParent(parent);o.transform.position=pos;o.transform.localScale=scale;var r=o.GetComponent<Renderer>();r.sharedMaterial=new Material(Shader.Find("Universal Render Pipeline/Lit"));r.sharedMaterial.color=color; }
         private static void EnsureBossHud(Scene scene)
         {
-            var existing=Object.FindFirstObjectByType<BossHealthBarUI>(); if(existing!=null) return;
+            var existing=Object.FindFirstObjectByType<BossHealthBarUI>();
+            if(existing!=null)
+            {
+                var existingSerialized = new SerializedObject(existing);
+                var existingFill = existingSerialized.FindProperty("fill").objectReferenceValue as Image;
+                if (existingFill != null)
+                {
+                    existingFill.type = Image.Type.Simple;
+                    var existingFillRect = existingFill.rectTransform;
+                    existingFillRect.anchorMin = Vector2.zero;
+                    existingFillRect.anchorMax = Vector2.one;
+                    existingFillRect.offsetMin = Vector2.zero;
+                    existingFillRect.offsetMax = Vector2.zero;
+                    EditorUtility.SetDirty(existingFill);
+                }
+                var existingPhase = existingSerialized.FindProperty("phaseLabel").objectReferenceValue as TMP_Text;
+                if (existingPhase != null)
+                {
+                    existingPhase.text = string.Empty;
+                    Object.DestroyImmediate(existingPhase.gameObject);
+                    existingSerialized.FindProperty("phaseLabel").objectReferenceValue = null;
+                    existingSerialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+                return;
+            }
             var canvasGo=new GameObject("BossHealthHUD",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster)); var canvas=canvasGo.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=20;
             var panel=new GameObject("Panel",typeof(RectTransform),typeof(Image));panel.transform.SetParent(canvasGo.transform,false);var rect=panel.GetComponent<RectTransform>();rect.anchorMin=new Vector2(.25f,.9f);rect.anchorMax=new Vector2(.75f,.96f);rect.offsetMin=rect.offsetMax=Vector2.zero;panel.GetComponent<Image>().color=new Color(0,0,0,.7f);
-            var fillGo=new GameObject("Fill",typeof(RectTransform),typeof(Image));fillGo.transform.SetParent(panel.transform,false);var fill=fillGo.GetComponent<Image>();fill.type=Image.Type.Filled;fill.fillMethod=Image.FillMethod.Horizontal;fill.color=Color.red;var fillRect=fillGo.GetComponent<RectTransform>();fillRect.anchorMin=Vector2.zero;fillRect.anchorMax=Vector2.one;fillRect.offsetMin=fillRect.offsetMax=Vector2.zero;
+            var fillGo=new GameObject("Fill",typeof(RectTransform),typeof(Image));fillGo.transform.SetParent(panel.transform,false);var fill=fillGo.GetComponent<Image>();fill.type=Image.Type.Simple;fill.color=Color.red;var fillRect=fillGo.GetComponent<RectTransform>();fillRect.anchorMin=Vector2.zero;fillRect.anchorMax=Vector2.one;fillRect.offsetMin=fillRect.offsetMax=Vector2.zero;
             var labelGo=new GameObject("Name",typeof(RectTransform),typeof(TextMeshProUGUI));labelGo.transform.SetParent(panel.transform,false);var label=labelGo.GetComponent<TextMeshProUGUI>();label.alignment=TextAlignmentOptions.Center;label.fontSize=28;var labelRect=labelGo.GetComponent<RectTransform>();labelRect.anchorMin=new Vector2(0,1);labelRect.anchorMax=new Vector2(1,1);labelRect.anchoredPosition=new Vector2(0,26);labelRect.sizeDelta=new Vector2(0,36);
-            var phaseGo=new GameObject("Phase",typeof(RectTransform),typeof(TextMeshProUGUI));phaseGo.transform.SetParent(panel.transform,false);var phase=phaseGo.GetComponent<TextMeshProUGUI>();phase.alignment=TextAlignmentOptions.Center;phase.color=Color.yellow;phase.fontSize=18;var phaseRect=phaseGo.GetComponent<RectTransform>();phaseRect.anchorMin=new Vector2(0,0);phaseRect.anchorMax=new Vector2(1,0);phaseRect.anchoredPosition=new Vector2(0,-22);phaseRect.sizeDelta=new Vector2(0,28);
-            var hud=canvasGo.AddComponent<BossHealthBarUI>();var so=new SerializedObject(hud);so.FindProperty("panelRoot").objectReferenceValue=panel;so.FindProperty("fill").objectReferenceValue=fill;so.FindProperty("nameLabel").objectReferenceValue=label;so.FindProperty("phaseLabel").objectReferenceValue=phase;so.ApplyModifiedPropertiesWithoutUndo();
+            var hud=canvasGo.AddComponent<BossHealthBarUI>();var so=new SerializedObject(hud);so.FindProperty("panelRoot").objectReferenceValue=panel;so.FindProperty("fill").objectReferenceValue=fill;so.FindProperty("nameLabel").objectReferenceValue=label;so.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }

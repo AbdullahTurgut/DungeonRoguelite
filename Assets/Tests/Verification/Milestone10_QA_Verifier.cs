@@ -7,9 +7,9 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using DungeonRoguelite.Characters;
 using DungeonRoguelite.Dungeons;
+using DungeonRoguelite.Progression;
 using DungeonRoguelite.Experience;
 using DungeonRoguelite.Player;
-using DungeonRoguelite.Progression;
 using DungeonRoguelite.UI;
 using DungeonRoguelite.Upgrades;
 
@@ -57,6 +57,7 @@ namespace DungeonRoguelite.Tests
         {
             Debug.Log("[MANUAL QA VERIFIER] Starting Phase 10 Manual QA Blocking Fixes Verification...");
             Time.timeScale = 1f;
+            PermanentProgression.ResetAllProgression();
             yield return null;
 
             // =========================================================================

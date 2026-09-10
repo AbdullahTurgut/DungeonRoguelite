@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using TMPro;
 using DungeonRoguelite.Characters;
 using DungeonRoguelite.Dungeons;
@@ -114,6 +115,20 @@ namespace DungeonRoguelite.Tests
             }
             map.LeftNavigationButton.onClick.Invoke();
             Check(map.FocusedIndex == 0 && !map.LeftNavigationButton.interactable, "Left boundary cannot underflow");
+            map.HandleKeyboardNavigation(Key.LeftArrow);
+            Check(map.FocusedIndex == 0 && !map.LeftNavigationButton.interactable, "Keyboard Left boundary cannot underflow");
+            map.RightNavigationButton.onClick.Invoke();
+            int buttonFocus = map.FocusedIndex;
+            int buttonWindow = map.WindowStart;
+            map.SelectDungeonLocally(catalog[0]);
+            map.HandleKeyboardNavigation(Key.RightArrow);
+            Check(map.FocusedIndex == buttonFocus && map.WindowStart == buttonWindow,
+                "Keyboard Right uses the same focus and window path as the right button");
+            map.SelectDungeonLocally(catalog[catalog.Count - 1]);
+            map.HandleKeyboardNavigation(Key.RightArrow);
+            Check(map.FocusedIndex == catalog.Count - 1 && !map.RightNavigationButton.interactable,
+                "Keyboard Right boundary cannot overflow");
+            map.SelectDungeonLocally(catalog[0]);
             int[] windows = { 0, 0, 1, 2, 2 };
             for (int i = 1; i < 5; ++i)
             {
@@ -151,6 +166,10 @@ namespace DungeonRoguelite.Tests
             var panel = map.SkillTreePanel;
             Check(panel.IsOpen && panel.transform.parent == map.transform && panel.transform.GetSiblingIndex() == map.transform.childCount - 1,
                 "Skill Tree opens as final Canvas sibling");
+            map.HandleKeyboardNavigation(Key.LeftArrow);
+            map.HandleKeyboardNavigation(Key.RightArrow);
+            Check(map.FocusedIndex == focus && map.WindowStart == window,
+                "Skill Tree blocks keyboard carousel navigation");
             yield return null;
             Canvas.ForceUpdateCanvases();
             var pointer = new PointerEventData(EventSystem.current);

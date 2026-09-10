@@ -50,7 +50,7 @@ namespace DungeonRoguelite.Editor
         private static void VerifyBoss()
         {
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/AshWarden.prefab"); Check(prefab!=null && prefab.GetComponent<BossWardenController>()!=null,"boss prefab and dedicated controller"); var instance=UnityEngine.Object.Instantiate(prefab); try { var health=instance.GetComponent<EnemyHealth>(); health.InitializeHealth(1.4f); var boss=instance.GetComponent<BossWardenController>(); boss.InitializeAttack(1.3f); Check(health.MaxHealth==1680f,"boss D5 runtime health scaling"); Check(boss.StrikeDamage==26f && boss.SlamDamage==42f && boss.BoltDamage==21f,"boss D5 attack rounding"); Check(instance.GetComponent<ExperienceReward>().XPAmount==960,"boss XP reward"); } finally { UnityEngine.Object.DestroyImmediate(instance); }
-            EditorSceneManager.OpenScene(Phase14Setup.ScenePath); Check(UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.UI.BossHealthBarUI>()!=null,"boss health HUD lifecycle binding exists");
+            EditorSceneManager.OpenScene(Phase14Setup.ScenePath); var hud = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.UI.BossHealthBarUI>(); Check(hud != null && hud.IsFillConfigured && hud.IsPhasePresentationHidden,"boss HUD presents a RectTransform health fill without a phase label");
         }
         private static void VerifyEncounter()
         {

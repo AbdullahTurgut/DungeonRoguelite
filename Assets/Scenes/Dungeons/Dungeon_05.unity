@@ -1146,7 +1146,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &207653444
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1410,7 +1410,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 0}
-  m_Type: 3
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
@@ -1679,7 +1679,7 @@ MonoBehaviour:
   panelRoot: {fileID: 925458336}
   fill: {fileID: 271066989}
   nameLabel: {fileID: 549534342}
-  phaseLabel: {fileID: 207653444}
+  phaseLabel: {fileID: 0}
 --- !u!114 &361120789
 MonoBehaviour:
   m_ObjectHideFlags: 0
