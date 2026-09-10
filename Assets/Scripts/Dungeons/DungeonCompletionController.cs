@@ -42,6 +42,8 @@ namespace DungeonRoguelite.Dungeons
         public bool IsCompletionFinished => isCompletionFinished;
         public bool OffersBlacksmithIntro => isCompletionFinished && PermanentProgression.NeedsBlacksmithIntro &&
             (waveManager != null && waveManager.ActiveDungeon != null ? waveManager.ActiveDungeon.Id : DungeonRunSession.SelectedDungeon?.Id) == "dungeon_5";
+        public bool OffersSecondBlacksmithIntro => isCompletionFinished && PermanentProgression.NeedsSecondBlacksmithIntro &&
+            (waveManager != null && waveManager.ActiveDungeon != null ? waveManager.ActiveDungeon.Id : DungeonRunSession.SelectedDungeon?.Id) == "dungeon_10";
         public DungeonRunSummary FinalSummary => finalSummary;
         public PlayerSpawner PlayerSpawner => playerSpawner;
         public PlayableCharacter ActiveCharacter => activeCharacter;
@@ -409,7 +411,7 @@ namespace DungeonRoguelite.Dungeons
         public void ReturnToWorldMap()
         {
             Time.timeScale = 1f;
-            if (OffersBlacksmithIntro)
+            if (OffersBlacksmithIntro || OffersSecondBlacksmithIntro)
             {
                 if (activeCharacter != null) CharacterSelectionSession.SetSelection(activeCharacter.CharacterDefinition);
                 SceneManager.LoadScene("Hub_Armory");

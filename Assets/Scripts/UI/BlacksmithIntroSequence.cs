@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using DungeonRoguelite.Characters;
 using DungeonRoguelite.Progression;
 using DungeonRoguelite.Weapons;
@@ -19,6 +20,13 @@ namespace DungeonRoguelite.UI
             "Önündeki karanlık için daha sağlam bir silaha ihtiyacın olacak.",
             "Bunu senin için dövdüm. Al; yoluna onunla devam et."
         };
+        [SerializeField, TextArea(2, 3)] private string[] secondMilestoneLines = {
+            "Yeniden hoş geldin. Ocağın ateşi senin için yanıyor.",
+            "Boş Kalenin Muhafızı düştü. Yıldızsız Taht artık sessiz.",
+            "İlk dövdüğüm silah seni buraya taşıdı. Şimdi daha güçlüsünü hak ettin.",
+            "Bu silah zaferinin nişanesi. Al; yeni yollar seni bekliyor."
+        };
+        private string[] activeLines;
         private CharacterDefinition hero;
         private WeaponDefinition reward;
         private Action onReward;
@@ -31,7 +39,10 @@ namespace DungeonRoguelite.UI
 
         public void Begin(CharacterDefinition character, WeaponDefinition weapon, Action refresh)
         {
-            if (!PermanentProgression.NeedsBlacksmithIntro || character == null || weapon == null) return;
+            if (IsRunning || character == null || weapon == null) return;
+            if (weapon.Tier == 1 ? !PermanentProgression.NeedsBlacksmithIntro : weapon.Tier != 2 || !PermanentProgression.NeedsSecondBlacksmithIntro) return;
+            activeLines = weapon.Tier == 2 ? secondMilestoneLines : lines;
+            lineIndex = 0;
             hero = character; reward = weapon; onReward = refresh;
             IsRunning = true;
             if (EventSystem.current != null) EventSystem.current.SetSelectedGameObject(null);
@@ -44,7 +55,7 @@ namespace DungeonRoguelite.UI
             var panel = Rect(rect,"Dialogue",new Vector2(0,-260),new Vector2(1100,320));
             panel.gameObject.AddComponent<Image>().color = new Color(.055f,.065f,.08f,.98f);
             Text(panel,"Speaker","DEMİRCİ",new Vector2(0,115),new Vector2(1000,45),28);
-            dialogue = Text(panel,"Line",lines[0],new Vector2(0,15),new Vector2(1000,145),28);
+            dialogue = Text(panel,"Line",activeLines[0],new Vector2(0,15),new Vector2(1000,145),28);
             var buttonRect = Rect(panel,"Continue",new Vector2(0,-110),new Vector2(400,55));
             var image = buttonRect.gameObject.AddComponent<Image>(); image.color = new Color(.24f,.3f,.36f);
             var button = buttonRect.gameObject.AddComponent<Button>(); button.targetGraphic = image;
@@ -67,16 +78,17 @@ namespace DungeonRoguelite.UI
             if (!IsRunning || Time.unscaledTime < readyAt) return;
             readyAt = Time.unscaledTime + .2f; // A button submit and Enter in the same frame advance only once.
             lineIndex++;
-            if (lineIndex < lines.Length) { dialogue.text = lines[lineIndex]; return; }
-            if (lineIndex == lines.Length)
+            if (lineIndex < activeLines.Length) { dialogue.text = activeLines[lineIndex]; return; }
+            if (lineIndex == activeLines.Length)
             {
-                if (!PermanentProgression.CompleteBlacksmithIntro(hero.Id,reward))
+                var earlier = hero.WeaponCatalog?.Weapons.FirstOrDefault(w => w != null && w.CharacterId == hero.Id && w.Tier == 1);
+                if (!PermanentProgression.CompleteBlacksmithIntro(hero.Id,reward,earlier))
                 {
                     dialogue.text = "Silah teslim edilemedi. Lütfen cephaneliği yeniden ziyaret et.";
                     continueLabel.text = "KAPAT";
                     return;
                 }
-                dialogue.text = hero.DisplayName + "\n" + reward.DisplayName + "\nTier I — ALINDI VE KUŞANILDI";
+                dialogue.text = hero.DisplayName + "\n" + reward.DisplayName + (reward.Tier == 2 ? "\nTier II" : "\nTier I") + " — ALINDI VE KUŞANILDI";
                 continueLabel.text = "CEPHANELİĞE DEVAM";
                 onReward?.Invoke();
                 return;

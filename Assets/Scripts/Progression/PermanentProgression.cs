@@ -37,6 +37,7 @@ namespace DungeonRoguelite.Progression
         {
             public int version = 3;
             public bool firstBlacksmithIntroSeen;
+            public bool secondBlacksmithIntroSeen;
             public List<CharacterProgressionData> characters = new List<CharacterProgressionData>();
         }
 
@@ -57,6 +58,12 @@ namespace DungeonRoguelite.Progression
 
         private static bool isLoaded = false;
         private static bool firstBlacksmithIntroSeen;
+        private static bool secondBlacksmithIntroSeen;
+
+        public static bool NeedsSecondBlacksmithIntro
+        {
+            get { EnsureLoaded(); return !secondBlacksmithIntroSeen && Dungeons.DungeonProgression.IsDungeonCompleted("dungeon_10"); }
+        }
 
         public static bool NeedsBlacksmithIntro
         {
@@ -64,13 +71,19 @@ namespace DungeonRoguelite.Progression
         }
 
         // One save commits the introduction reward, equipped slot and global completion flag.
-        public static bool CompleteBlacksmithIntro(string characterId, Weapons.WeaponDefinition weapon)
+        public static bool CompleteBlacksmithIntro(string characterId, Weapons.WeaponDefinition weapon, Weapons.WeaponDefinition earlierReward = null)
         {
-            if (!NeedsBlacksmithIntro || weapon == null || weapon.Tier != 1 || !CanClaimWeapon(characterId, weapon)) return false;
+            if (weapon == null || !CanClaimWeapon(characterId, weapon)) return false;
+            if (weapon.Tier == 1 ? !NeedsBlacksmithIntro : weapon.Tier != 2 || !NeedsSecondBlacksmithIntro) return false;
+            bool recoverEarlierReward = weapon.Tier == 2 && !firstBlacksmithIntroSeen;
+            if (recoverEarlierReward && (earlierReward == null || earlierReward.Tier != 1 || !CanClaimWeapon(characterId, earlierReward))) return false;
             var data = GetOrAddCharacterData(characterId);
+            // Recover a missed first presentation without duplicates or equipping the older weapon.
+            if (recoverEarlierReward && !IsWeaponClaimed(characterId, earlierReward.Id)) data.claimedWeaponIds.Add(earlierReward.Id);
             if (!IsWeaponClaimed(characterId, weapon.Id)) data.claimedWeaponIds.Add(weapon.Id);
             data.equippedWeaponId = weapon.Id;
             firstBlacksmithIntroSeen = true;
+            if (weapon.Tier == 2) secondBlacksmithIntroSeen = true;
             SaveToPrefs();
             return true;
         }
@@ -96,6 +109,7 @@ namespace DungeonRoguelite.Progression
             characterCache.Clear();
             isLoaded = false;
             firstBlacksmithIntroSeen = false;
+            secondBlacksmithIntroSeen = false;
             OnSkillPurchased = null;
             OnDungeonRewardAwarded = null;
             OnSkillPointsChanged = null;
@@ -116,6 +130,7 @@ namespace DungeonRoguelite.Progression
                     {
                         var data = JsonUtility.FromJson<PermanentSaveData>(json);
                         if (data != null) firstBlacksmithIntroSeen = data.firstBlacksmithIntroSeen;
+                        if (data != null) secondBlacksmithIntroSeen = data.secondBlacksmithIntroSeen;
                         if (data != null && data.characters != null)
                         {
                             foreach (var charData in data.characters)
@@ -147,6 +162,7 @@ namespace DungeonRoguelite.Progression
         {
             var data = new PermanentSaveData();
             data.firstBlacksmithIntroSeen = firstBlacksmithIntroSeen;
+            data.secondBlacksmithIntroSeen = secondBlacksmithIntroSeen;
             data.characters.AddRange(characterCache.Values);
             string json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString(PrefsKey, json);
@@ -484,6 +500,7 @@ namespace DungeonRoguelite.Progression
             characterCache.Clear();
             isLoaded = true;
             firstBlacksmithIntroSeen = false;
+            secondBlacksmithIntroSeen = false;
 
             if (PlayerPrefs.HasKey(PrefsKey))
             {

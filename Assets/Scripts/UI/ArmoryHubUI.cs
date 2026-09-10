@@ -54,10 +54,11 @@ namespace DungeonRoguelite.UI
                 campaignAcknowledgement.text = "YILDIZSIZ TAHT AŞILDI • İLK SEFER TAMAMLANDI • TIER II HAZIR";
             equipmentPanel.SetActive(false);
             SelectCharacter(selectedIndex);
-            if (PermanentProgression.NeedsBlacksmithIntro)
+            if (PermanentProgression.NeedsSecondBlacksmithIntro || PermanentProgression.NeedsBlacksmithIntro)
             {
+                int tier = PermanentProgression.NeedsSecondBlacksmithIntro ? 2 : 1;
                 intro = gameObject.AddComponent<BlacksmithIntroSequence>();
-                intro.Begin(SelectedCharacter, SelectedCharacter.WeaponCatalog.Weapons.FirstOrDefault(w => w != null && w.CharacterId == SelectedCharacter.Id && w.Tier == 1), Refresh);
+                intro.Begin(SelectedCharacter, SelectedCharacter.WeaponCatalog.Weapons.FirstOrDefault(w => w != null && w.CharacterId == SelectedCharacter.Id && w.Tier == tier), Refresh);
             }
         }
 
