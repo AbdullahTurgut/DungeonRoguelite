@@ -2,7 +2,12 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update:
+Last update: 2026-09-11 — Phase 15–19 campaign milestone COMPLETE; final user manual QA GREEN, including D10 Blacksmith Tier II reward flow. D5 Warrior balance is accepted for now; further melee/boss tuning is deferred to Phase 20. Phase 20 is NOT STARTED. Await explicit user direction.
+
+## Historical update log
+
+The entries below retain evidence and instructions from earlier checkpoints; their next-step instructions are superseded by Current Project State.
+
 - D10 Blacksmith verification: Unity compilation succeeded with only the three known legacy TMP CS0618 warnings. One production-scene smoke PASSED: D10 waves/deaths/XP and upgrade resolution, exact L11 52/5767 exit, +3 points, actual return-button transition, Archer Tier II dialogue/reveal/auto-equip, missed Tier I recovery without duplicate IDs, persisted once-only flags, Warrior/Gunner Tier II claim/equip, and Hub reload without replay. Phase12StateSnapshot restored test state. No broad regressions or licensing retries. Next: USER MANUAL QA of the D10 reward presentation and Armory exit/re-entry/app restart; do not push or start Phase 20.
 - Phase 19 gameplay, Hollow Castellan, Tier II and the D5 Warrior spacing patch are user manual QA GREEN. The new D10 Blacksmith presentation is the only pending manual QA task; no push and no Phase 20.
 - D10 Blacksmith polish: after normal XP, upgrade choices and completion finish, the unchanged Haritaya Dön action routes once to Hub_Armory. The existing BlacksmithIntroSequence presents four editable Turkish lines, the existing fade, and the active hero's Tier II reward with automatic claim/equip. An additive `secondBlacksmithIntroSeen` boolean in save v3 commits with ownership/equipment; older saves default to unseen and can receive the sequence on their next eligible Hub visit. A missed Tier I presentation is safely settled in that same transaction by adding only the active hero's missing Tier I weapon, retaining Tier II equipped, and marking the earlier intro seen. Other heroes retain normal free milestone claims. No combat, XP, economy, stat layers, or carousel changes.
@@ -47,7 +52,43 @@ Last update:
 
 # Current Project State
 
-## Status
+## Phase 15–19 campaign milestone — COMPLETE, manual QA GREEN
+
+- Phase 15: existing nine-node trees cost 1/2/2 per branch, 15 points per character. D1–D10 first-clear rewards are 1/1/1/1/2/1/1/2/2/3, character-scoped and replay-idempotent. Save v1 -> v2 grandfathers points, purchases and reward history; legacy D5 receives one future claim.
+- Phase 16: Hub_Armory, selected-character presentation, free milestone weapon claims/equipment, and the once-only D5 Blacksmith Tier I introduction are accepted. Save v2 -> v3 adds per-character equipment. PlayerStats preserves Permanent Skill × Equipped Weapon × Temporary Run layering; Retry/EndRun retain equipment.
+- Phases 17–18: D6–D9 arenas, waves, unlock continuity, progression and Tier I campaign play are manually GREEN. No fifth normal enemy archetype or carousel redesign.
+- Phase 19: D10 / Yıldızsız Taht / The Starless Throne and The Hollow Castellan / Boş Kalenin Muhafızı are manually GREEN. Three warm-up waves contain 80 enemies / 1,200 XP, followed by one 3,800-HP boss worth 2,000 XP. Two phases: cleave and line dash, then faster cadence and a three-shard fan at half HP. No adds or persistent hazards. Shared IBossPresentation HUD uses actual EnemyHealth and one red health bar.
+- D10 grants 3 first-clear skill points per character, global Tier II access and persistent campaign completion, acknowledged in the Hub. Tier II damage/attack-speed multipliers: Warrior 1.18/1.15, Archer 1.16/1.18, Gunner 1.14/1.21; equipment replaces the previous weapon layer.
+- D10 Blacksmith reward sequence (`4af5e5d`) is manually GREEN: XP, upgrade choices and completion resolve before Haritaya Dön routes once to the existing Blacksmith fade/dialogue. The active hero receives/equips Tier II; the normal Armory and return flow continue afterward. Save v3 adds only `secondBlacksmithIntroSeen`, committed with ownership/equipment. Legacy eligible Hub entry is supported; missed Tier I presentation is settled without duplicate ownership or downgrading equipment. Other heroes retain free affinity-scoped claims.
+- D5 Warrior balance (`3cd757c`) is accepted for now: Strike/stop range 2.9m, Strike cooldown 2.1s, recovery 0.85s, telegraph 0.45s. Strike damage, Slam/Bolt, boss HP/XP and Warrior stats remain unchanged. Further melee/boss tuning is deferred to Phase 20 and requires evidence from play.
+
+| Dungeon | Enemies | XP | Campaign exit | First-clear points |
+|---|---:|---:|---|---:|
+| D5 | 19 | 1,200 | L8 68/1709 | 2 |
+| D6 | 55 | 900 | L8 968/1709 | 1 |
+| D7 | 70 | 1,100 | L9 359/2563 | 1 |
+| D8 | 80 | 1,300 | L9 1659/2563 | 2 |
+| D9 | 90 | 1,600 | L10 696/3844 | 2 |
+| D10 | 81 | 3,200 | L11 52/5767 | 3 |
+
+D10 campaign cumulative XP: 11,385. The full fresh-character permanent tree is fundable at D10 (15 points).
+
+## Verification and checkpoints
+
+- Accepted focused automation: Phase15 migration/economy smoke; Phase16 equipment/stat-layer smoke; D5 Blacksmith smoke (9 checks); D6, D7, D8 and D9 real scene lifecycle smokes; D10 boss lifecycle smoke; shared D5 boss HUD (9/9); D5 melee-spacing smoke (7 checks); D10-to-Blacksmith production-scene smoke. Final implementation compilation succeeded with only the three known legacy TMP CS0618 warnings. State snapshots preserved user saves. Presentation and gameplay feel are accepted by user manual QA.
+- Historical Phase 14 reruns still ENVIRONMENT BLOCKED before execution: Phase 12.5 Skill Tree UI, Phase 14 Gate 14.1, and D5 boss lifecycle regression (`Connection to channel LicenseClient-Alcor refused`). These were not passed or retried during sign-off. Gate 14.3 later PASSED. Later focused smokes do not imply those blocked legacy suites ran.
+- Checkpoints: `84d2a5e` Phase 15; `cb48f63` Armory/Tier I; `04bf1a9` D5 Blacksmith; `0f5b9bb` D6/D7; `dfccc7e` D8/D9; `56d4972` D10/Castellan/Tier II; `3cd757c` D5 spacing; `4af5e5d` D10 Blacksmith.
+- Final sign-off changes documentation only. No new Unity execution or broad regression matrix is required for this documentation update.
+
+**NEXT: Phase 20 — First Campaign Stabilization, NOT STARTED. Stop and wait for explicit user direction.** Stabilization is evidence-driven; no automatic D11–D15 expansion or additional tuning in this sign-off.
+
+---
+
+# Historical Phase Records
+
+## Historical Phase 15–19 implementation notes
+
+These checkpoint notes are historical; the final acceptance above supersedes pending-QA and next-phase statements.
 
 **Phase 19 and requested D5 spacing patch implemented — USER MANUAL QA REQUIRED**
 
@@ -109,7 +150,7 @@ Blacksmith verification: compilation succeeded (only the three known legacy TMP 
 
 ---
 
-# Historical Phase Records
+
 
 ## PHASE 12 — Permanent Progression / Skill Tree (COMPLETE)
 

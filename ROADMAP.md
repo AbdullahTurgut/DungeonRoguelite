@@ -326,45 +326,54 @@ Implemented:
 # PHASE 14 — Dungeon 5 + First Boss (COMPLETE)
 
 - Dungeon 5, The Ashen Sanctum / Kül Mabedi, is `dungeon_5`: 1.4x enemy HP, 1.3x enemy damage, three waves, 18 normal enemies plus The Ash Warden / Kül Muhafızı, 19 enemies, and 1,200 XP total.
-- The Ash Warden has 1,200 base HP / 1,680 runtime HP, two phases, no adds, no persistent hazards, and 960 boss XP. D5 reaches Level 8 at 68/1709 from the Level 7, 7/1139 entry state; campaign XP is 3,285 and D5 first-clear permanent reward remains 0.
+- The Ash Warden has 1,200 base HP / 1,680 runtime HP, two phases, no adds, no persistent hazards, and 960 boss XP. D5 reaches Level 8 at 68/1709 from the Level 7, 7/1139 entry state; campaign XP is 3,285. D5 first-clear permanent reward was 0 at Phase 14 sign-off; Phase 15 changes it to 2.
 - The World Map now uses a generic three-card carousel with newest-unlocked focus, locked browsing, Enter gating, bounded button and keyboard navigation, Skill Tree modal safety, and D6+ window support.
 - Final presentation includes the Warrior's 0.12-second visual-only melee slash and a centered boss name with one red RectTransform health fill over a dark empty track; no Phase II label is presented.
 - User manual QA is GREEN. Focused evidence: Boss Health Bar 9/9, Warrior Slash Feedback 8/8, World Map Carousel 525 checks, Phase 10 World Map QA 10/10, and Gate 14.3 PASSED.
 - Final reruns of Phase 12.5 Skill Tree UI, Gate 14.1, and D5 boss lifecycle were blocked before verifier startup by `Connection to channel LicenseClient-Alcor refused`. This is an ENVIRONMENT BLOCKER, not a production result; those suites are not recorded as passed.
 
 ---
-# PHASE 15 — Permanent Progression Rebalance (PLANNED, NOT STARTED)
+# PHASE 15 — Permanent Progression Rebalance (COMPLETE)
 
-Planned goals only:
+- Existing nine-node trees cost 1/2/2 per branch: 15 points per character.
+- First-clear rewards D1–D10: 1/1/1/1/2/1/1/2/2/3. Replays never farm points.
+- Safe v1 -> v2 migration grandfathers purchases/points/history, with one future legacy D5 claim. Focused migration/economy smoke passed.
 
-- Retain the existing 9-node skill trees and change costs to 1 / 2 / 2, totaling 15 points per character tree.
-- Version the permanent-progression save data and migrate existing saves safely.
-- Rebuild the D1-D10 first-clear permanent-point economy.
-- Do not add Hub, Armorer, weapons, or D6-D10 production content in this phase.
+# PHASE 16 — Hub, Armorer and Tier I Weapons (COMPLETE)
 
----
+- Small 3D Hub_Armory, three character displays, deliberate Blacksmith interaction, free D5 milestone weapons and selected-character equipment presentation.
+- D5 once-only Blacksmith introduction automatically claims/equips the active hero's Tier I weapon. Other heroes retain free claims.
+- Additive v2 -> v3 equipment persistence; authoritative stat layering preserves permanent versus temporary state. Focused smoke and user manual QA GREEN.
+
+# PHASE 17 — Dungeons 6 and 7 (COMPLETE)
+
+- D6 / Kırık Geçit: causeway, five waves, 55 enemies / 900 XP, exit L8 968/1709, 1 point.
+- D7 / Çökmüş Sarnıç: central-basin ring, five waves, 70 enemies / 1,100 XP, exit L9 359/2563, 1 point.
+- Production lifecycle smoke and manual campaign QA GREEN.
+
+# PHASE 18 — Dungeons 8 and 9 (COMPLETE)
+
+- D8 / Közlü Avlu: four-obelisk courtyard, five waves, 80 enemies / 1,300 XP, exit L9 1659/2563, 2 points.
+- D9 / Gölge Hisarı: two-lane fortress, six waves, 90 enemies / 1,600 XP, exit L10 696/3844, 2 points.
+- Production lifecycle smoke and manual campaign QA GREEN.
+
+# PHASE 19 — Dungeon 10 and Hollow Castellan (COMPLETE)
+
+- D10 / Yıldızsız Taht: four-pillar throne arena, three warm-up waves followed by Hollow Castellan; 81 enemies / 3,200 XP, exit L11 52/5767, 3 first-clear points.
+- Boss: 2,000 base / 3,800 runtime HP, 2,000 XP, cleave and line dash; Phase II adds faster cadence and a three-projectile shard fan. No adds or persistent hazards. Narrow shared boss HUD contract.
+- Tier II milestone claim/equip, persistent campaign completion, and modest Hub acknowledgement are implemented.
+- Once-only D10 Blacksmith reward sequence follows completed XP/upgrades/victory and the Haritaya Dön action. Active hero's Tier II is revealed and auto-equipped with persistent, duplicate-safe ownership and missed Tier I recovery.
+- D10 gameplay, Hollow Castellan, Tier II and Blacksmith reward flow: user manual QA GREEN. Focused boss and reward-flow smokes passed.
+- D5 Warrior spacing adjustment is accepted for now (2.9m Strike/stop, 2.1s cooldown, 0.85s recovery); further melee/boss tuning is deferred to Phase 20.
+
+# PHASE 20 — First Campaign Stabilization (PLANNED, NOT STARTED)
+
+- Begin only on explicit user instruction after this sign-off.
+- Address evidence-driven campaign feel, readability, balance, UI/Hub usability, persistence or performance issues from manual play.
+- Do not automatically implement every polish category. No D11–D15, Tier III, loot/inventory/crafting systems, final art pipeline or generic frameworks.
 
 # Current Priority
 
-Unless `PROJECT_STATUS.md` says otherwise:
+Phases 0–19 are implemented and accepted. The Phase 15–19 campaign milestone is manually GREEN, including the D10 Blacksmith Tier II reward flow. Stop before Phase 20.
 
-```text
-Phase 0–7 (Core Vertical Slice)              -> COMPLETED
-    ↓
-Phase 8 (Character System)                    -> COMPLETED
-    ↓
-Phase 9 (Dungeon Progression)                 -> COMPLETED
-    ↓
-Phase 10 (Campaign Run Progression & Scaling) -> COMPLETED (Manual QA GREEN)
-    ↓
-Phase 11 (Combat & Enemy Variety)             -> COMPLETED (Manual QA ALL GREEN)
-    ↓
-Phase 12 (Permanent Progression / Skill Tree) -> COMPLETED (Manual QA ALL GREEN)
-    ↓
-Phase 13 (Dungeon 4 + Encounter Design)       -> COMPLETED (Manual QA GREEN)
-    ↓
-Phase 14 (Dungeon 5 + First Boss)              -> COMPLETED (Manual QA GREEN)
-```
-
-Milestones 0 through 13 and Phase 14 are implemented and signed off.
-Next task: Phase 15 (Permanent Progression Rebalance) — planned only, not started.
+Historical automation caveat: Phase 14 final reruns of Phase 12.5 Skill Tree UI, Gate 14.1 and D5 boss lifecycle remain environment-blocked before execution by Unity licensing IPC. They are not recorded as passed; Gate 14.3 later passed. See PROJECT_STATUS.md for focused evidence and checkpoint history.
