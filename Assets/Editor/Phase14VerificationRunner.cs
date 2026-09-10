@@ -3,6 +3,8 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 using DungeonRoguelite.Dungeons;
 using DungeonRoguelite.Enemies;
 using DungeonRoguelite.Experience;
@@ -50,7 +52,7 @@ namespace DungeonRoguelite.Editor
         private static void VerifyBoss()
         {
             var prefab=AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/AshWarden.prefab"); Check(prefab!=null && prefab.GetComponent<BossWardenController>()!=null,"boss prefab and dedicated controller"); var instance=UnityEngine.Object.Instantiate(prefab); try { var health=instance.GetComponent<EnemyHealth>(); health.InitializeHealth(1.4f); var boss=instance.GetComponent<BossWardenController>(); boss.InitializeAttack(1.3f); Check(health.MaxHealth==1680f,"boss D5 runtime health scaling"); Check(boss.StrikeDamage==26f && boss.SlamDamage==42f && boss.BoltDamage==21f,"boss D5 attack rounding"); Check(instance.GetComponent<ExperienceReward>().XPAmount==960,"boss XP reward"); } finally { UnityEngine.Object.DestroyImmediate(instance); }
-            EditorSceneManager.OpenScene(Phase14Setup.ScenePath); var hud = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.UI.BossHealthBarUI>(); Check(hud != null && hud.IsFillConfigured && hud.IsPhasePresentationHidden,"boss HUD presents a RectTransform health fill without a phase label");
+            EditorSceneManager.OpenScene(Phase14Setup.ScenePath); var hud = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.UI.BossHealthBarUI>(); Check(hud != null && hud.IsFillConfigured && hud.IsPhasePresentationHidden,"boss HUD presents a RectTransform health fill without a phase label"); VerifyBossHudLayout(hud);
         }
         private static void VerifyEncounter()
         {
@@ -72,6 +74,32 @@ namespace DungeonRoguelite.Editor
             }
         }
         private static bool Near(Vector3 a,Vector3 b)=>Vector3.Distance(a,b)<.01f;
+        private static void VerifyBossHudLayout(DungeonRoguelite.UI.BossHealthBarUI hud)
+        {
+            var serialized = new SerializedObject(hud);
+            var panel = serialized.FindProperty("panelRoot").objectReferenceValue as GameObject;
+            var fill = serialized.FindProperty("fill").objectReferenceValue as Image;
+            var name = serialized.FindProperty("nameLabel").objectReferenceValue as TMP_Text;
+            var scaler = hud.GetComponent<CanvasScaler>();
+            var xp = GameObject.Find("ExperienceHUD")?.GetComponent<RectTransform>();
+            var panelRect = panel != null ? panel.GetComponent<RectTransform>() : null;
+            var nameRect = name != null ? name.rectTransform : null;
+            bool anchoredUnit = panelRect != null && panelRect.anchorMin == new Vector2(.5f, 1f) && panelRect.anchorMax == new Vector2(.5f, 1f) &&
+                panelRect.pivot == new Vector2(.5f, 1f) && panelRect.anchoredPosition == new Vector2(0f, -178f) && panelRect.sizeDelta == new Vector2(600f, 26f) &&
+                nameRect != null && nameRect.anchorMin == new Vector2(0f, 1f) && nameRect.anchorMax == new Vector2(1f, 1f) &&
+                nameRect.pivot == new Vector2(.5f, 0f) && nameRect.anchoredPosition == new Vector2(0f, 8f) && nameRect.sizeDelta == new Vector2(0f, 38f) && name.alignment == TextAlignmentOptions.Center;
+            bool responsive = scaler != null && scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize &&
+                scaler.referenceResolution == new Vector2(1920f, 1080f) && Mathf.Approximately(scaler.matchWidthOrHeight, .5f);
+            float xpBottom = xp != null ? 1080f + xp.anchoredPosition.y - xp.sizeDelta.y : float.PositiveInfinity;
+            float bossNameTop = panelRect != null && nameRect != null ? 1080f + panelRect.anchoredPosition.y + nameRect.anchoredPosition.y + nameRect.sizeDelta.y : float.NegativeInfinity;
+            var track = panel != null ? panel.GetComponent<Image>() : null;
+            bool singleBar = panel != null && panel.transform.childCount == 2 && fill != null && fill.transform.parent == panel.transform &&
+                fill.color.r > .8f && fill.color.g < .1f && fill.color.b < .1f && name != null && name.gameObject.activeSelf &&
+                name.transform.parent == panel.transform && track != null && track.color.r < .1f && track.color.g < .1f && track.color.b < .1f &&
+                panel.transform.Find("Phase") == null;
+            Check(anchoredUnit && responsive && bossNameTop <= xpBottom - 40f && singleBar,
+                "boss HUD is a centered name-and-single-bar unit below the player XP HUD at 1280x720 and 1920x1080");
+        }
         private static void Check(bool value,string name){if(!value)throw new InvalidOperationException("[CHECK FAILED] "+name);Debug.Log("[CHECK PASSED] "+name);}
     }
 }

@@ -136,32 +136,75 @@ namespace DungeonRoguelite.Editor
             if(existing!=null)
             {
                 var existingSerialized = new SerializedObject(existing);
-                var existingFill = existingSerialized.FindProperty("fill").objectReferenceValue as Image;
-                if (existingFill != null)
-                {
-                    existingFill.type = Image.Type.Simple;
-                    var existingFillRect = existingFill.rectTransform;
-                    existingFillRect.anchorMin = Vector2.zero;
-                    existingFillRect.anchorMax = Vector2.one;
-                    existingFillRect.offsetMin = Vector2.zero;
-                    existingFillRect.offsetMax = Vector2.zero;
-                    EditorUtility.SetDirty(existingFill);
-                }
                 var existingPhase = existingSerialized.FindProperty("phaseLabel").objectReferenceValue as TMP_Text;
                 if (existingPhase != null)
                 {
                     existingPhase.text = string.Empty;
                     Object.DestroyImmediate(existingPhase.gameObject);
                     existingSerialized.FindProperty("phaseLabel").objectReferenceValue = null;
-                    existingSerialized.ApplyModifiedPropertiesWithoutUndo();
                 }
+                existingSerialized.ApplyModifiedPropertiesWithoutUndo();
+                ConfigureBossHudLayout(existing, existingSerialized);
                 return;
             }
             var canvasGo=new GameObject("BossHealthHUD",typeof(Canvas),typeof(CanvasScaler),typeof(GraphicRaycaster)); var canvas=canvasGo.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=20;
-            var panel=new GameObject("Panel",typeof(RectTransform),typeof(Image));panel.transform.SetParent(canvasGo.transform,false);var rect=panel.GetComponent<RectTransform>();rect.anchorMin=new Vector2(.25f,.9f);rect.anchorMax=new Vector2(.75f,.96f);rect.offsetMin=rect.offsetMax=Vector2.zero;panel.GetComponent<Image>().color=new Color(0,0,0,.7f);
+            var panel=new GameObject("Panel",typeof(RectTransform),typeof(Image));panel.transform.SetParent(canvasGo.transform,false);
             var fillGo=new GameObject("Fill",typeof(RectTransform),typeof(Image));fillGo.transform.SetParent(panel.transform,false);var fill=fillGo.GetComponent<Image>();fill.type=Image.Type.Simple;fill.color=Color.red;var fillRect=fillGo.GetComponent<RectTransform>();fillRect.anchorMin=Vector2.zero;fillRect.anchorMax=Vector2.one;fillRect.offsetMin=fillRect.offsetMax=Vector2.zero;
             var labelGo=new GameObject("Name",typeof(RectTransform),typeof(TextMeshProUGUI));labelGo.transform.SetParent(panel.transform,false);var label=labelGo.GetComponent<TextMeshProUGUI>();label.alignment=TextAlignmentOptions.Center;label.fontSize=28;var labelRect=labelGo.GetComponent<RectTransform>();labelRect.anchorMin=new Vector2(0,1);labelRect.anchorMax=new Vector2(1,1);labelRect.anchoredPosition=new Vector2(0,26);labelRect.sizeDelta=new Vector2(0,36);
-            var hud=canvasGo.AddComponent<BossHealthBarUI>();var so=new SerializedObject(hud);so.FindProperty("panelRoot").objectReferenceValue=panel;so.FindProperty("fill").objectReferenceValue=fill;so.FindProperty("nameLabel").objectReferenceValue=label;so.ApplyModifiedPropertiesWithoutUndo();
+            var hud=canvasGo.AddComponent<BossHealthBarUI>();var so=new SerializedObject(hud);so.FindProperty("panelRoot").objectReferenceValue=panel;so.FindProperty("fill").objectReferenceValue=fill;so.FindProperty("nameLabel").objectReferenceValue=label;so.ApplyModifiedPropertiesWithoutUndo(); ConfigureBossHudLayout(hud, so);
+        }
+
+        private static void ConfigureBossHudLayout(BossHealthBarUI hud, SerializedObject serialized)
+        {
+            var canvas = hud.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 20;
+            var scaler = hud.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = .5f;
+
+            var panel = serialized.FindProperty("panelRoot").objectReferenceValue as GameObject;
+            var fill = serialized.FindProperty("fill").objectReferenceValue as Image;
+            var name = serialized.FindProperty("nameLabel").objectReferenceValue as TMP_Text;
+            if (panel == null || fill == null || name == null) return;
+
+            var panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(.5f, 1f);
+            panelRect.anchorMax = new Vector2(.5f, 1f);
+            panelRect.pivot = new Vector2(.5f, 1f);
+            panelRect.anchoredPosition = new Vector2(0f, -178f);
+            panelRect.sizeDelta = new Vector2(600f, 26f);
+
+            var track = panel.GetComponent<Image>();
+            track.color = new Color(.05f, .04f, .04f, .8f);
+            var fillRect = fill.rectTransform;
+            fill.type = Image.Type.Simple;
+            fill.color = new Color(.9f, .05f, .05f, 1f);
+            fillRect.anchorMin = Vector2.zero;
+            fillRect.anchorMax = Vector2.one;
+            fillRect.offsetMin = Vector2.zero;
+            fillRect.offsetMax = Vector2.zero;
+
+            var nameRect = name.rectTransform;
+            nameRect.anchorMin = new Vector2(0f, 1f);
+            nameRect.anchorMax = new Vector2(1f, 1f);
+            nameRect.pivot = new Vector2(.5f, 0f);
+            nameRect.anchoredPosition = new Vector2(0f, 8f);
+            nameRect.sizeDelta = new Vector2(0f, 38f);
+            name.alignment = TextAlignmentOptions.Center;
+            name.fontSize = 30f;
+            name.color = Color.white;
+
+            var legacyPhase = panel.transform.Find("Phase");
+            if (legacyPhase != null) Object.DestroyImmediate(legacyPhase.gameObject);
+            serialized.FindProperty("phaseLabel").objectReferenceValue = null;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(hud);
+            EditorUtility.SetDirty(panel);
+            EditorUtility.SetDirty(fill);
+            EditorUtility.SetDirty(name);
         }
     }
 }
