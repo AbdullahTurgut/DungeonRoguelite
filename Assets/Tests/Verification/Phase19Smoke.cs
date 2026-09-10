@@ -66,7 +66,7 @@ namespace DungeonRoguelite.Tests
                     if(boss!=null)continue;
                     boss=candidate;bossHealth=enemy;
                     Check(defeated==80 && waves.CurrentWaveIndex==3 && enemy.MaxHealth==3800 && enemy.GetComponent<ExperienceReward>().XPAmount==2000,"warm-ups then one correctly scaled boss");
-                    Check(hud.BoundHealth==enemy && hud.BoundBoss==boss && hud.DisplayedHealthRatio==1,"shared boss HUD full binding");
+                    Check(hud.BoundHealth==enemy && ReferenceEquals(hud.BoundBoss,boss) && hud.DisplayedHealthRatio==1,"shared boss HUD full binding");
                     Move(boss.transform,new Vector3(0,0,0));Move(experience.transform,new Vector3(0,0,3));
                     boss.OnAttackExecuted+=attack=>{if(attack=="Cleave")cleaves++;if(attack=="Dash")dashes++;if(attack=="Fan"){fans++;Check(FindObjectsByType<EnemyProjectile>(FindObjectsSortMode.None).Length==3,"three shard fan");}};
                 }

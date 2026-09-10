@@ -243,11 +243,13 @@ MonoBehaviour:
   phaseOneMoveSpeed: 2.6
   phaseTwoMoveSpeed: 3.1
   engagementRange: 16
-  meleeRange: 3.4
+  meleeRange: 2.9
+  slamTriggerRange: 3.4
   strikeDamage: 20
   slamDamage: 32
   boltDamage: 16
-  strikeCooldown: 1.6
+  strikeCooldown: 2.1
+  strikeRecovery: 0.85
   slamCooldown: 5
   boltCooldown: 3.5
   projectilePrefab: {fileID: 1125663049360119359, guid: 62bc9eda12f2cff4882cd47d73dbdcfb, type: 3}

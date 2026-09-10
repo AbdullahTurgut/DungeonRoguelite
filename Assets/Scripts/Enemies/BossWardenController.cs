@@ -17,12 +17,14 @@ namespace DungeonRoguelite.Enemies
         [SerializeField] private float phaseOneMoveSpeed = 2.6f;
         [SerializeField] private float phaseTwoMoveSpeed = 3.1f;
         [SerializeField] private float engagementRange = 16f;
-        [SerializeField] private float meleeRange = 3.4f;
+        [SerializeField] private float meleeRange = 2.9f;
+        [SerializeField] private float slamTriggerRange = 3.4f;
         [Header("Attacks")]
         [SerializeField] private float strikeDamage = 20f;
         [SerializeField] private float slamDamage = 32f;
         [SerializeField] private float boltDamage = 16f;
-        [SerializeField] private float strikeCooldown = 1.6f;
+        [SerializeField] private float strikeCooldown = 2.1f;
+        [SerializeField] private float strikeRecovery = .85f;
         [SerializeField] private float slamCooldown = 5f;
         [SerializeField] private float boltCooldown = 3.5f;
         [SerializeField] private EnemyProjectile projectilePrefab;
@@ -72,7 +74,7 @@ namespace DungeonRoguelite.Enemies
             var delta = target.position - transform.position; delta.y = 0f;
             float distance = delta.magnitude;
             if (distance > engagementRange) { Move(delta); return; }
-            if (distance <= meleeRange && Time.time >= nextSlam)
+            if (distance <= slamTriggerRange && Time.time >= nextSlam)
                 StartCoroutine(SlamRoutine());
             else if (distance <= meleeRange && Time.time >= nextStrike)
                 StartCoroutine(StrikeRoutine());
@@ -84,7 +86,7 @@ namespace DungeonRoguelite.Enemies
         private void Move(Vector3 delta)
         {
             State = BossWardenState.Chase;
-            if (delta.sqrMagnitude < .01f) return;
+            if (delta.sqrMagnitude <= meleeRange * meleeRange) return;
             transform.rotation = Quaternion.RotateTowards(transform.rotation, Quaternion.LookRotation(delta.normalized, Vector3.up), 540f * Time.deltaTime);
             controller.Move(delta.normalized * (phaseTwo ? phaseTwoMoveSpeed : phaseOneMoveSpeed) * Time.deltaTime + Vector3.down * 2f * Time.deltaTime);
         }
@@ -94,7 +96,7 @@ namespace DungeonRoguelite.Enemies
             acting = true; State = BossWardenState.Telegraph; OnTelegraphStarted?.Invoke("Strike"); SetTelegraph(true, new Color(1f, .2f, .1f));
             yield return new WaitForSeconds(.45f); State = BossWardenState.Execute; SetTelegraph(false, Color.white);
             DealIfInRange(meleeRange, strikeDamage); nextStrike = Time.time + strikeCooldown;
-            State = BossWardenState.Recovery; yield return new WaitForSeconds(.8f); acting = false; State = BossWardenState.Engage;
+            State = BossWardenState.Recovery; yield return new WaitForSeconds(strikeRecovery); acting = false; State = BossWardenState.Engage;
         }
 
         private IEnumerator SlamRoutine()

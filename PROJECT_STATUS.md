@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 19 checkpoint `56d4972` is complete locally and awaits manual QA. Shared D5 boss HUD regression passed 9/9. The requested separate D5 spacing patch is implemented and its focused real-melee smoke passed 7 checks; final feel remains user QA. No push and no Phase 20.
 - Phase 19 implemented after Phase 18 manual QA GREEN: Dungeon 10, Hollow Castellan, shared boss HUD identity contract, Tier II claim/equip and campaign-completion acknowledgement. D10 lifecycle smoke passed. A separately requested D5 Warrior-spacing patch is next before final manual QA handoff; do not begin Phase 20 or push.
 - Phase 18 implemented after Phase 17 manual QA GREEN. D8 was completed and passed its actual scene lifecycle before D9 was authored and tested. Both focused smoke paths passed; Phase 18 awaits user manual QA. No push; Phase 19 not started.
 - Phase 17 implemented after Phase 16 Blacksmith manual QA GREEN (`04bf1a9`). D6 was built and passed a real scene lifecycle before D7 was built. D6 and D7 content/lifecycle smoke checks both passed; new arena gameplay requires manual QA before expanding to Phase 18. No push.
@@ -45,7 +46,9 @@ Last update:
 
 ## Status
 
-**Phase 19 implemented — manual QA required; requested D5 spacing patch pending**
+**Phase 19 and requested D5 spacing patch implemented — USER MANUAL QA REQUIRED**
+
+D5 patch: Ash Warden Strike range and explicit movement stop distance are 2.9m; Strike cooldown 2.1s; recovery 0.85s (repository recovery was 0.8s, not 0.65s). The shared old melee range was split so Slam retains its original 3.4m trigger range. Strike telegraph remains 0.45s; all damage, Slam/Bolt routines and cadence, phase threshold, HP, XP, encounter and progression remain unchanged. Warrior stats/range and D10 balance are untouched by this patch. WardenSpacingSmoke passed 7 checks: normal Strike startup, evasion, unchanged Warrior attack configuration, two actual 25-damage melee hits during recovery, damage for staying close, Phase II, and 960 boss XP on death. That timing check isolates Strike by delaying the other attacks only in the harness; mixed-attack punish windows and feel require manual Warrior/Archer/Gunner QA. Compilation succeeded with only the existing TMP warnings; state restored. D10 lifecycle and the shared D5 HUD 9/9 checks were already GREEN before this separate patch.
 
 - D10 / Yıldızsız Taht / The Starless Throne: 44x36m arena with four substantial pillars, D9 prerequisite, HP x1.90 / damage x1.55. Warm-ups are 20/220, 26/380, 34/600 (enemies/XP), then one Hollow Castellan. Total 81 enemies / 3,200 XP. Campaign L10 696/3844 -> L11 52/5767, cumulative XP 11,385. First clear grants 3 character-scoped points exactly once.
 - The Hollow Castellan / Boş Kalenin Muhafızı uses a distinct angular statue/armor placeholder, 2,000 base / 3,800 runtime HP, and 2,000 XP. Two phases only: speed 3.0 -> 3.4 at <=50% real HP. Phase I: 120-degree cleave (base 24), locked-direction line dash (base 32). Phase II retains those with faster cadence and adds a telegraphed three-shard fan (base 12 each). D10 scaled damage rounds to 37/50/19. Pillars stop dash movement and obstruct attacks/projectiles. No adds, persistent hazards, or generic boss framework.

@@ -75,7 +75,7 @@ namespace DungeonRoguelite.Tests
 
             var firstBoss = GetOnlyBoss(manager);
             var firstHealth = firstBoss.GetComponent<EnemyHealth>();
-            Check(hud.BoundHealth == firstHealth && hud.BoundBoss == firstBoss && hud.IsVisible,
+            Check(hud.BoundHealth == firstHealth && ReferenceEquals(hud.BoundBoss, firstBoss) && hud.IsVisible,
                 "Boss HUD binds once through WaveManager.OnEnemySpawned");
             Check(Approximately(hud.DisplayedHealthRatio, 1f), "Boss spawn displays full real health ratio");
 
@@ -101,7 +101,7 @@ namespace DungeonRoguelite.Tests
             yield return new WaitForSeconds(.1f);
             var retryBoss = GetOnlyBoss(manager);
             var retryHealth = retryBoss.GetComponent<EnemyHealth>();
-            Check(retryHealth != firstHealth && hud.BoundHealth == retryHealth && hud.BoundBoss == retryBoss && hud.IsVisible &&
+            Check(retryHealth != firstHealth && hud.BoundHealth == retryHealth && ReferenceEquals(hud.BoundBoss, retryBoss) && hud.IsVisible &&
                 Approximately(hud.DisplayedHealthRatio, 1f), "Fresh retry boss binds once and starts at full health");
         }
 
