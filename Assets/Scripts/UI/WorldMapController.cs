@@ -44,6 +44,20 @@ namespace DungeonRoguelite.UI
         [Tooltip("Overlay controller for the permanent skill tree.")]
         [SerializeField] private SkillTreeUI skillTreePanel;
 
+        [Header("Carousel")]
+        [SerializeField] private RectTransform cardsContainer;
+        [SerializeField] private Button leftNavigationButton;
+        [SerializeField] private Button rightNavigationButton;
+        public const int VisibleCapacity = 3;
+        private int focusedIndex = -1;
+
+        public int FocusedIndex => focusedIndex;
+        public int WindowStart => Mathf.Clamp(focusedIndex - 1, 0, Mathf.Max(0, (dungeonCatalog != null ? dungeonCatalog.Count : 0) - VisibleCapacity));
+        public RectTransform CardsContainer => cardsContainer;
+        public Button LeftNavigationButton => leftNavigationButton;
+        public Button RightNavigationButton => rightNavigationButton;
+        private bool IsInputBlocked => isTransitioning || (skillTreePanel != null && skillTreePanel.IsOpen);
+
         private DungeonDefinition selectedDungeon;
         private bool isTransitioning = false;
 
@@ -123,7 +137,7 @@ namespace DungeonRoguelite.UI
                         {
                             var def = dungeonCatalog[i];
                             bool unlocked = DungeonProgression.IsDungeonUnlocked(def);
-                            bool completed = DungeonProgression.IsDungeonCompleted(def.Id);
+                            bool completed = def != null && DungeonProgression.IsDungeonCompleted(def.Id);
 
                             cards[i].gameObject.SetActive(true);
                             cards[i].Bind(def, unlocked, completed);
@@ -137,31 +151,23 @@ namespace DungeonRoguelite.UI
                 }
             }
 
-            // Reposition cards in a clean, readable horizontal row
-            ApplyHorizontalCardLayout();
-
-            // Default local selection: prioritize previously selected dungeon if unlocked, else first unlocked
-            DungeonDefinition defaultToSelect = null;
-            if (DungeonRunSession.HasSelection && DungeonRunSession.SelectedDungeon != null && DungeonProgression.IsDungeonUnlocked(DungeonRunSession.SelectedDungeon))
+            // Initialization focuses the newest unlocked entry. Browsing never commits a run selection.
+            focusedIndex = dungeonCatalog != null && dungeonCatalog.Count > 0 ? 0 : -1;
+            if (dungeonCatalog != null)
             {
-                defaultToSelect = DungeonRunSession.SelectedDungeon;
-            }
-            else if (dungeonCatalog != null && dungeonCatalog.Count > 0)
-            {
-                for (int i = 0; i < dungeonCatalog.Count; i++)
+                for (int i = dungeonCatalog.Count - 1; i >= 0; i--)
                 {
                     if (dungeonCatalog[i] != null && DungeonProgression.IsDungeonUnlocked(dungeonCatalog[i]))
                     {
-                        defaultToSelect = dungeonCatalog[i];
+                        focusedIndex = i;
                         break;
                     }
                 }
             }
 
-            if (defaultToSelect != null)
-            {
-                SelectDungeonLocally(defaultToSelect);
-            }
+            RefreshCarousel();
+            if (leftNavigationButton != null) leftNavigationButton.onClick.AddListener(NavigateLeft);
+            if (rightNavigationButton != null) rightNavigationButton.onClick.AddListener(NavigateRight);
 
             // Wire navigation buttons
             if (enterDungeonButton != null)
@@ -190,6 +196,8 @@ namespace DungeonRoguelite.UI
 
         private void UnbindEvents()
         {
+            if (leftNavigationButton != null) leftNavigationButton.onClick.RemoveListener(NavigateLeft);
+            if (rightNavigationButton != null) rightNavigationButton.onClick.RemoveListener(NavigateRight);
             if (cards != null)
             {
                 foreach (var card in cards)
@@ -222,33 +230,35 @@ namespace DungeonRoguelite.UI
         /// </summary>
         public void SelectDungeonLocally(DungeonDefinition dungeon)
         {
-            if (dungeon == null || !DungeonProgression.IsDungeonUnlocked(dungeon))
+            if (dungeon == null || dungeonCatalog == null || IsInputBlocked)
             {
                 return;
             }
 
-            selectedDungeon = dungeon;
-
-            if (cards != null)
+            for (int i = 0; i < dungeonCatalog.Count; i++)
             {
-                foreach (var card in cards)
+                if (dungeonCatalog[i] == dungeon)
                 {
-                    if (card != null)
-                    {
-                        card.SetSelected(card.BoundDungeon == selectedDungeon);
-                    }
+                    focusedIndex = i;
+                    RefreshCarousel();
+                    return;
                 }
             }
+        }
 
-            if (enterDungeonButton != null)
-            {
-                enterDungeonButton.interactable = true;
-            }
+        public void NavigateLeft() => MoveFocus(-1);
+        public void NavigateRight() => MoveFocus(1);
+
+        private void MoveFocus(int direction)
+        {
+            if (IsInputBlocked || dungeonCatalog == null || dungeonCatalog.Count == 0) return;
+            focusedIndex = Mathf.Clamp(focusedIndex + direction, 0, dungeonCatalog.Count - 1);
+            RefreshCarousel();
         }
 
         private void HandleCardClicked(WorldMapCard card)
         {
-            if (card != null && card.IsUnlocked && card.BoundDungeon != null)
+            if (card != null && card.gameObject.activeInHierarchy && card.BoundDungeon != null)
             {
                 SelectDungeonLocally(card.BoundDungeon);
             }
@@ -259,7 +269,7 @@ namespace DungeonRoguelite.UI
         /// </summary>
         public void HandleEnterDungeonClicked()
         {
-            if (isTransitioning)
+            if (IsInputBlocked)
             {
                 return;
             }
@@ -288,7 +298,7 @@ namespace DungeonRoguelite.UI
         /// </summary>
         public void HandleBackClicked()
         {
-            if (isTransitioning)
+            if (IsInputBlocked)
             {
                 return;
             }
@@ -302,6 +312,7 @@ namespace DungeonRoguelite.UI
         /// </summary>
         public void HandleSkillTreeClicked()
         {
+            if (IsInputBlocked) return;
             if (skillTreePanel != null)
             {
                 CharacterDefinition hero = CharacterSelectionSession.HasSelection && CharacterSelectionSession.SelectedCharacter != null
@@ -335,7 +346,7 @@ namespace DungeonRoguelite.UI
 
             if (cardList.Count > 0 && cardList.Count < dungeonCatalog.Count)
             {
-                Transform parentTransform = cardList[0].transform.parent;
+                Transform parentTransform = cardsContainer != null ? cardsContainer : cardList[0].transform.parent;
                 WorldMapCard template = cardList[0];
 
                 for (int i = cardList.Count; i < dungeonCatalog.Count; i++)
@@ -350,49 +361,48 @@ namespace DungeonRoguelite.UI
                     }
                 }
 
-                cards = cardList.ToArray();
             }
+            cards = cardList.ToArray();
+            if (cardsContainer != null)
+                foreach (var card in cards)
+                    if (card.transform.parent != cardsContainer) card.transform.SetParent(cardsContainer, false);
         }
 
-        private void ApplyHorizontalCardLayout()
+        private void RefreshCarousel()
         {
-            if (cards == null || cards.Length == 0) return;
-
-            int activeCount = 0;
-            for (int i = 0; i < cards.Length; i++)
+            int count = dungeonCatalog != null ? dungeonCatalog.Count : 0;
+            int visibleCount = Mathf.Min(VisibleCapacity, count);
+            selectedDungeon = focusedIndex >= 0 && focusedIndex < count ? dungeonCatalog[focusedIndex] : null;
+            if (enterDungeonButton != null)
+                enterDungeonButton.interactable = !isTransitioning && DungeonProgression.IsDungeonUnlocked(selectedDungeon);
+            if (leftNavigationButton != null) leftNavigationButton.interactable = !isTransitioning && focusedIndex > 0;
+            if (rightNavigationButton != null) rightNavigationButton.interactable = !isTransitioning && focusedIndex >= 0 && focusedIndex < count - 1;
+            if (cards == null) return;
+            for (int i = 0; i < cards.Length; ++i)
             {
-                if (cards[i] != null && cards[i].gameObject.activeSelf)
-                {
-                    activeCount++;
-                }
-            }
-
-            if (activeCount == 0) return;
-
-            // Spacing calculations for 1920 reference resolution (scaled cleanly to 1280x720)
-            // For 5 cards: width = 330, spacing = 360, positions: -720, -360, 0, +360, +720
-            // For 4 cards: width = 380, spacing = 420, positions: -630, -210, +210, +630
-            // For 3 cards: width = 440, spacing = 500, positions: -500, 0, +500
-            // For 2 cards: width = 460, spacing = 560, positions: -280, +280
-            // For 1 card: width = 460, position: 0
-            float cardWidth = activeCount >= 5 ? 330f : (activeCount == 4 ? 380f : (activeCount == 3 ? 440f : 460f));
-            float spacing = activeCount >= 5 ? 360f : (activeCount == 4 ? 420f : (activeCount == 3 ? 500f : (activeCount == 2 ? 560f : 0f)));
-            float startX = -((activeCount - 1) * spacing) / 2f;
-
-            int currentIndex = 0;
-            for (int i = 0; i < cards.Length; i++)
-            {
-                if (cards[i] != null && cards[i].gameObject.activeSelf)
+                if (cards[i] == null) continue;
+                bool visible = i >= WindowStart && i < WindowStart + visibleCount && cards[i].BoundDungeon != null;
+                cards[i].gameObject.SetActive(visible);
+                cards[i].SetSelected(i == focusedIndex && selectedDungeon != null);
+                if (visible)
                 {
                     var rect = cards[i].GetComponent<RectTransform>();
                     if (rect != null)
                     {
-                        rect.sizeDelta = new Vector2(cardWidth, 450f);
-                        rect.anchoredPosition = new Vector2(startX + currentIndex * spacing, 30f);
+                        rect.sizeDelta = new Vector2(440f, 450f);
+                        rect.anchoredPosition = new Vector2((i - WindowStart - (visibleCount - 1) * .5f) * 500f, 20f);
                     }
-                    currentIndex++;
                 }
             }
+        }
+
+        public void SetCarouselReferences(RectTransform container, Button left, Button right)
+        {
+            if (leftNavigationButton != null) leftNavigationButton.onClick.RemoveListener(NavigateLeft);
+            if (rightNavigationButton != null) rightNavigationButton.onClick.RemoveListener(NavigateRight);
+            cardsContainer = container;
+            leftNavigationButton = left;
+            rightNavigationButton = right;
         }
 
         public void SetReferences(

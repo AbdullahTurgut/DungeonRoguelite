@@ -413,6 +413,12 @@ namespace DungeonRoguelite.Editor
         public static void SetupGate9_4()
         {
             Debug.Log("[Milestone 9.4 Setup] Configuring DungeonCatalog, WorldMap scene, and Build Settings...");
+            // Existing campaigns must not be rebuilt by the legacy three-dungeon bootstrap.
+            if (File.Exists(WorldMapScenePath))
+            {
+                WorldMapCarouselSetup.Run();
+                return;
+            }
             EnsureDirectories();
 
             // 1. Create or update DungeonCatalog.asset
@@ -520,6 +526,7 @@ namespace DungeonRoguelite.Editor
             sMap.FindProperty("titleText").objectReferenceValue = titleTMP;
             sMap.ApplyModifiedProperties();
 
+            WorldMapCarouselSetup.Apply(mapController);
             EditorSceneManager.SaveScene(mapScene, WorldMapScenePath);
 
             // 4. Update Build Settings registration & order

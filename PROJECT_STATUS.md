@@ -3,6 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
+- Phase 14 World Map carousel/UI checkpoint (2026-09-10): Automated GREEN. The World Map now presents the five-dungeon campaign in a responsive three-card carousel with locked-dungeon inspection, left/right navigation, newest-unlocked focus, and selection that commits only when entering a dungeon. The Skill Tree overlay remains the final Canvas sibling, blocks carousel/map input while open, and preserves the exact focus/window state on close. Added idempotent scene authoring and a 521-check runtime UI verifier. Carousel verification (521 checks), Gate 14.1 foundation, Gate 14.5 campaign progression, and Phase 12.5 Skill Tree UI regression (131 checks) are GREEN. Phase 14 remains in progress; remaining final Phase 14 sign-off and manual gameplay QA are next.
 - Phase 13 Final Sign-off (2026-09-09): Phase 13 is COMPLETE. Gates 13.1–13.5, the 2129/2129 final regression matrix, the D4 Wave 1 -> Wave 2 runtime regression (3/3), and user manual gameplay QA are GREEN. Dungeon 4, The Colonnade / Bölüm 4: Sütunlu Salon, has a 36m x 28m four-pillar arena, six spawn points, four waves (45 enemies / 705 XP), 1.3x HP and 1.2x damage scaling, and a character-scoped 3-point first-clear reward. Campaign reaches Level 7 during D4 (entry Level 6, 61/759; end Level 7, 7/1139). Manual-QA geometry, wave configuration, and Skill Tree overlay issues are resolved. Phase 14 (Dungeon 5 + First Boss) is NEXT.
 - Phase 13 final manual-QA UI recovery (2026-09-09): Skill Tree overlay layering is automated GREEN. Opening the panel now moves its full-screen root to the final Canvas sibling position, ensuring dynamically created D4 World Map cards cannot render above it; close returns the unchanged map. Phase 12.5 Skill Tree UI regression passed 128 checks and Phase 10 QA World Map regression passed 10 checks.
 - Phase 13 Gate 13.5 (2026-09-09): Full D4 campaign progression is automated GREEN. D4 remains 45 enemies / 705 XP; campaign total is 2085 XP. It enters at Level 6, 61/759 and ends at Level 7, 7/1139 under the production `RoundToInt` curve. First-clear reward remains 3 points, replay is idempotent, and another character retains its reward. Gate verifier and Phase 10.5 campaign regression passed.
@@ -39,7 +40,7 @@ Last update:
 
 ## Status
 
-**COMPLETED — Phase 13: Dungeon 4 / The Colonnade**
+**IN PROGRESS — Phase 14: Dungeon 5 / The Ashen Sanctum and First Boss**
 **ALL GATES 12.1 THROUGH 12.5 AUTOMATED GREEN (2432/2432 CHECKS TOTAL) | USER MANUAL GAMEPLAY QA ALL GREEN**
 - Gate 12.1: 87/87 checks PASSED
 - Gate 12.2: 99/99 checks PASSED
@@ -49,7 +50,7 @@ Last update:
 - Full Regression Matrix (10 suites): Suite 10.1 (11/11), Suite 10.2 (15/15), Suite 10.3 (5/5), Suite 10.4 (5/5), Suite 10.5 (11/11), Phase 10 QA (10/10), Archer 8.3 (68/68), Gunner 8.4 (PASSED), Suite 11.1 (43/43), Suite 11.5 (1485/1485).
 - User Manual Gameplay QA: ALL GREEN.
 
-**NEXT — Phase 14: Dungeon 5 + First Boss**
+**NEXT — Phase 14 final regression matrix and manual gameplay QA**
 
 Milestones 1.1 through 13.5, Phase 9 Polish Pass, and Phase 10/11/12/13 Manual QA are fully implemented, verified, and signed off.
 

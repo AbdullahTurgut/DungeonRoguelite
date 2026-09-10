@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -25,6 +26,35 @@ namespace DungeonRoguelite.Tests
 
         private IEnumerator Start()
         {
+#if UNITY_EDITOR
+            using (var snapshot = new Phase12StateSnapshot())
+            {
+                var routine = VerifyChecks();
+                try
+                {
+                    while (true)
+                    {
+                        object current;
+                        try
+                        {
+                            if (!routine.MoveNext()) break;
+                            current = routine.Current;
+                        }
+                        catch (Exception ex) { Debug.LogException(ex); allPassed = false; break; }
+                        yield return current;
+                    }
+                }
+                finally { (routine as IDisposable)?.Dispose(); }
+            }
+            if (Application.isBatchMode) UnityEditor.EditorApplication.Exit(allPassed ? 0 : 1);
+            else UnityEditor.EditorApplication.isPlaying = false;
+#else
+            yield return VerifyChecks();
+#endif
+        }
+
+        private IEnumerator VerifyChecks()
+        {
             Debug.Log("[MANUAL QA VERIFIER] Starting Phase 10 Manual QA Blocking Fixes Verification...");
             Time.timeScale = 1f;
             yield return null;
@@ -42,12 +72,12 @@ namespace DungeonRoguelite.Tests
             }
             else
             {
-                // CHECK 1: Catalog contains 4 dungeons and WorldMapController has 4 cards
+                // CHECK 1: Catalog and bound cards include the complete five-dungeon campaign.
                 var catalog = worldMapController.DungeonCatalog;
-                bool c1 = catalog != null && catalog.Count == 4 && worldMapController.Cards.Count == 4;
+                bool c1 = catalog != null && catalog.Count == 5 && worldMapController.Cards.Count == catalog.Count;
                 if (c1)
                 {
-                    Debug.Log($"[CHECK 1 PASSED] WorldMap has exactly 3 cards matching DungeonCatalog: [{catalog[0].Id}, {catalog[1].Id}, {catalog[2].Id}].");
+                    Debug.Log("[CHECK 1 PASSED] WorldMap has five bound cards matching DungeonCatalog.");
                 }
                 else
                 {
@@ -64,14 +94,14 @@ namespace DungeonRoguelite.Tests
                 var rect1 = card1.GetComponent<RectTransform>();
                 var rect2 = card2.GetComponent<RectTransform>();
 
-                var card3 = worldMapController.Cards[3]; var rect3 = card3.GetComponent<RectTransform>();
-                bool c2Pos = Mathf.Approximately(rect0.anchoredPosition.x, -630f) && Mathf.Approximately(rect1.anchoredPosition.x, -210f) && Mathf.Approximately(rect2.anchoredPosition.x, 210f) && Mathf.Approximately(rect3.anchoredPosition.x, 630f);
-                bool c2Width = Mathf.Approximately(rect0.sizeDelta.x, 380f) && Mathf.Approximately(rect1.sizeDelta.x, 380f) && Mathf.Approximately(rect2.sizeDelta.x, 380f) && Mathf.Approximately(rect3.sizeDelta.x, 380f);
+                var visible = worldMapController.Cards.Where(c => c.gameObject.activeInHierarchy).ToArray();
+                bool c2Pos = visible.Length == 3 && visible.Select(c => c.GetComponent<RectTransform>().anchoredPosition.x).SequenceEqual(new[] { -500f, 0f, 500f });
+                bool c2Width = visible.All(c => c.GetComponent<RectTransform>().sizeDelta == new Vector2(440, 450));
                 bool c2Bound = card2.BoundDungeon != null && card2.BoundDungeon.Id == "dungeon_3";
 
                 if (c2Pos && c2Width && c2Bound)
                 {
-                    Debug.Log("[CHECK 2 PASSED] 3-Card horizontal layout verified: X=[-500, 0, +500], width=440, Card 3 bound to dungeon_3.");
+                    Debug.Log("[CHECK 2 PASSED] Three visible fixed-size carousel cards; D3 binding retained.");
                 }
                 else
                 {
@@ -314,11 +344,6 @@ namespace DungeonRoguelite.Tests
             yield return new WaitForSeconds(0.5f);
 #if UNITY_EDITOR
             System.IO.File.AppendAllText("gate_verification_results.log", $"[MANUAL QA RESULT] Success: {allPassed} at {DateTime.Now}\n");
-            UnityEditor.EditorApplication.isPlaying = false;
-            if (Application.isBatchMode)
-            {
-                UnityEditor.EditorApplication.Exit(allPassed ? 0 : 1);
-            }
 #endif
         }
     }

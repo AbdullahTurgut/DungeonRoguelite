@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -165,10 +166,10 @@ namespace DungeonRoguelite.Tests
 
             var mapController = FindFirstObjectByType<WorldMapController>();
             Check(mapController != null, "WorldMapController found in WorldMap scene");
-            Check(mapController.DungeonCatalog != null && mapController.DungeonCatalog.Count == 4,
-                "WorldMapController has 4 dungeons in catalog");
-            Check(mapController.Cards != null && mapController.Cards.Count == 4,
-                "WorldMapController has 4 cards wired");
+            Check(mapController.DungeonCatalog != null && mapController.DungeonCatalog.Count == 5,
+                "WorldMapController has 5 dungeons in catalog");
+            Check(mapController.Cards != null && mapController.Cards.Count == 5,
+                "WorldMapController has 5 bound cards");
 
             // SkillTreeButton
             var skillTreeBtn = mapController.SkillTreeButton;
@@ -200,14 +201,32 @@ namespace DungeonRoguelite.Tests
                 "SkillTreeUI has exactly 9 SkillTreeNodeUI cards wired (3 branches x 3 tiers)");
 
             // Test Open / Close via button and controller
+            mapController.NavigateRight();
+            int focus = mapController.FocusedIndex;
+            int window = mapController.WindowStart;
+            var selected = mapController.SelectedDungeon;
+            var visible = mapController.Cards.Select(c => c.gameObject.activeSelf).ToArray();
+            bool left = mapController.LeftNavigationButton.interactable;
+            bool right = mapController.RightNavigationButton.interactable;
             mapController.HandleSkillTreeClicked();
             Check(skillTreePanel.IsOpen, "HandleSkillTreeClicked opens the SkillTreePanel overlay");
             Check(skillTreePanel.PanelRoot.activeSelf, "SkillTreePanel root is active when opened");
+            Check(skillTreePanel.transform.parent == mapController.transform &&
+                skillTreePanel.transform.GetSiblingIndex() == mapController.transform.childCount - 1 &&
+                mapController.Cards.All(c => c.transform.IsChildOf(mapController.CardsContainer)),
+                "Skill Tree is the final Canvas sibling above all carousel cards and navigation");
+            mapController.LeftNavigationButton.onClick.Invoke();
+            mapController.RightNavigationButton.onClick.Invoke();
+            Check(mapController.FocusedIndex == focus, "Modal blocks carousel navigation");
 
             // Close via CloseButton
             skillTreePanel.CloseButton.onClick.Invoke();
             Check(!skillTreePanel.IsOpen, "CloseButton onClick closes the SkillTreePanel overlay");
             Check(!skillTreePanel.PanelRoot.activeSelf, "SkillTreePanel root is inactive when closed");
+            Check(mapController.FocusedIndex == focus && mapController.WindowStart == window &&
+                mapController.SelectedDungeon == selected && visible.SequenceEqual(mapController.Cards.Select(c => c.gameObject.activeSelf)) &&
+                mapController.LeftNavigationButton.interactable == left && mapController.RightNavigationButton.interactable == right,
+                "Closing Skill Tree restores the exact carousel focus, window and arrow state");
 
             // Verify session invariants
             Check(!RunProgressionSession.HasActiveRun, "Opening/closing SkillTreePanel did not alter RunProgressionSession");

@@ -247,6 +247,7 @@ namespace DungeonRoguelite.Editor
             sMap.ApplyModifiedProperties();
 
             EditorSceneManager.MarkSceneDirty(scene);
+            WorldMapCarouselSetup.Apply(mapController);
             EditorSceneManager.SaveScene(scene);
             Debug.Log("[Milestone 12.5 Setup] World Map Skill Tree UI configured and saved successfully.");
         }

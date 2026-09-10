@@ -32,7 +32,13 @@ namespace DungeonRoguelite.Editor
             Check(d5 != null && d5.Id == "dungeon_5" && d5.SceneName == "Dungeon_05" && d5.RequiredDungeonId == "dungeon_4" && d5.Type == DungeonType.Boss && Mathf.Approximately(d5.EnemyHealthMultiplier,1.4f) && Mathf.Approximately(d5.EnemyDamageMultiplier,1.3f), "D5 definition and Boss classification");
             Check(catalog.Dungeons.Select(x=>x.Id).SequenceEqual(new[]{"dungeon_1","dungeon_2","dungeon_3","dungeon_4","dungeon_5"}), "catalog appends D5 while preserving D1-D4");
             Check(EditorBuildSettings.scenes.Length == 7 && EditorBuildSettings.scenes[6].path.EndsWith("Dungeon_05.unity"), "Build Settings D5 route");
-            string map = System.IO.File.ReadAllText("Assets/Scripts/UI/WorldMapController.cs"); Check(map.Contains("activeCount >= 5 ? 330f") && map.Contains("activeCount >= 5 ? 360f"), "five-card World Map layout");
+            EditorSceneManager.OpenScene(WorldMapCarouselSetup.ScenePath);
+            var map = UnityEngine.Object.FindFirstObjectByType<DungeonRoguelite.UI.WorldMapController>();
+            Check(map != null && map.DungeonCatalog == catalog && map.CardsContainer != null &&
+                map.LeftNavigationButton != null && map.RightNavigationButton != null &&
+                map.Cards.All(c => c != null && c.transform.parent == map.CardsContainer &&
+                    c.GetComponent<RectTransform>().sizeDelta == new Vector2(440,450)),
+                "World Map serialized carousel bindings and fixed card dimensions (runtime window verified separately)");
         }
         private static void VerifyArena()
         {

@@ -83,6 +83,8 @@ namespace DungeonRoguelite.UI
             isUnlocked = unlocked;
             isCompleted = completed;
 
+            ApplyTextBounds();
+
             if (titleText != null)
             {
                 titleText.text = dungeon != null ? dungeon.DisplayName : string.Empty;
@@ -117,6 +119,27 @@ namespace DungeonRoguelite.UI
                     statusText.text = "KİLİTLİ";
                     statusText.color = new Color(0.95f, 0.35f, 0.35f, 1f);
                 }
+            }
+        }
+
+        private void ApplyTextBounds()
+        {
+            if (titleText != null)
+            {
+                titleText.maxVisibleLines = 2;
+                titleText.overflowMode = TextOverflowModes.Ellipsis;
+            }
+
+            if (descriptionText != null)
+            {
+                descriptionText.maxVisibleLines = 3;
+                descriptionText.overflowMode = TextOverflowModes.Ellipsis;
+            }
+
+            if (statusText != null)
+            {
+                statusText.maxVisibleLines = 1;
+                statusText.overflowMode = TextOverflowModes.Ellipsis;
             }
         }
 
