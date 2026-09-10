@@ -323,22 +323,24 @@ Implemented:
 
 ---
 
-# PHASE 14 — Dungeon 5 + First Boss
+# PHASE 14 — Dungeon 5 + First Boss (COMPLETE)
 
-- Dungeon 5 and first boss.
+- Dungeon 5, The Ashen Sanctum / Kül Mabedi, is `dungeon_5`: 1.4x enemy HP, 1.3x enemy damage, three waves, 18 normal enemies plus The Ash Warden / Kül Muhafızı, 19 enemies, and 1,200 XP total.
+- The Ash Warden has 1,200 base HP / 1,680 runtime HP, two phases, no adds, no persistent hazards, and 960 boss XP. D5 reaches Level 8 at 68/1709 from the Level 7, 7/1139 entry state; campaign XP is 3,285 and D5 first-clear permanent reward remains 0.
+- The World Map now uses a generic three-card carousel with newest-unlocked focus, locked browsing, Enter gating, bounded button and keyboard navigation, Skill Tree modal safety, and D6+ window support.
+- Final presentation includes the Warrior's 0.12-second visual-only melee slash and a centered boss name with one red RectTransform health fill over a dark empty track; no Phase II label is presented.
+- User manual QA is GREEN. Focused evidence: Boss Health Bar 9/9, Warrior Slash Feedback 8/8, World Map Carousel 525 checks, Phase 10 World Map QA 10/10, and Gate 14.3 PASSED.
+- Final reruns of Phase 12.5 Skill Tree UI, Gate 14.1, and D5 boss lifecycle were blocked before verifier startup by `Connection to channel LicenseClient-Alcor refused`. This is an ENVIRONMENT BLOCKER, not a production result; those suites are not recorded as passed.
 
 ---
-# PHASE 15 — Production
+# PHASE 15 — Permanent Progression Rebalance (PLANNED, NOT STARTED)
 
-Implement:
+Planned goals only:
 
-- Settings
-- Resolution
-- Audio sliders
-- Save validation
-- Build configuration
-- Performance checks
-- Steam-ready PC build if desired
+- Retain the existing 9-node skill trees and change costs to 1 / 2 / 2, totaling 15 points per character tree.
+- Version the permanent-progression save data and migrate existing saves safely.
+- Rebuild the D1-D10 first-clear permanent-point economy.
+- Do not add Hub, Armorer, weapons, or D6-D10 production content in this phase.
 
 ---
 
@@ -360,8 +362,9 @@ Phase 11 (Combat & Enemy Variety)             -> COMPLETED (Manual QA ALL GREEN)
 Phase 12 (Permanent Progression / Skill Tree) -> COMPLETED (Manual QA ALL GREEN)
     ↓
 Phase 13 (Dungeon 4 + Encounter Design)       -> COMPLETED (Manual QA GREEN)
+    ↓
+Phase 14 (Dungeon 5 + First Boss)              -> COMPLETED (Manual QA GREEN)
 ```
 
-Milestones 0 through 13 are fully implemented, automated-verified, and manual-QA-verified.
-Phase 13 is complete and signed off.
-Next task: Phase 14 (Dungeon 5 + First Boss).
+Milestones 0 through 13 and Phase 14 are implemented and signed off.
+Next task: Phase 15 (Permanent Progression Rebalance) — planned only, not started.

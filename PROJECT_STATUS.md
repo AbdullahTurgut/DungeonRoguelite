@@ -3,7 +3,7 @@
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
 Last update:
-- Phase 14 automated gate recovery (2026-09-10): Gates 14.1–14.5 are GREEN in the current checkout: D5 foundation/build route and World Map bindings, Ashen Sanctum arena, Ash Warden scaling/HUD, D5 encounter composition, and campaign progression. The UI runner now exposes every Phase 14 gate. The World Map carousel checkpoint remains GREEN (521 checks), as does the Phase 12.5 Skill Tree UI regression (131 checks). Phase 14 remains in progress pending manual gameplay QA and final sign-off.
+- Phase 14 Final Sign-off (2026-09-10): Phase 14 is COMPLETE. User manual QA is GREEN for the D5 boss encounter, progression and completion flow, World Map carousel and keyboard navigation, Warrior melee slash feedback, and the final minimal boss HUD. Dungeon 5 is `dungeon_5`, The Ashen Sanctum / Kül Mabedi: 1.4x enemy HP, 1.3x enemy damage, three waves, 18 normal enemies plus The Ash Warden / Kül Muhafızı, 19 enemies, and 1,200 XP total. The Ash Warden has 1,200 base HP / 1,680 runtime HP, two phases, no adds, no persistent hazards, and 960 boss XP. D5 enters at Level 7, 7/1139 and exits at Level 8, 68/1709 (3,285 campaign XP); its first-clear permanent reward remains 0. Previous boss lifecycle, campaign, and completion-order checkpoints remain accepted. Final focused evidence: Boss Health Bar 9/9, Warrior Slash Feedback 8/8, World Map Carousel 525 checks, Phase 10 World Map QA 10/10, and Gate 14.3 passed. The final reruns of Phase 12.5 Skill Tree UI, Gate 14.1, and D5 boss lifecycle did not start because Unity batch licensing reported `Connection to channel LicenseClient-Alcor refused`; these are ENVIRONMENT BLOCKED, not production RED or passed suites. Gate 14.3 later ran successfully. Final polish checkpoints: `b38b9a9`, `b30b237`, and `e9ee929`. NEXT: Phase 15 — Permanent Progression Rebalance (planned only; not started).
 - Phase 13 Final Sign-off (2026-09-09): Phase 13 is COMPLETE. Gates 13.1–13.5, the 2129/2129 final regression matrix, the D4 Wave 1 -> Wave 2 runtime regression (3/3), and user manual gameplay QA are GREEN. Dungeon 4, The Colonnade / Bölüm 4: Sütunlu Salon, has a 36m x 28m four-pillar arena, six spawn points, four waves (45 enemies / 705 XP), 1.3x HP and 1.2x damage scaling, and a character-scoped 3-point first-clear reward. Campaign reaches Level 7 during D4 (entry Level 6, 61/759; end Level 7, 7/1139). Manual-QA geometry, wave configuration, and Skill Tree overlay issues are resolved. Phase 14 (Dungeon 5 + First Boss) is NEXT.
 - Phase 13 final manual-QA UI recovery (2026-09-09): Skill Tree overlay layering is automated GREEN. Opening the panel now moves its full-screen root to the final Canvas sibling position, ensuring dynamically created D4 World Map cards cannot render above it; close returns the unchanged map. Phase 12.5 Skill Tree UI regression passed 128 checks and Phase 10 QA World Map regression passed 10 checks.
 - Phase 13 Gate 13.5 (2026-09-09): Full D4 campaign progression is automated GREEN. D4 remains 45 enemies / 705 XP; campaign total is 2085 XP. It enters at Level 6, 61/759 and ends at Level 7, 7/1139 under the production `RoundToInt` curve. First-clear reward remains 3 points, replay is idempotent, and another character retains its reward. Gate verifier and Phase 10.5 campaign regression passed.
@@ -40,19 +40,24 @@ Last update:
 
 ## Status
 
-**IN PROGRESS — Phase 14: Dungeon 5 / The Ashen Sanctum and First Boss**
-**ALL GATES 12.1 THROUGH 12.5 AUTOMATED GREEN (2432/2432 CHECKS TOTAL) | USER MANUAL GAMEPLAY QA ALL GREEN**
-- Gate 12.1: 87/87 checks PASSED
-- Gate 12.2: 99/99 checks PASSED
-- Gate 12.3: 200/200 checks PASSED
-- Gate 12.4: 226/226 checks PASSED
-- Gate 12.5: 127/127 checks PASSED
-- Full Regression Matrix (10 suites): Suite 10.1 (11/11), Suite 10.2 (15/15), Suite 10.3 (5/5), Suite 10.4 (5/5), Suite 10.5 (11/11), Phase 10 QA (10/10), Archer 8.3 (68/68), Gunner 8.4 (PASSED), Suite 11.1 (43/43), Suite 11.5 (1485/1485).
-- User Manual Gameplay QA: ALL GREEN.
+**COMPLETE — Phase 14: Dungeon 5 / The Ashen Sanctum and First Boss**
 
-**NEXT — Phase 14 manual gameplay QA and final sign-off**
+- D5 / Kül Mabedi: three waves, 18 normal enemies plus The Ash Warden / Kül Muhafızı, 19 enemies, 1,200 XP, 1.4x enemy HP, and 1.3x enemy damage.
+- Campaign target is preserved: enter Level 7 at 7/1139; exit Level 8 at 68/1709; campaign cumulative XP is 3,285. D5 permanent first-clear reward remains 0.
+- The Ash Warden uses 1,200 base HP / 1,680 runtime HP with two phases, no adds, and no persistent hazards. Boss death, XP, retry, return-to-map, and completion ordering are accepted GREEN.
+- World Map uses the scalable three-card carousel: newest-unlocked initial focus, locked-card browsing, Enter gating, generic D6+ windows, bounded UI-arrow and Left/Right keyboard navigation, and Skill Tree modal-safe input/focus restoration.
+- Warrior attacks have a visual-only 120-degree slash feedback arc from the successful melee attack path; it lasts 0.12 seconds and does not change combat values.
+- Boss HUD is a centered name with one red RectTransform fill over a subtle dark track. It has no Phase II label, uses `CurrentHealth / MaxHealth`, reaches zero on death, and binds fresh on retry without stale listeners.
+- User manual QA: ALL GREEN.
+- Focused automation: Boss Health Bar 9/9; Warrior Slash Feedback 8/8; World Map Carousel 525 checks; Phase 10 World Map QA 10/10; Gate 14.3 PASSED.
+- Final regression reruns blocked before verifier startup: Phase 12.5 Skill Tree UI, Gate 14.1, and D5 boss lifecycle. Unity batch reported `Connection to channel LicenseClient-Alcor refused`; this is an ENVIRONMENT BLOCKER, not production RED. Do not treat those three suites as passed.
 
-Milestones 1.1 through 13.5, Phase 9 Polish Pass, and Phase 10/11/12/13 Manual QA are fully implemented, verified, and signed off.
+**NEXT — Phase 15: Permanent Progression Rebalance (planned, NOT STARTED)**
+
+- Keep the existing 9-node trees; apply planned costs 1 / 2 / 2, for 15 total points per character tree.
+- Add versioned save migration and revise the D1-D10 first-clear reward economy.
+
+Milestones 1.1 through 13.5 and Phases 9 through 14 are implemented and signed off. Phase 15 has not started.
 
 ---
 
