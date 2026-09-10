@@ -105,6 +105,7 @@ GameObject:
   - component: {fileID: 819200000000000001}
   - component: {fileID: 7159233836035212516}
   - component: {fileID: 5720721292504143998}
+  - component: {fileID: 819200000000000007}
   - component: {fileID: 8122806169242011842}
   - component: {fileID: 1690830145018986285}
   - component: {fileID: 5191688275893372911}
@@ -252,6 +253,22 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &819200000000000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3441253740286043302}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acf45798cca14323a62543864b54f020, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Weapons.WarriorSlashFeedback
+  lifetime: 0.12
+  radiusFraction: 0.72
+  lineWidth: 0.11
+  slashColor: {r: 1, g: 0.84, b: 0.24, a: 1}
 --- !u!114 &8122806169242011842
 MonoBehaviour:
   m_ObjectHideFlags: 0
