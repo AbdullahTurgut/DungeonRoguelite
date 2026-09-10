@@ -35,7 +35,7 @@ namespace DungeonRoguelite.Progression
         [Serializable]
         public class PermanentSaveData
         {
-            public int version = 1;
+            public int version = 2;
             public List<CharacterProgressionData> characters = new List<CharacterProgressionData>();
         }
 
@@ -46,6 +46,7 @@ namespace DungeonRoguelite.Progression
             public int availableSkillPoints = 0;
             public List<string> unlockedNodeIds = new List<string>();
             public List<string> rewardedDungeonIds = new List<string>();
+            public bool legacyD5RewardPending;
         }
 
         private static readonly Dictionary<string, CharacterProgressionData> characterCache =
@@ -98,11 +99,13 @@ namespace DungeonRoguelite.Progression
                             {
                                 if (charData != null && !string.IsNullOrEmpty(charData.characterId))
                                 {
-                                    if (charData.unlockedNodeIds == null) charData.unlockedNodeIds = new List<string>();
-                                    if (charData.rewardedDungeonIds == null) charData.rewardedDungeonIds = new List<string>();
+                                    charData.unlockedNodeIds = NormalizeIds(charData.unlockedNodeIds);
+                                    charData.rewardedDungeonIds = NormalizeIds(charData.rewardedDungeonIds);
+                                    if (data.version < 2) charData.legacyD5RewardPending = true;
                                     characterCache[charData.characterId] = charData;
                                 }
                             }
+                            if (data.version < 2) SaveToPrefs();
                         }
                     }
                     catch (Exception ex)
@@ -122,6 +125,16 @@ namespace DungeonRoguelite.Progression
             string json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString(PrefsKey, json);
             PlayerPrefs.Save();
+        }
+
+        private static List<string> NormalizeIds(List<string> ids)
+        {
+            var result = new List<string>();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (ids != null)
+                foreach (var id in ids)
+                    if (!string.IsNullOrWhiteSpace(id) && seen.Add(id.Trim())) result.Add(id.Trim());
+            return result;
         }
 
         private static CharacterProgressionData GetOrAddCharacterData(string characterId)
@@ -186,7 +199,7 @@ namespace DungeonRoguelite.Progression
 
             if (characterCache.TryGetValue(characterId, out var data) && data.unlockedNodeIds != null)
             {
-                return data.unlockedNodeIds.Contains(nodeId);
+                return data.unlockedNodeIds.Exists(id => string.Equals(id, nodeId, StringComparison.OrdinalIgnoreCase));
             }
             return false;
         }
@@ -261,6 +274,7 @@ namespace DungeonRoguelite.Progression
 
             if (characterCache.TryGetValue(characterId, out var data) && data.rewardedDungeonIds != null)
             {
+                if (data.legacyD5RewardPending && string.Equals(dungeonId.Trim(), "dungeon_5", StringComparison.OrdinalIgnoreCase)) return false;
                 for (int i = 0; i < data.rewardedDungeonIds.Count; i++)
                 {
                     if (string.Equals(data.rewardedDungeonIds[i], dungeonId, StringComparison.OrdinalIgnoreCase))
@@ -274,7 +288,7 @@ namespace DungeonRoguelite.Progression
 
         /// <summary>
         /// Maps canonical dungeon IDs to their first-clear permanent skill point values.
-        /// D1 = 2, D2 = 2, D3 = 3. Returns 0 for unknown dungeons.
+        /// Campaign first-clear economy. Returns 0 for unknown dungeons.
         /// </summary>
         public static int GetDungeonFirstClearPoints(string dungeonId)
         {
@@ -282,12 +296,17 @@ namespace DungeonRoguelite.Progression
             switch (dungeonId.Trim().ToLowerInvariant())
             {
                 case "dungeon_1":
-                    return 2;
                 case "dungeon_2":
-                    return 2;
                 case "dungeon_3":
-                    return 3;
                 case "dungeon_4":
+                case "dungeon_6":
+                case "dungeon_7":
+                    return 1;
+                case "dungeon_5":
+                case "dungeon_8":
+                case "dungeon_9":
+                    return 2;
+                case "dungeon_10":
                     return 3;
                 default:
                     return 0;
@@ -328,7 +347,9 @@ namespace DungeonRoguelite.Progression
             if (data == null) return false;
 
             string normalizedDungeonId = dungeonId.Trim().ToLowerInvariant();
-            data.rewardedDungeonIds.Add(normalizedDungeonId);
+            if (!data.rewardedDungeonIds.Exists(id => string.Equals(id, normalizedDungeonId, StringComparison.OrdinalIgnoreCase)))
+                data.rewardedDungeonIds.Add(normalizedDungeonId);
+            if (normalizedDungeonId == "dungeon_5") data.legacyD5RewardPending = false;
             if (points > 0)
             {
                 data.availableSkillPoints += points;

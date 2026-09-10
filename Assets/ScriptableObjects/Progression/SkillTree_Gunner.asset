@@ -30,7 +30,7 @@ MonoBehaviour:
     tier: 2
     displayName: "Ate\u015F G\xFCc\xFC II"
     description: +10% Hasar
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_firepower_1
     effectType: 1
     effectMagnitude: 0.1
@@ -40,7 +40,7 @@ MonoBehaviour:
     tier: 3
     displayName: "Ate\u015F G\xFCc\xFC III"
     description: +15% Hasar
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_firepower_2
     effectType: 1
     effectMagnitude: 0.15
@@ -60,7 +60,7 @@ MonoBehaviour:
     tier: 2
     displayName: Seri Tetik II
     description: "+5% Sald\u0131r\u0131 H\u0131z\u0131"
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_cadence_1
     effectType: 2
     effectMagnitude: 0.05
@@ -70,7 +70,7 @@ MonoBehaviour:
     tier: 3
     displayName: Seri Tetik III
     description: "+10% Sald\u0131r\u0131 H\u0131z\u0131"
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_cadence_2
     effectType: 2
     effectMagnitude: 0.1
@@ -90,7 +90,7 @@ MonoBehaviour:
     tier: 2
     displayName: "Taktik Z\u0131rh II"
     description: +10% Azami Can
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_handling_1
     effectType: 0
     effectMagnitude: 0.1
@@ -100,7 +100,7 @@ MonoBehaviour:
     tier: 3
     displayName: "Hafif Te\xE7hizat III"
     description: "+5% Hareket H\u0131z\u0131"
-    cost: 1
+    cost: 2
     prerequisiteNodeId: gunner_handling_2
     effectType: 3
     effectMagnitude: 0.05

@@ -30,7 +30,7 @@ MonoBehaviour:
     tier: 2
     displayName: "Demir B\xFCnye II"
     description: +10% Azami Can
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_durability_1
     effectType: 0
     effectMagnitude: 0.1
@@ -40,7 +40,7 @@ MonoBehaviour:
     tier: 3
     displayName: "Demir B\xFCnye III"
     description: +15% Azami Can
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_durability_2
     effectType: 0
     effectMagnitude: 0.15
@@ -60,7 +60,7 @@ MonoBehaviour:
     tier: 2
     displayName: "A\u011F\u0131r Darbe II"
     description: +10% Hasar
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_power_1
     effectType: 1
     effectMagnitude: 0.1
@@ -70,7 +70,7 @@ MonoBehaviour:
     tier: 3
     displayName: "A\u011F\u0131r Darbe III"
     description: +15% Hasar
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_power_2
     effectType: 1
     effectMagnitude: 0.15
@@ -90,7 +90,7 @@ MonoBehaviour:
     tier: 2
     displayName: "Hafif Ad\u0131m II"
     description: "+5% Hareket H\u0131z\u0131"
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_tempo_1
     effectType: 3
     effectMagnitude: 0.05
@@ -100,7 +100,7 @@ MonoBehaviour:
     tier: 3
     displayName: "Kas\u0131rga Bi\xE7i\u015F III"
     description: "+10% Sald\u0131r\u0131 H\u0131z\u0131"
-    cost: 1
+    cost: 2
     prerequisiteNodeId: warrior_tempo_2
     effectType: 2
     effectMagnitude: 0.1
