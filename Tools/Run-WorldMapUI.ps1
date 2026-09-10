@@ -1,5 +1,5 @@
 param(
-    [ValidateSet('setup', 'carousel', '10_QA', '12_5', '14_1', '14_5')]
+    [ValidateSet('setup', 'carousel', '10_QA', '12_5', '14_1', '14_2', '14_3', '14_4', '14_5')]
     [string]$Suite = 'carousel',
     [int]$TimeoutSeconds = 240
 )
