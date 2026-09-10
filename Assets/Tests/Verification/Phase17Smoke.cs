@@ -24,6 +24,10 @@ namespace DungeonRoguelite.Tests
         private float deadline;
         private int defeated, victories;
         private bool bound, finished;
+        private int EntryLevel => DungeonNumber < 8 ? 8 : 9;
+        private int EntryXP => DungeonNumber == 6 ? 68 : DungeonNumber == 7 ? 968 : DungeonNumber == 8 ? 359 : 1659;
+        private int EntryTotal => DungeonNumber == 6 ? 3285 : DungeonNumber == 7 ? 4185 : DungeonNumber == 8 ? 5285 : 6585;
+        private int EarnedXP => DungeonNumber == 6 ? 900 : DungeonNumber == 7 ? 1100 : DungeonNumber == 8 ? 1300 : 1600;
         private void Start()
         {
             DontDestroyOnLoad(gameObject);
@@ -32,13 +36,14 @@ namespace DungeonRoguelite.Tests
             {
                 Debug.Log($"[D{DungeonNumber} SMOKE START]");
                 DungeonProgression.ResetProgression(); PermanentProgression.ResetAllProgression();
+                var dungeon=AssetDatabase.LoadAssetAtPath<DungeonDefinition>($"Assets/ScriptableObjects/Dungeons/Dungeon_{DungeonNumber:00}.asset");
+                Require(dungeon.RequiredDungeonId=="dungeon_"+(DungeonNumber-1) && !DungeonProgression.IsDungeonUnlocked(dungeon),"locked until preceding dungeon completion");
                 for(int i=1;i<DungeonNumber;i++)DungeonProgression.RecordDungeonCompleted("dungeon_"+i);
                 var hero=AssetDatabase.LoadAssetAtPath<CharacterDefinition>("Assets/ScriptableObjects/Characters/Character_Warrior.asset");
                 CharacterSelectionSession.SetSelection(hero);
                 var weapon=hero.WeaponCatalog.Find("warrior_tier_1");PermanentProgression.TryClaimWeapon(hero.Id,weapon);PermanentProgression.TryEquipWeapon(hero.Id,weapon);
                 RunProgressionSession.StartNewRun(hero.Id);
-                RunProgressionSession.CommitDungeonVictory(8,DungeonNumber==6?68:968,DungeonNumber==6?3285:4185,Array.Empty<string>());
-                var dungeon=AssetDatabase.LoadAssetAtPath<DungeonDefinition>($"Assets/ScriptableObjects/Dungeons/Dungeon_{DungeonNumber:00}.asset");
+                RunProgressionSession.CommitDungeonVictory(EntryLevel,EntryXP,EntryTotal,Array.Empty<string>());
                 Require(DungeonProgression.IsDungeonUnlocked(dungeon),"prerequisite unlock");
                 DungeonRunSession.SetSelection(dungeon);
                 deadline=Time.realtimeSinceStartup+100;
@@ -66,11 +71,14 @@ namespace DungeonRoguelite.Tests
                 foreach(var enemy in waves.ActiveEnemies.ToArray()) if(enemy!=null)enemy.TakeDamage(999999);
                 foreach(var pickup in FindObjectsByType<ExperiencePickup>(FindObjectsSortMode.None))if(!pickup.IsCollected)pickup.TryCollect(experience);
                 if(victories==0)return;
-                Require(defeated==(DungeonNumber==6?55:70) && victories==1 && waves.CurrentWaveIndex==4,"five real waves completed once");
-                Require(experience.TotalXPEarned==(DungeonNumber==6?4185:5285) && experience.Level==(DungeonNumber==6?8:9) && experience.CurrentXP==(DungeonNumber==6?968:359),"exact campaign XP and level");
-                Require(DungeonProgression.IsDungeonCompleted("dungeon_"+DungeonNumber) && PermanentProgression.GetAvailablePoints("warrior")==1,"completion and first-clear point persisted");
+                Require(defeated==(DungeonNumber==6?55:DungeonNumber==7?70:DungeonNumber==8?80:90) && victories==1 && waves.CurrentWaveIndex==(DungeonNumber==9?5:4),"all real waves completed once");
+                Require(experience.TotalXPEarned==EntryTotal+EarnedXP && experience.Level==(DungeonNumber==6?8:DungeonNumber==9?10:9) && experience.CurrentXP==(DungeonNumber==6?968:DungeonNumber==7?359:DungeonNumber==8?1659:696),"exact campaign XP and level");
+                Require(experience.XPToNextLevel==(DungeonNumber==6?1709:DungeonNumber==9?3844:2563),"production next-level threshold");
+                Require(DungeonProgression.IsDungeonCompleted("dungeon_"+DungeonNumber) && PermanentProgression.GetAvailablePoints("warrior")== (DungeonNumber<8?1:2),"completion and first-clear points persisted");
                 Require(!PermanentProgression.TryAwardDungeonFirstClear("warrior","dungeon_"+DungeonNumber,out _),"replay cannot farm points");
                 Require(RunProgressionSession.TotalXP==experience.TotalXPEarned,"victory commits run state");
+                var hero=CharacterSelectionSession.SelectedCharacter;
+                Require(PermanentProgression.GetEquippedWeapon(hero.Id,hero.WeaponCatalog)?.Id=="warrior_tier_1","Tier I survives dungeon completion");
                 Finish(true);
             }
             catch(Exception ex) { Fail(ex); }

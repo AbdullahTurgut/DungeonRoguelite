@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9743a19de7960ee479c6ad2ec60fff7a, type: 3}
+  m_Name: Dungeon_08
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Dungeons.DungeonDefinition
+  id: dungeon_8
+  displayName: "B\xF6l\xFCm 8: K\xF6zl\xFC Avlu"
+  description: "The Ember Courtyard \u2014 Dikilita\u015Flar\u0131 siper al, a\u011F\u0131r
+    d\xFC\u015Fmanlar\u0131 ay\u0131r."
+  sceneName: Dungeon_08
+  requiredDungeonId: dungeon_7
+  waves:
+  - {fileID: 11400000, guid: 4ceaae668a07f1f41b26f7586f829bf9, type: 2}
+  - {fileID: 11400000, guid: fa67eb241c883414cabe32b2f33222e1, type: 2}
+  - {fileID: 11400000, guid: 541aab1bdd2fafa4685e2ad2db83d480, type: 2}
+  - {fileID: 11400000, guid: 2b344ad03bdd0a84b94aa65704ba5aa4, type: 2}
+  - {fileID: 11400000, guid: b2bc0ae5bb3f3a34495704721b4c6585, type: 2}
+  enemyHealthMultiplier: 1.7
+  enemyDamageMultiplier: 1.45
+  dungeonType: 0

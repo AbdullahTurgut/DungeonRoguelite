@@ -18,6 +18,8 @@ namespace DungeonRoguelite.Editor
         }
         public static void Run6() { Phase17Setup.Build6(); Start(6); }
         public static void Run7() { Phase17Setup.Build7(); Start(7); }
+        public static void Run8() { Phase18Setup.Build8(); Start(8); }
+        public static void Run9() { Phase18Setup.Build9(); Start(9); }
         private static void Start(int number)
         {
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
