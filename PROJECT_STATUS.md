@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-11 — Phase 20 combat-fairness milestone COMPLETE and user manual QA GREEN for normal enemies and Ash Warden geometry. Checkpoints: 20dae97 and 40e27a0. This signs off combat fairness only, not all of Phase 20. Stop and await explicit direction before further polish.
+Last update: 2026-09-11 — Warrior + Kenney Zombie visual integration is user manual QA ALL GREEN. Production models, controllers and presentation bindings retained; validation-only tools/assets removed. No gameplay or environment changes. Final Unity batch compile exited 0 with no compiler errors; manual QA ALL GREEN. Local checkpoint only; no push. Await the next user task.
 
 ## Historical update log
 
