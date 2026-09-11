@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-11 — Phase 20 enemy attack fairness is implemented; focused verification PASSED, user manual QA pending. Phase 15–19 remains signed off at dca72d1. No push; no unrelated Phase 20 work.
+Last update: 2026-09-11 — General enemy fairness is user manual QA GREEN. Phase 20 Ash Warden geometry refinement is implemented; focused verification PASSED and user manual QA is pending. Phase 15–19 remains signed off at dca72d1. No push; no unrelated Phase 20 work.
 
 ## Historical update log
 
@@ -52,7 +52,16 @@ The entries below retain evidence and instructions from earlier checkpoints; the
 
 # Current Project State
 
-## Active task — Phase 20 enemy attack fairness
+## Active task — Ash Warden attack geometry
+
+- Normal enemy fairness checkpoint `20dae97` is manually GREEN. This follow-up changes Ash Warden only: Strike uses a committed 140-degree frontal sector at the existing 2.9m range, a 0.45s amber wind-up, 0.15s active window with at most one hit, and existing 0.85s recovery. Side/rear positioning outside the sector is safe; no backstab bonus or player-stat change.
+- Slam remains 6.5m radius, 1.1s wind-up, one execution-time distance check and 1s recovery. Its red world-space outline now exactly matches the damaging radius, independent of prefab scale, with a fixed center throughout wind-up.
+- Bolt retains purple presentation, existing damage/speed/projectiles, 0.7s wind-up and Phase II double shot. Aim is committed at wind-up start for both shots, instead of tracking again at firing time. All attack cues reuse the existing telegraph material; no new combat/VFX framework. Pending routines and outlines are cleared on death/disable.
+- Warrior stats, boss HP, XP, D5 points, encounter/progression, Slam/Bolt damage and attack cooldowns are unchanged. The previous D5 balance acceptance remains the historical baseline; this geometry change requires new manual QA.
+- Verification: WardenGeometrySmoke PASSED after the harness added selected Warrior/clean progression setup. Real prefab checks verified rear safety, unchanged front damage, committed direction, exact 6.5m Slam outline with inside-hit/outside-miss and no wind-up damage, purple Phase II double-shot direction/miss, death cancellation, 960 boss XP, completion, and exactly +2 first-clear D5 points. Compilation succeeded; the initial full compile had only the three known TMP CS0618 warnings. Phase12StateSnapshot restored user state. No broad suite; the already-completed successful rerun was not repeated during checkpoint recovery.
+- Manual QA: Warrior reads amber frontal Strike, circles to side/rear and punishes recovery; leaves the red Slam circle before execution; dodges the purple firing line. Confirm front/inside positions still take damage, both phases remain threatening, death/XP/victory and Retry remain correct. Check Archer/Gunner distance pressure too. No push or unrelated Phase 20 work.
+
+## Phase 20 normal enemy fairness — manual QA GREEN
 
 - Normal melee previously dealt instant range-only damage. EnemyAttack now commits its origin and direction at wind-up start, then checks a fixed 120-degree sector during a 0.12-second active window, at most one hit per attack. Recovery is 0.18 seconds. Serialized wind-ups preserve archetype cadence: Zombie 0.40s, Runner 0.28s, Tank 0.65s. Existing damage, range and cooldown values are unchanged.
 - EnemyRangedAttack now telegraphs a fixed firing direction for 0.45s and uses the existing straight swept-collision projectile; speed, damage and lifetime are unchanged. Its short 0.15s release recovery prevents immediate pursuit during firing.
@@ -89,7 +98,7 @@ D10 campaign cumulative XP: 11,385. The full fresh-character permanent tree is f
 - Checkpoints: `84d2a5e` Phase 15; `cb48f63` Armory/Tier I; `04bf1a9` D5 Blacksmith; `0f5b9bb` D6/D7; `dfccc7e` D8/D9; `56d4972` D10/Castellan/Tier II; `3cd757c` D5 spacing; `4af5e5d` D10 Blacksmith.
 - Final sign-off changes documentation only. No new Unity execution or broad regression matrix is required for this documentation update.
 
-**NEXT: user manual QA of the Phase 20 enemy fairness checkpoint above.** No automatic further tuning or D11–D15 expansion. The following history retains the earlier sign-off state.
+**NEXT: user manual QA of Ash Warden attack geometry.** No automatic further tuning or D11–D15 expansion. The following history retains the earlier sign-off state.
 
 ---
 

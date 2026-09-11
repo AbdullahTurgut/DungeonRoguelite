@@ -25,6 +25,8 @@ namespace DungeonRoguelite.Enemies
         [SerializeField] private float boltDamage = 16f;
         [SerializeField] private float strikeCooldown = 2.1f;
         [SerializeField] private float strikeRecovery = .85f;
+        [SerializeField, Range(1f,180f)] private float strikeArc = 140f;
+        [SerializeField, Min(.01f)] private float strikeActiveDuration = .15f;
         [SerializeField] private float slamCooldown = 5f;
         [SerializeField] private float boltCooldown = 3.5f;
         [SerializeField] private EnemyProjectile projectilePrefab;
@@ -43,6 +45,8 @@ namespace DungeonRoguelite.Enemies
         private float baseStrike;
         private float baseSlam;
         private float baseBolt;
+        private const float SlamRadius = 6.5f;
+        private LineRenderer attackOutline;
 
         public string BossName => bossName;
         public BossWardenState State { get; private set; } = BossWardenState.Engage;
@@ -61,7 +65,7 @@ namespace DungeonRoguelite.Enemies
         }
 
         private void OnEnable() { health.OnDied += HandleDeath; }
-        private void OnDisable() { health.OnDied -= HandleDeath; StopAllCoroutines(); SetTelegraph(false, Color.white); }
+        private void OnDisable() { health.OnDied -= HandleDeath; StopAllCoroutines(); acting = false; HideTelegraph(); }
         private void Update()
         {
             if (health.IsDead || Time.timeScale <= 0f || acting) return;
@@ -93,51 +97,113 @@ namespace DungeonRoguelite.Enemies
 
         private IEnumerator StrikeRoutine()
         {
-            acting = true; State = BossWardenState.Telegraph; OnTelegraphStarted?.Invoke("Strike"); SetTelegraph(true, new Color(1f, .2f, .1f));
-            yield return new WaitForSeconds(.45f); State = BossWardenState.Execute; SetTelegraph(false, Color.white);
-            DealIfInRange(meleeRange, strikeDamage); nextStrike = Time.time + strikeCooldown;
+            acting = true;
+            Vector3 origin = transform.position, direction = CommitDirection();
+            State = BossWardenState.Telegraph;
+            ShowTelegraph(origin, direction, meleeRange, strikeArc, new Color(1f,.7f,.1f));
+            OnTelegraphStarted?.Invoke("Strike");
+            yield return new WaitForSeconds(.45f);
+            State = BossWardenState.Execute;
+            ShowTelegraph(origin, direction, meleeRange, strikeArc, new Color(1f,.3f,.05f));
+            nextStrike = Time.time + strikeCooldown;
+            float endsAt = Time.time + strikeActiveDuration;
+            bool hit = false;
+            while (Time.time < endsAt)
+            {
+                if (Time.timeScale > 0f && !hit && playerHealth != null && !playerHealth.IsDead && target != null)
+                {
+                    Vector3 delta = target.position - origin; delta.y = 0f;
+                    if (delta.sqrMagnitude <= meleeRange * meleeRange && Vector3.Angle(direction,delta) <= strikeArc * .5f)
+                    {
+                        hit = true; playerHealth.TakeDamage(strikeDamage);
+                    }
+                }
+                yield return null;
+            }
+            HideTelegraph();
             State = BossWardenState.Recovery; yield return new WaitForSeconds(strikeRecovery); acting = false; State = BossWardenState.Engage;
         }
 
         private IEnumerator SlamRoutine()
         {
-            acting = true; State = BossWardenState.Telegraph; OnTelegraphStarted?.Invoke("Slam"); SetTelegraph(true, new Color(1f, .55f, .05f));
-            yield return new WaitForSeconds(1.1f); State = BossWardenState.Execute; SetTelegraph(false, Color.white);
-            DealIfInRange(6.5f, slamDamage); nextSlam = Time.time + (phaseTwo ? 3.5f : slamCooldown);
+            acting = true; Vector3 origin = transform.position;
+            State = BossWardenState.Telegraph;
+            ShowTelegraph(origin, transform.forward, SlamRadius, 360f, new Color(1f,.1f,.08f));
+            OnTelegraphStarted?.Invoke("Slam");
+            yield return new WaitForSeconds(1.1f); State = BossWardenState.Execute; HideTelegraph();
+            DealIfInRange(origin, SlamRadius, slamDamage); nextSlam = Time.time + (phaseTwo ? 3.5f : slamCooldown);
             State = BossWardenState.Recovery; yield return new WaitForSeconds(1f); acting = false; State = BossWardenState.Engage;
         }
 
         private IEnumerator BoltRoutine()
         {
-            acting = true; State = BossWardenState.Telegraph; OnTelegraphStarted?.Invoke("Bolt"); SetTelegraph(true, new Color(.8f, .1f, 1f));
-            yield return new WaitForSeconds(.7f); State = BossWardenState.Execute; SetTelegraph(false, Color.white); FireBolt();
-            if (phaseTwo) { yield return new WaitForSeconds(.18f); if (!health.IsDead) FireBolt(); }
+            acting = true; Vector3 direction = CommitDirection();
+            Vector3 origin = muzzle != null ? muzzle.position : transform.position + Vector3.up * 1.5f;
+            State = BossWardenState.Telegraph;
+            ShowTelegraph(new Vector3(origin.x,transform.position.y,origin.z), direction, engagementRange, 0f, new Color(.8f,.1f,1f));
+            OnTelegraphStarted?.Invoke("Bolt");
+            yield return new WaitForSeconds(.7f); State = BossWardenState.Execute; HideTelegraph(); FireBolt(origin,direction);
+            if (phaseTwo) { yield return new WaitForSeconds(.18f); if (!health.IsDead) FireBolt(origin,direction); }
             nextBolt = Time.time + (phaseTwo ? 2.6f : boltCooldown);
             State = BossWardenState.Recovery; yield return new WaitForSeconds(.5f); acting = false; State = BossWardenState.Engage;
         }
 
-        private void DealIfInRange(float range, float damage)
+        private Vector3 CommitDirection()
+        {
+            Vector3 direction = target != null ? target.position - transform.position : transform.forward;
+            direction.y = 0f;
+            direction = direction.sqrMagnitude > .001f ? direction.normalized : transform.forward;
+            transform.rotation = Quaternion.LookRotation(direction,Vector3.up);
+            return direction;
+        }
+        private void DealIfInRange(Vector3 origin, float range, float damage)
         {
             if (playerHealth == null || playerHealth.IsDead || target == null) return;
-            Vector3 delta = target.position - transform.position; delta.y = 0f;
+            Vector3 delta = target.position - origin; delta.y = 0f;
             if (delta.sqrMagnitude <= range * range) playerHealth.TakeDamage(damage);
         }
-        private void FireBolt()
+        private void FireBolt(Vector3 origin, Vector3 direction)
         {
-            if (projectilePrefab == null || target == null) return;
-            Vector3 direction = target.position - transform.position; direction.y = 0f;
-            Vector3 origin = muzzle != null ? muzzle.position : transform.position + Vector3.up * 1.5f;
+            if (projectilePrefab == null || health.IsDead) return;
             var shot = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction.normalized, Vector3.up));
             shot.Initialize(transform, direction, 14f, boltDamage, 3f);
         }
-        private void SetTelegraph(bool visible, Color color)
+        private void ShowTelegraph(Vector3 origin, Vector3 direction, float range, float arc, Color color)
         {
-            if (telegraph == null) return;
-            telegraph.gameObject.SetActive(visible);
-            var renderer = telegraph.GetComponent<Renderer>();
-            if (renderer != null) renderer.material.color = color;
+            // World-space geometry avoids the boss prefab's scale changing the indicated radius.
+            if (telegraph != null) telegraph.gameObject.SetActive(false);
+            if (attackOutline == null)
+            {
+                var root = new GameObject("WardenAttackOutline"); root.transform.SetParent(transform,false);
+                attackOutline = root.AddComponent<LineRenderer>(); attackOutline.useWorldSpace = true;
+                attackOutline.widthMultiplier = .12f;
+                attackOutline.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                attackOutline.receiveShadows = false;
+                var source = telegraph != null ? telegraph.GetComponent<Renderer>() : GetComponentInChildren<Renderer>();
+                if (source != null) attackOutline.sharedMaterial = source.sharedMaterial;
+            }
+            var block = new MaterialPropertyBlock(); block.SetColor("_BaseColor",color); block.SetColor("_Color",color);
+            attackOutline.SetPropertyBlock(block); attackOutline.enabled = true;
+            origin += Vector3.up * .1f;
+            if (arc <= 0f)
+            {
+                attackOutline.positionCount=2; attackOutline.SetPosition(0,origin); attackOutline.SetPosition(1,origin+direction*range);
+                return;
+            }
+            const int segments = 64;
+            bool circle = arc >= 360f;
+            attackOutline.positionCount = circle ? segments+1 : segments+3;
+            if (!circle) attackOutline.SetPosition(0,origin);
+            for (int i=0;i<=segments;i++)
+                attackOutline.SetPosition(i+(circle?0:1),origin+Quaternion.AngleAxis(Mathf.Lerp(-arc/2,arc/2,i/(float)segments),Vector3.up)*direction*range);
+            if (!circle) attackOutline.SetPosition(segments+2,origin);
         }
-        private void HandleDeath() { State = BossWardenState.Dead; acting = false; SetTelegraph(false, Color.white); }
+        private void HideTelegraph()
+        {
+            if (telegraph != null) telegraph.gameObject.SetActive(false);
+            if (attackOutline != null) attackOutline.enabled = false;
+        }
+        private void HandleDeath() { StopAllCoroutines(); State = BossWardenState.Dead; acting = false; HideTelegraph(); }
         public void SetTarget(Transform newTarget) { target = newTarget; playerHealth = target != null ? target.GetComponentInParent<PlayerHealth>() : null; }
         public void InitializeAttack(float multiplier)
         {
