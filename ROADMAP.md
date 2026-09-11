@@ -366,14 +366,16 @@ Implemented:
 - D10 gameplay, Hollow Castellan, Tier II and Blacksmith reward flow: user manual QA GREEN. Focused boss and reward-flow smokes passed.
 - D5 Warrior spacing adjustment is accepted for now (2.9m Strike/stop, 2.1s cooldown, 0.85s recovery); further melee/boss tuning is deferred to Phase 20.
 
-# PHASE 20 — First Campaign Stabilization (PLANNED, NOT STARTED)
+# PHASE 20 — First Campaign Stabilization (COMBAT FAIRNESS SIGNED OFF; FURTHER WORK AWAITS DIRECTION)
 
-- Begin only on explicit user instruction after this sign-off.
+- Combat-fairness milestone is complete and user manual QA GREEN: normal enemy committed wind-ups, directional melee/active windows and dodgeable ranged aim (`20dae97`); Ash Warden frontal Strike, exact red Slam boundary and committed purple Bolt aim (`40e27a0`). Damage, player stats, HP, XP and campaign rewards remain unchanged.
+- Focused EnemyFairnessSmoke and WardenGeometrySmoke passed; compilation succeeded with known TMP warnings. D5 still grants 960 boss XP and +2 first-clear points. No blocked legacy results are reclassified.
+- Stop after this milestone. Further Phase 20 work requires explicit user direction; overall stabilization is not yet declared complete.
 - Address evidence-driven campaign feel, readability, balance, UI/Hub usability, persistence or performance issues from manual play.
 - Do not automatically implement every polish category. No D11–D15, Tier III, loot/inventory/crafting systems, final art pipeline or generic frameworks.
 
 # Current Priority
 
-Phases 0–19 are implemented and accepted. The Phase 15–19 campaign milestone is manually GREEN, including the D10 Blacksmith Tier II reward flow. Stop before Phase 20.
+Phases 0–19 are implemented and accepted. The Phase 15–19 campaign milestone is manually GREEN, including the D10 Blacksmith Tier II reward flow. Phase 20 combat fairness is also signed off with manual QA GREEN. Stop before any next polish task.
 
 Historical automation caveat: Phase 14 final reruns of Phase 12.5 Skill Tree UI, Gate 14.1 and D5 boss lifecycle remain environment-blocked before execution by Unity licensing IPC. They are not recorded as passed; Gate 14.3 later passed. See PROJECT_STATUS.md for focused evidence and checkpoint history.
