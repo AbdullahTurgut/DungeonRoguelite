@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-11 — Warrior + Kenney Zombie visual integration is user manual QA ALL GREEN. Production models, controllers and presentation bindings retained; validation-only tools/assets removed. No gameplay or environment changes. Final Unity batch compile exited 0 with no compiler errors; manual QA ALL GREEN. Local checkpoint only; no push. Await the next user task.
+Last update: 2026-09-12 — Phase 21 D1 environment visual conversion is COMPLETE and user manual QA ALL GREEN. Retained only five KayKit Dungeon FREE 1.1 meshes, one atlas, two materials and license records, with a separate D1 visual root. Existing gameplay geometry, colliders, camera, waves and progression remain unchanged. One-time setup/validation code removed. Local checkpoint only; no push. Await the next user task.
 
 ## Historical update log
 
