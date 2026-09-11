@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-12 — Phase 21 D1 environment visual conversion is COMPLETE and user manual QA ALL GREEN. Retained only five KayKit Dungeon FREE 1.1 meshes, one atlas, two materials and license records, with a separate D1 visual root. Existing gameplay geometry, colliders, camera, waves and progression remain unchanged. One-time setup/validation code removed. Local checkpoint only; no push. Await the next user task.
+Last update: 2026-09-12 — Phase 22A Runner/Tank/Ranged visuals implemented; USER MANUAL QA ALL GREEN. Reused approved Kenney/KayKit Humanoid assets, role-specific controllers/materials, existing hit/death bindings, and an optional ranged presentation notification. Gameplay colliders, timing, stats and projectile anchors preserved. Boss variants now inherit a frozen BossTankBase; resolved boss hierarchy/components/presentation compared unchanged. Unity compilation and focused prefab/reference sanity passed. Temporary authoring helper removed. D3 is the manual QA scene. Phase 22A finalized as one local checkpoint; no push. Await the next user task.
 
 ## Historical update log
 

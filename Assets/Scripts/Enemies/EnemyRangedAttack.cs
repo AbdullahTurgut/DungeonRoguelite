@@ -21,6 +21,8 @@ namespace DungeonRoguelite.Enemies
         private float nextAttackTime;
         private EnemyVisualFeedback feedback;
         public bool IsAttacking { get; private set; }
+        // Presentation notification only; projectile aim/spawn remain owned by this component.
+        public event System.Action OnAttack;
         private readonly HashSet<EnemyProjectile> projectiles = new HashSet<EnemyProjectile>();
 
         public float Damage => damage;
@@ -72,6 +74,7 @@ namespace DungeonRoguelite.Enemies
             projectiles.Add(projectile);
             projectile.OnResolved += ForgetProjectile;
             projectile.Initialize(transform, direction, projectileSpeed, damage, projectileLifetime);
+            OnAttack?.Invoke();
             yield return new WaitForSeconds(0.15f);
             IsAttacking = false;
         }

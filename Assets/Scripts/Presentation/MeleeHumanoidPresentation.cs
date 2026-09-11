@@ -12,6 +12,7 @@ namespace DungeonRoguelite.Presentation
         [SerializeField] private CharacterController movement;
         [SerializeField] private MeleeWeapon weapon;
         [SerializeField] private EnemyAttack enemyAttack;
+        [SerializeField] private EnemyRangedAttack rangedAttack;
         [SerializeField] private PlayerHealth playerHealth;
         [SerializeField] private EnemyHealth enemyHealth;
         [SerializeField] private float attackClipLength = 1.1f;
@@ -20,6 +21,7 @@ namespace DungeonRoguelite.Presentation
         [SerializeField] private float enemyFollowThrough = 0.3f;
         private float returnAt;
         private bool attacking, windingUp, dead;
+        private bool EnemyIsAttacking => enemyAttack != null ? enemyAttack.IsAttacking : rangedAttack != null && rangedAttack.IsAttacking;
         private static readonly int MoveX = Animator.StringToHash("MoveX");
         private static readonly int MoveZ = Animator.StringToHash("MoveZ");
         private static readonly int AttackSpeed = Animator.StringToHash("AttackSpeed");
@@ -32,6 +34,7 @@ namespace DungeonRoguelite.Presentation
             animator.applyRootMotion = false;
             if (weapon != null) weapon.OnAttack += Swing;
             if (enemyAttack != null) enemyAttack.OnAttack += Swing;
+            if (rangedAttack != null) rangedAttack.OnAttack += Swing;
             if (playerHealth != null) playerHealth.OnDied += Die;
             if (enemyHealth != null) enemyHealth.OnDied += Die;
         }
@@ -40,6 +43,7 @@ namespace DungeonRoguelite.Presentation
         {
             if (weapon != null) weapon.OnAttack -= Swing;
             if (enemyAttack != null) enemyAttack.OnAttack -= Swing;
+            if (rangedAttack != null) rangedAttack.OnAttack -= Swing;
             if (playerHealth != null) playerHealth.OnDied -= Die;
             if (enemyHealth != null) enemyHealth.OnDied -= Die;
         }
@@ -47,13 +51,13 @@ namespace DungeonRoguelite.Presentation
         private void LateUpdate()
         {
             if (dead || Time.timeScale <= 0) return;
-            if (enemyAttack != null && enemyAttack.IsAttacking && !attacking && !windingUp)
+            if (EnemyIsAttacking && !attacking && !windingUp)
             {
                 windingUp = true;
                 animator.SetFloat(AttackSpeed, releaseTime * attackClipLength / Mathf.Max(.01f, enemyWindup));
                 animator.Play(Attack, 0, 0);
             }
-            if (windingUp && !enemyAttack.IsAttacking)
+            if (windingUp && !EnemyIsAttacking)
             {
                 windingUp = false;
                 animator.CrossFadeInFixedTime(Locomotion, .06f);
@@ -61,7 +65,7 @@ namespace DungeonRoguelite.Presentation
             if (attacking && Time.time >= returnAt)
             {
                 // Keep recovery pose until the production enemy attack releases movement.
-                if (enemyAttack != null && enemyAttack.IsAttacking) return;
+                if (EnemyIsAttacking) return;
                 attacking = false;
                 animator.CrossFadeInFixedTime(Locomotion, .06f);
             }

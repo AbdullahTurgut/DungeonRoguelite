@@ -1,4 +1,4 @@
-﻿# Warrior / Zombie visual provenance
+# Warrior / Zombie visual provenance
 
 Production subset retained after user manual QA ALL GREEN. No environment conversion or gameplay changes.
 
@@ -15,3 +15,5 @@ Production files live under Assets/Art/ThirdParty, Materials and AnimationContro
 Play Mode validation confirmed valid Knight/Kenney Humanoid avatars and retargeted movement, attacks and death. Root motion is disabled. Sword slice source length: 1.1 seconds; Death_A: 0.8 seconds. Presentation follows existing attack/health events; gameplay movement, damage, timing, colliders and anchors remain authoritative. User manual QA accepted the production integration, including the backward walk and Kenney's modern-clothing style compromise.
 
 Rejected candidate history: Cartoon Zombie Rigged by Vinrax (https://opengameart.org/content/cartoon-zombie-rigged, CC BY 3.0) failed Humanoid hierarchy validation: LegLower.L is not an ancestor of Foot.L. No rig repair was forced. Its model, texture, material and validation-only tools/scene were removed; there is no Vinrax production dependency.
+
+Phase 22A reuses these same CC0 sources: Kenney characterMedium for Runner and Ranged; KayKit Knight for Tank. Role tints and Ranged primitive hood/mantle are project-authored. Walking_A from the existing MovementBasic container is additionally imported for Tank locomotion. No new vendor downloads, shaders, controllers or license obligations. Presentation manual QA is ALL GREEN.
