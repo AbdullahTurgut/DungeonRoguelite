@@ -30,6 +30,7 @@ namespace DungeonRoguelite.Enemies
         public string BossName => bossName;
         public bool IsPhaseTwo { get; private set; }
         public event Action<string> OnAttackExecuted;
+        public event Action<string> OnTelegraphStarted;
 
         private void Awake()
         {
@@ -117,8 +118,9 @@ namespace DungeonRoguelite.Enemies
             return Vector3.Distance(point,a+ab*(ab.sqrMagnitude>0?Mathf.Clamp01(Vector3.Dot(point-a,ab)/ab.sqrMagnitude):0));
         }
         private void Damage(float amount) { if(playerHealth!=null && !playerHealth.IsDead)playerHealth.TakeDamage(amount); }
-        private void ShowTelegraph(string attack,Vector3 origin,Vector3 direction)
+        private void ShowTelegraph(string attack, Vector3 origin, Vector3 direction)
         {
+            OnTelegraphStarted?.Invoke(attack);
             if(telegraph==null)return;
             telegraph.gameObject.SetActive(true);telegraph.useWorldSpace=true;
             telegraph.startColor=telegraph.endColor=attack=="Fan"?new Color(.6f,.3f,1):attack=="Dash"?Color.cyan:new Color(1,.5f,.1f);
