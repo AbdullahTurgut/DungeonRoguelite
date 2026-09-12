@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-12 — D2 environment visual conversion implemented; awaiting USER MANUAL QA. Created D2_DungeonFloor.mat (dark cool-grey, r:0.11 g:0.13 b:0.15) and D2_DungeonWall.mat (warm grey-brown, r:0.28 g:0.25 b:0.22) in Assets/Art/Materials/. All walls (Wall_East/West/North/South) and pillars (Pillar_NE/Pillar_SW) in Dungeon_02.unity now use D2_DungeonWall. Added Floor plane (30x30 cube, y=-0.1, no collider) using D2_DungeonFloor. Default URP Lit placeholder fully replaced. Unity batchmode compile exit code 0; git diff --check clean. No commit yet; do not push.
+Last update: 2026-09-12 — D2 and D3 environment visual conversion completed and verified; USER MANUAL QA ACCEPTED. D2 features the accepted rust/warm stone cellar visual identity with KayKit modular walls, pillars, doorway accents, and a seamless 7x7 modular floor grid; D3 ("Mahzenin Derinlikleri") features a subterranean cold slate-blue crypt visual identity with D3_DungeonFloor.mat and D3_DungeonWall.mat, a central North vaulted doorway, modular boundary walls, 4 crypt pillars + 4 corner pillars, and 2 cracked wall accents. Authoritative BoxColliders on floor, walls, and pillars in both D2 and D3 remain 100% active and unchanged while old prototype MeshRenderers are disabled to eliminate z-fighting. All spawn points, dimensions, waves, XP, and gameplay logic remain intact. Clean Unity batchmode compilation and git diff check. Checkpoint commit created locally; no push.
 
 ## Historical update log
 
