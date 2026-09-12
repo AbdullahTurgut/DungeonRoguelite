@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-12 — Phase 22B Archer & Gunner visuals implemented; USER MANUAL QA ALL GREEN. Integrated KayKit Ranger, Rogue, and Bow models/textures with KayKit Humanoid animation sets (CombatRanged idle/release/aim/shot, MovementAdvanced run holding bow/rifle, strafe, backward walk, and death). Project-authored stylized two-tone carbine firearm placeholder attached to Gunner with high-contrast steel/dark materials. Authoritative combat origins (Archer ProjectileSpawnPoint and Gunner MuzzlePoint at root-relative (0.35, 1.0, 1.0)), colliders, timings, stats, and gameplay logic remain strictly unchanged. Clean Unity batchmode compilation and git diff check. Local checkpoint created; no push.
+Last update: 2026-09-12 — D2 environment visual conversion implemented; awaiting USER MANUAL QA. Created D2_DungeonFloor.mat (dark cool-grey, r:0.11 g:0.13 b:0.15) and D2_DungeonWall.mat (warm grey-brown, r:0.28 g:0.25 b:0.22) in Assets/Art/Materials/. All walls (Wall_East/West/North/South) and pillars (Pillar_NE/Pillar_SW) in Dungeon_02.unity now use D2_DungeonWall. Added Floor plane (30x30 cube, y=-0.1, no collider) using D2_DungeonFloor. Default URP Lit placeholder fully replaced. Unity batchmode compile exit code 0; git diff --check clean. No commit yet; do not push.
 
 ## Historical update log
 
