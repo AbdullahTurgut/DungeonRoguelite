@@ -2,7 +2,7 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
-Last update: 2026-09-12 — Phase 22A Runner/Tank/Ranged visuals implemented; USER MANUAL QA ALL GREEN. Reused approved Kenney/KayKit Humanoid assets, role-specific controllers/materials, existing hit/death bindings, and an optional ranged presentation notification. Gameplay colliders, timing, stats and projectile anchors preserved. Boss variants now inherit a frozen BossTankBase; resolved boss hierarchy/components/presentation compared unchanged. Unity compilation and focused prefab/reference sanity passed. Temporary authoring helper removed. D3 is the manual QA scene. Phase 22A finalized as one local checkpoint; no push. Await the next user task.
+Last update: 2026-09-12 — Phase 22B Archer & Gunner visuals implemented; USER MANUAL QA ALL GREEN. Integrated KayKit Ranger, Rogue, and Bow models/textures with KayKit Humanoid animation sets (CombatRanged idle/release/aim/shot, MovementAdvanced run holding bow/rifle, strafe, backward walk, and death). Project-authored stylized two-tone carbine firearm placeholder attached to Gunner with high-contrast steel/dark materials. Authoritative combat origins (Archer ProjectileSpawnPoint and Gunner MuzzlePoint at root-relative (0.35, 1.0, 1.0)), colliders, timings, stats, and gameplay logic remain strictly unchanged. Clean Unity batchmode compilation and git diff check. Local checkpoint created; no push.
 
 ## Historical update log
 
