@@ -6,7 +6,7 @@ namespace DungeonRoguelite.Enemies
     /// Pursues a target Transform on the X/Z plane using a CharacterController.
     /// Halts forward translation when within stopping distance.
     /// Cleanly reacts to EnemyHealth.OnDied by stopping movement and disabling its CharacterController.
-    /// Note: Direct pursuit is an intentional prototype solution and does not provide full pathfinding around complex dungeon geometry.
+    /// Uses short-range static-obstacle steering; this is not full dungeon pathfinding.
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public class EnemyMovement : MonoBehaviour
@@ -24,6 +24,9 @@ namespace DungeonRoguelite.Enemies
         [Tooltip("Angular turning speed in degrees per second.")]
         [SerializeField] private float turnSpeed = 720f;
 
+        [Header("Pursuit Obstacle Avoidance")]
+        [SerializeField] private EnemyObstacleAvoidance obstacleAvoidance = new EnemyObstacleAvoidance();
+
         [Header("Targeting")]
         [Tooltip("The target Transform to pursue. Auto-discovers tag 'Player' if unassigned.")]
         [SerializeField] private Transform target;
@@ -34,6 +37,7 @@ namespace DungeonRoguelite.Enemies
         private bool isMoving;
         private EnemyAttack meleeAttack;
         private EnemyRangedAttack rangedAttack;
+        private bool usesObstacleAvoidance;
 
         public float MoveSpeed => moveSpeed;
         public float StoppingDistance => stoppingDistance;
@@ -46,6 +50,7 @@ namespace DungeonRoguelite.Enemies
             health = GetComponent<EnemyHealth>();
             meleeAttack = GetComponent<EnemyAttack>();
             rangedAttack = GetComponent<EnemyRangedAttack>();
+            usesObstacleAvoidance = (meleeAttack != null || rangedAttack != null) && GetComponent<IBossPresentation>() == null;
             ResolveTarget();
         }
 
@@ -68,6 +73,7 @@ namespace DungeonRoguelite.Enemies
 
         private void OnDisable()
         {
+            obstacleAvoidance?.Reset();
             if (health != null)
             {
                 health.OnDied -= HandleDied;
@@ -112,6 +118,7 @@ namespace DungeonRoguelite.Enemies
 
             if ((meleeAttack != null && meleeAttack.IsAttacking) || (rangedAttack != null && rangedAttack.IsAttacking))
             {
+                obstacleAvoidance?.Reset();
                 isMoving = false;
                 characterController.Move(Vector3.down * gravity * dt);
                 return;
@@ -122,6 +129,7 @@ namespace DungeonRoguelite.Enemies
                 ResolveTarget();
                 if (target == null)
                 {
+                    obstacleAvoidance?.Reset();
                     isMoving = false;
                     characterController.Move(Vector3.down * gravity * dt);
                     return;
@@ -134,8 +142,10 @@ namespace DungeonRoguelite.Enemies
 
             if (distance > stoppingDistance)
             {
-                isMoving = true;
                 Vector3 moveDir = toTarget.normalized;
+                if (usesObstacleAvoidance && obstacleAvoidance != null)
+                    moveDir = obstacleAvoidance.Steer(characterController, moveDir, distance, moveSpeed, dt);
+                isMoving = moveDir.sqrMagnitude > .001f;
 
                 // Rotate smoothly toward movement direction
                 if (moveDir.sqrMagnitude > 0.001f)
@@ -149,6 +159,7 @@ namespace DungeonRoguelite.Enemies
             }
             else
             {
+                obstacleAvoidance?.Reset();
                 isMoving = false;
 
                 // Maintain facing direction toward target even when stopped
@@ -180,6 +191,7 @@ namespace DungeonRoguelite.Enemies
         /// </summary>
         public void SetTarget(Transform newTarget)
         {
+            if (target != newTarget) obstacleAvoidance?.Reset();
             target = newTarget;
         }
     }
