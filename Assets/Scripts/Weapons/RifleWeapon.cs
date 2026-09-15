@@ -53,6 +53,9 @@ namespace DungeonRoguelite.Weapons
         private IDamageable ownerDamageable;
         private PlayerStats playerStats;
         private Coroutine feedbackCoroutine;
+        private LineRenderer styledTracer;
+        private Gradient baseTracerColor;
+        private float baseTracerWidth;
 
         public float Damage => damage;
         public float BaseDamage => damage;
@@ -301,6 +304,28 @@ namespace DungeonRoguelite.Weapons
                 tracerLine.positionCount = 2;
                 tracerLine.SetPosition(0, origin);
                 tracerLine.SetPosition(1, endPoint);
+
+                // Capture the authored appearance once and restore it for Base/Tier II.
+                if (styledTracer != tracerLine)
+                {
+                    styledTracer = tracerLine;
+                    baseTracerColor = tracerLine.colorGradient;
+                    baseTracerWidth = tracerLine.widthMultiplier;
+                }
+                tracerLine.colorGradient = baseTracerColor;
+                tracerLine.widthMultiplier = baseTracerWidth;
+                var pc = GetComponentInParent<DungeonRoguelite.Characters.PlayableCharacter>();
+                if (pc != null && pc.CharacterDefinition != null)
+                {
+                    var equipped = DungeonRoguelite.Progression.PermanentProgression.GetEquippedWeapon(pc.CharacterDefinition.Id, pc.CharacterDefinition.WeaponCatalog);
+                    if (equipped != null && equipped.Tier == 1)
+                    {
+                        tracerLine.widthMultiplier = baseTracerWidth * 1.2f;
+                        tracerLine.startColor = new Color(.45f, .85f, 1f, 1f);
+                        tracerLine.endColor = new Color(.25f, .65f, 1f, 0f);
+                    }
+                }
+
                 tracerLine.enabled = true;
             }
 

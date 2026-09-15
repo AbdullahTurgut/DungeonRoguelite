@@ -135,6 +135,19 @@ namespace DungeonRoguelite.Weapons
             line.numCapVertices = 2;
             line.startColor = slashColor;
             line.endColor = slashColor;
+
+            var pc = GetComponentInParent<DungeonRoguelite.Characters.PlayableCharacter>();
+            if (pc != null && pc.CharacterDefinition != null)
+            {
+                var equipped = DungeonRoguelite.Progression.PermanentProgression.GetEquippedWeapon(pc.CharacterDefinition.Id, pc.CharacterDefinition.WeaponCatalog);
+                if (equipped != null && equipped.Tier == 1)
+                {
+                    line.startColor = new Color(1f, .5f, .18f, 1f);
+                    line.endColor = new Color(1f, .5f, .18f, 0f);
+                    line.startWidth = lineWidth * 1.2f;
+                }
+            }
+
             line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             line.receiveShadows = false;
 

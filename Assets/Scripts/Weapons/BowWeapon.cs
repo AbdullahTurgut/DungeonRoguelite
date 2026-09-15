@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using DungeonRoguelite.Combat;
 using DungeonRoguelite.Player;
@@ -176,6 +176,30 @@ namespace DungeonRoguelite.Weapons
             Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
             GameObject arrowObj = Instantiate(arrowPrefab, spawnPosition, rotation);
 
+            // Presentation only: never scale the projectile root or its collider.
+            var pc = GetComponentInParent<DungeonRoguelite.Characters.PlayableCharacter>();
+            if (pc != null && pc.CharacterDefinition != null)
+            {
+                var equipped = DungeonRoguelite.Progression.PermanentProgression.GetEquippedWeapon(pc.CharacterDefinition.Id, pc.CharacterDefinition.WeaponCatalog);
+                if (equipped != null && equipped.Tier == 1)
+                {
+                    var trail = arrowObj.GetComponentInChildren<TrailRenderer>();
+                    if (trail != null)
+                    {
+                        trail.startColor = new Color(.35f, .85f, 1f, .8f);
+                        trail.endColor = new Color(.35f, .85f, 1f, 0f);
+                    }
+                    var block = new MaterialPropertyBlock();
+                    foreach (var renderer in arrowObj.GetComponentsInChildren<MeshRenderer>())
+                    {
+                        renderer.GetPropertyBlock(block);
+                        block.SetColor("_BaseColor", new Color(.55f, .85f, 1f));
+                        block.SetColor("_Color", new Color(.55f, .85f, 1f));
+                        renderer.SetPropertyBlock(block);
+                        block.Clear();
+                    }
+                }
+            }
             ArrowProjectile projectile = arrowObj.GetComponent<ArrowProjectile>();
             if (projectile != null)
             {
