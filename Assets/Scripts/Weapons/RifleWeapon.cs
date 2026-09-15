@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using DungeonRoguelite.Combat;
 using DungeonRoguelite.Player;
+using DungeonRoguelite.Presentation;
 
 namespace DungeonRoguelite.Weapons
 {
@@ -53,9 +54,10 @@ namespace DungeonRoguelite.Weapons
         private IDamageable ownerDamageable;
         private PlayerStats playerStats;
         private Coroutine feedbackCoroutine;
-        private LineRenderer styledTracer;
-        private Gradient baseTracerColor;
-        private float baseTracerWidth;
+        private Renderer flashRenderer;
+        private GameObject styledFlash;
+        private Vector3 baseFlashScale;
+        private MaterialPropertyBlock flashBlock;
 
         public float Damage => damage;
         public float BaseDamage => damage;
@@ -305,32 +307,37 @@ namespace DungeonRoguelite.Weapons
                 tracerLine.SetPosition(0, origin);
                 tracerLine.SetPosition(1, endPoint);
 
-                // Capture the authored appearance once and restore it for Base/Tier II.
-                if (styledTracer != tracerLine)
-                {
-                    styledTracer = tracerLine;
-                    baseTracerColor = tracerLine.colorGradient;
-                    baseTracerWidth = tracerLine.widthMultiplier;
-                }
-                tracerLine.colorGradient = baseTracerColor;
-                tracerLine.widthMultiplier = baseTracerWidth;
-                var pc = GetComponentInParent<DungeonRoguelite.Characters.PlayableCharacter>();
-                if (pc != null && pc.CharacterDefinition != null)
-                {
-                    var equipped = DungeonRoguelite.Progression.PermanentProgression.GetEquippedWeapon(pc.CharacterDefinition.Id, pc.CharacterDefinition.WeaponCatalog);
-                    if (equipped != null && equipped.Tier == 1)
-                    {
-                        tracerLine.widthMultiplier = baseTracerWidth * 1.2f;
-                        tracerLine.startColor = new Color(.45f, .85f, 1f, 1f);
-                        tracerLine.endColor = new Color(.25f, .65f, 1f, 0f);
-                    }
-                }
+                int tier = AttackVfxStyle.EquippedTier(this);
+                // Absolute world widths avoid multiplying the authored curve into a beam.
+                AttackVfxStyle.Configure(tracerLine, ShotColor(tier),
+                    tier == 2 ? 0.065f : tier == 1 ? 0.05f : 0.035f);
+                tracerLine.useWorldSpace = true;
 
                 tracerLine.enabled = true;
             }
 
             if (muzzleFlashVisual != null)
             {
+                int tier = AttackVfxStyle.EquippedTier(this);
+                if (styledFlash != muzzleFlashVisual)
+                {
+                    styledFlash = muzzleFlashVisual;
+                    baseFlashScale = styledFlash.transform.localScale;
+                    flashRenderer = styledFlash.GetComponent<Renderer>();
+                }
+                // Scale only the dedicated flash mesh, never the combat anchor.
+                styledFlash.transform.localScale = Vector3.Scale(baseFlashScale,
+                    tier == 2 ? new Vector3(1.25f, 1.25f, 2f) :
+                    tier == 1 ? new Vector3(1.1f, 1.1f, 1.4f) : Vector3.one);
+                if (flashRenderer != null)
+                {
+                    if (flashBlock == null) flashBlock = new MaterialPropertyBlock();
+                    flashRenderer.sharedMaterial = AttackVfxStyle.Material;
+                    flashRenderer.GetPropertyBlock(flashBlock);
+                    flashBlock.SetColor("_Color", ShotColor(tier));
+                    flashRenderer.SetPropertyBlock(flashBlock);
+                    flashRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
                 muzzleFlashVisual.SetActive(true);
             }
 
@@ -344,6 +351,9 @@ namespace DungeonRoguelite.Weapons
             }
         }
 
+        private static Color ShotColor(int tier) => tier == 2 ? new Color(0.85f, 0.5f, 1f) :
+            tier == 1 ? new Color(0.2f, 0.85f, 1f) : new Color(1f, 0.92f, 0.72f, 0.85f);
+
         private IEnumerator HideFeedbackRoutine()
         {
             float elapsed = 0f;
@@ -351,10 +361,8 @@ namespace DungeonRoguelite.Weapons
 
             while (elapsed < maxDuration)
             {
-                if (Time.timeScale > 0f)
-                {
-                    elapsed += Time.deltaTime;
-                }
+                // Presentation expires even when a level-up pauses gameplay.
+                elapsed += Time.unscaledDeltaTime;
 
                 if (muzzleFlashVisual != null && elapsed >= flashDuration)
                 {
