@@ -25,6 +25,19 @@ namespace DungeonRoguelite.UI
         [SerializeField] private Button returnButton;
         [SerializeField] private GameObject equipmentPanel;
         [SerializeField] private TMP_Text equipmentText;
+        [Header("Weapon Preview")]
+        [SerializeField] private Image weaponPreviewImage;
+        [SerializeField] private TMP_Text weaponPreviewFallback;
+        [SerializeField] private WeaponPreviewEntry[] weaponPreviews;
+
+        [Serializable]
+        private struct WeaponPreviewEntry
+        {
+            public CharacterDefinition character;
+            [Tooltip("Leave empty for this character's Base weapon.")]
+            public WeaponDefinition weapon;
+            public Sprite sprite;
+        }
         [SerializeField] private Button claimButton;
         [SerializeField] private Button equipButton;
         [SerializeField] private Button baseButton;
@@ -126,6 +139,7 @@ namespace DungeonRoguelite.UI
             // Slot zero is Base; the remaining slots belong only to this hero.
             offeredIndex %= choices.Length + 1;
             offeredWeapon = offeredIndex == 0 ? null : choices[offeredIndex - 1];
+            RefreshWeaponPreview();
             if (cycleWeaponButton != null) cycleWeaponButton.gameObject.SetActive(choices.Length > 0);
             var current = PermanentProgression.GetEquippedWeapon(SelectedCharacter.Id, SelectedCharacter.WeaponCatalog);
             if (offeredWeapon == null)
@@ -168,6 +182,26 @@ namespace DungeonRoguelite.UI
             var bText = baseButton.GetComponentInChildren<TMP_Text>(); if (bText) bText.text = "BAŞLANGIÇ";
             var xText = closeButton.GetComponentInChildren<TMP_Text>(); if (xText) xText.text = "KAPAT";
 
+        }
+
+        private void RefreshWeaponPreview()
+        {
+            if (weaponPreviewImage == null) return;
+            Sprite sprite = null;
+            if (weaponPreviews != null)
+                foreach (var entry in weaponPreviews)
+                    if (entry.character == SelectedCharacter && entry.weapon == offeredWeapon)
+                    {
+                        sprite = entry.sprite;
+                        break;
+                    }
+            // Always clear the previous selection, including when the next icon is missing.
+            weaponPreviewImage.sprite = sprite;
+            weaponPreviewImage.enabled = sprite != null;
+            weaponPreviewImage.preserveAspect = true;
+            weaponPreviewImage.raycastTarget = false;
+            if (weaponPreviewFallback != null)
+                weaponPreviewFallback.gameObject.SetActive(sprite == null);
         }
 
     }
