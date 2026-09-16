@@ -2670,6 +2670,11 @@ MonoBehaviour:
   flashDuration: 0.04
   tracerLine: {fileID: 4617318962661822827}
   muzzleFlashVisual: {fileID: 4983809051745759675}
+  audioSource: {fileID: 0}
+  shootClips:
+  - {fileID: 8300000, guid: 4e5d21f1a3dbd8b4bb188df158bfa1db, type: 3}
+  impactClips:
+  - {fileID: 8300000, guid: 945b8d80972eb554ea21af4b7f7d399d, type: 3}
 --- !u!114 &523779895863749123
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -49,6 +49,11 @@ namespace DungeonRoguelite.Weapons
         [Tooltip("Optional GameObject toggled for muzzle flash visual.")]
         [SerializeField] private GameObject muzzleFlashVisual;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip[] shootClips;
+        [SerializeField] private AudioClip[] impactClips;
+
         private float nextAttackTime = 0f;
         private Transform ownerTransform;
         private IDamageable ownerDamageable;
@@ -90,6 +95,8 @@ namespace DungeonRoguelite.Weapons
         {
             ResolveOwner();
             EnsureFeedbackComponents();
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         private void OnDisable()
@@ -160,6 +167,11 @@ namespace DungeonRoguelite.Weapons
                     muzzleFlashVisual = flashChild.gameObject;
                 }
             }
+
+            if (muzzleFlashVisual != null)
+            {
+                muzzleFlashVisual.SetActive(false);
+            }
         }
 
         /// <summary>
@@ -177,6 +189,14 @@ namespace DungeonRoguelite.Weapons
         public void SetPlayerStats(PlayerStats stats)
         {
             playerStats = stats;
+        }
+
+        /// <summary>
+        /// Explicitly binds the muzzle spawn point.
+        /// </summary>
+        public void SetMuzzlePoint(Transform spawnPoint)
+        {
+            muzzlePoint = spawnPoint;
         }
 
         /// <summary>
@@ -208,6 +228,8 @@ namespace DungeonRoguelite.Weapons
 
         private void ExecuteAttack()
         {
+            DungeonRoguelite.Audio.AudioHelper.PlayClip(audioSource, shootClips, 0.96f, 1.04f, 0.20f);
+
             Vector3 origin;
             Vector3 forward;
 
@@ -234,6 +256,7 @@ namespace DungeonRoguelite.Weapons
             }
 
             Vector3 endPoint = origin + forward * range;
+            bool hitSomething = false;
 
             // Single authoritative collision query
             RaycastHit[] hits = castRadius > 0.001f
@@ -271,6 +294,7 @@ namespace DungeonRoguelite.Weapons
                         hitPt = origin + forward * hits[i].distance;
                     }
                     endPoint = hitPt;
+                    hitSomething = true;
 
                     // The FIRST remaining valid solid hit is authoritative
                     IDamageable damageable = col.GetComponentInParent<IDamageable>();
@@ -288,6 +312,11 @@ namespace DungeonRoguelite.Weapons
                     // Nothing behind this hit may be damaged (no penetration).
                     break;
                 }
+            }
+
+            if (hitSomething && impactClips != null && impactClips.Length > 0)
+            {
+                DungeonRoguelite.Audio.AudioHelper.PlayClipAtPoint(impactClips[UnityEngine.Random.Range(0, impactClips.Length)], endPoint, 0.16f);
             }
 
             // Fire shot event with resolved endpoint

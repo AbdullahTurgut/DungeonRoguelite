@@ -501,6 +501,7 @@ GameObject:
   - component: {fileID: 1970031214855192238}
   - component: {fileID: 4992478222616938967}
   - component: {fileID: 2273410728332693021}
+  - component: {fileID: 6112505696810752750}
   m_Layer: 0
   m_Name: Ranged
   m_TagString: Untagged
@@ -696,6 +697,26 @@ MonoBehaviour:
   releaseTime: 0.25
   enemyWindup: 0.45
   enemyFollowThrough: 0.15
+--- !u!114 &6112505696810752750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8062806540668609047}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd7c14fa7cf8abc49a9ddc3aebf9ddee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyAudioFeedback
+  audioSource: {fileID: 0}
+  hurtClips:
+  - {fileID: 8300000, guid: 55d920a9c5eb4dc40a113141b6b75ed1, type: 3}
+  hurtVolume: 0.22
+  deathClips:
+  - {fileID: 8300000, guid: fdec09f52c33efe478a84f0686e0573e, type: 3}
+  deathVolume: 0.26
+  hurtCooldown: 0.2
 --- !u!1001 &5487589299557146761
 PrefabInstance:
   m_ObjectHideFlags: 0

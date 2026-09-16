@@ -2089,6 +2089,9 @@ MonoBehaviour:
   projectileLifetime: 2
   arrowPrefab: {fileID: 8499726248871958808, guid: 7b8c0aa821ed9684ea9747094173ca0a, type: 3}
   projectileSpawnPoint: {fileID: 8697740207258791257}
+  audioSource: {fileID: 0}
+  shootClips:
+  - {fileID: 8300000, guid: 4fcad3f8ace911240972dd980faf9754, type: 3}
 --- !u!114 &893251697037961175
 MonoBehaviour:
   m_ObjectHideFlags: 0

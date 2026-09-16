@@ -29,6 +29,11 @@ namespace DungeonRoguelite.Weapons
         [Tooltip("Layers checked for damageable entities.")]
         [SerializeField] private LayerMask targetLayers = ~0;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip[] swingClips;
+        [SerializeField] private AudioClip[] hitClips;
+
         private float nextAttackTime = 0f;
         private IDamageable ownerDamageable;
         private Transform ownerTransform;
@@ -54,6 +59,8 @@ namespace DungeonRoguelite.Weapons
         private void Awake()
         {
             ResolveOwner();
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         private void ResolveOwner()
@@ -116,6 +123,8 @@ namespace DungeonRoguelite.Weapons
                 forward.Normalize();
             }
 
+            DungeonRoguelite.Audio.AudioHelper.PlayClip(audioSource, swingClips, 0.95f, 1.05f, 0.28f);
+
             // Query colliders within reach
             Collider[] colliders = Physics.OverlapSphere(origin, range, targetLayers, QueryTriggerInteraction.Ignore);
             if (colliders == null || colliders.Length == 0)
@@ -125,6 +134,7 @@ namespace DungeonRoguelite.Weapons
 
             float halfArc = arcAngle * 0.5f;
             HashSet<IDamageable> hitDamageables = new HashSet<IDamageable>();
+            bool hitSomething = false;
 
             for (int i = 0; i < colliders.Length; i++)
             {
@@ -172,8 +182,14 @@ namespace DungeonRoguelite.Weapons
                     if (hitDamageables.Add(damageable))
                     {
                         damageable.TakeDamage(EffectiveDamage);
+                        hitSomething = true;
                     }
                 }
+            }
+
+            if (hitSomething)
+            {
+                DungeonRoguelite.Audio.AudioHelper.PlayClip(audioSource, hitClips, 0.96f, 1.04f, 0.34f);
             }
         }
 

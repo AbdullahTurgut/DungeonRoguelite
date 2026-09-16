@@ -436,6 +436,11 @@ MonoBehaviour:
   targetLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  audioSource: {fileID: 0}
+  swingClips:
+  - {fileID: 8300000, guid: 28f913710f790a3428482a5d88afb293, type: 3}
+  hitClips:
+  - {fileID: 8300000, guid: e91a9c0f199430a4a9044a7a8c5b7a89, type: 3}
 --- !u!114 &819200000000000007
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -451,7 +456,6 @@ MonoBehaviour:
   lifetime: 0.12
   radiusFraction: 0.72
   lineWidth: 0.11
-  slashColor: {r: 1, g: 0.84, b: 0.24, a: 1}
 --- !u!114 &8122806169242011842
 MonoBehaviour:
   m_ObjectHideFlags: 0

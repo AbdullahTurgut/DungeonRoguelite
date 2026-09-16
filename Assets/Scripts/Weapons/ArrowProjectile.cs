@@ -17,6 +17,9 @@ namespace DungeonRoguelite.Weapons
         [Tooltip("Layers checked for projectile impacts.")]
         [SerializeField] private LayerMask collisionLayers = ~0;
 
+        [Header("Audio")]
+        [SerializeField] private AudioClip[] impactClips;
+
         private Transform ownerRoot;
         private Vector3 travelDirection;
         private float speed = 18f;
@@ -125,7 +128,7 @@ namespace DungeonRoguelite.Weapons
                     }
 
                     // Valid solid hit detected
-                    ResolveHit(hitCol);
+                    ResolveHit(hitCol, hit.point);
                     return;
                 }
             }
@@ -134,7 +137,7 @@ namespace DungeonRoguelite.Weapons
             transform.position = currentPos + travelDirection * travelDistance;
         }
 
-        private void ResolveHit(Collider hitCol)
+        private void ResolveHit(Collider hitCol, Vector3 hitPoint)
         {
             if (hitResolved)
             {
@@ -142,6 +145,11 @@ namespace DungeonRoguelite.Weapons
             }
 
             hitResolved = true;
+
+            if (impactClips != null && impactClips.Length > 0)
+            {
+                DungeonRoguelite.Audio.AudioHelper.PlayClipAtPoint(impactClips[Random.Range(0, impactClips.Length)], hitPoint, 0.24f, 0.95f, 1.05f);
+            }
 
             // Check for IDamageable on target or its parents
             IDamageable damageable = hitCol.GetComponentInParent<IDamageable>();

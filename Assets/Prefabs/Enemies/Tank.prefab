@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 1231107240609609824}
   - component: {fileID: 6965941066668139451}
   - component: {fileID: 817081849651805238}
+  - component: {fileID: 1779533411088113370}
   m_Layer: 0
   m_Name: Tank
   m_TagString: Untagged
@@ -167,7 +168,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c0c505d99bfc6d44c8c3c5eb962a485a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyHealth
   maxHealth: 150
   currentHealth: 0
@@ -182,12 +183,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdecf1a32c3a2084ab7d06d752873467, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyMovement
   moveSpeed: 1.8
   stoppingDistance: 1.8
   gravity: 20
   turnSpeed: 720
+  obstacleAvoidance:
+    obstacleLayers:
+      serializedVersion: 2
+      m_Bits: 4294967291
+    probeDistance: 1.3
+    sideHoldTime: 0.8
+    clearDelay: 0.2
+    steeringDegreesPerSecond: 240
   target: {fileID: 0}
 --- !u!114 &2866709749203195316
 MonoBehaviour:
@@ -199,7 +208,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c61289d0b0ca1ff4cacda25477d2316d, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyAttack
   damage: 22
   attackRange: 2
@@ -219,7 +228,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 361a29216c69ad145801ebb2321abf38, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Experience.ExperienceReward
   xpAmount: 40
   pickupPrefab: {fileID: 899525307405159231, guid: 2a97eae418329514c9e7a29f90fbef49, type: 3}
@@ -233,7 +242,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 41a7b3ab9f8e4c73ab9d8056cbd71102, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyVisualFeedback
   targetRenderers:
   - {fileID: 8240691436566674416}
@@ -254,6 +263,8 @@ MonoBehaviour:
   hitParticleCount: 5
   deathParticleCount: 9
   impactMaterial: {fileID: 2100000, guid: ac4cb8304f35462bbbfb8ce09d2dd4c5, type: 2}
+  hideOnDeathStart: []
+  hideOnDeathEnd: []
 --- !u!114 &6965941066668139451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -264,7 +275,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 41a7b3ab9f8e4c73ab9d8056cbd71103, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.CorpseCleanup
   cleanupDelay: 1.5
 --- !u!114 &817081849651805238
@@ -277,19 +288,44 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4199e6f76e21134586907c1d4cec7ca, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Presentation.MeleeHumanoidPresentation
   animator: {fileID: 1041749790790182018}
   movement: {fileID: 7172837468662834003}
   weapon: {fileID: 0}
+  bowWeapon: {fileID: 0}
+  rifleWeapon: {fileID: 0}
   enemyAttack: {fileID: 2866709749203195316}
   rangedAttack: {fileID: 0}
   playerHealth: {fileID: 0}
   enemyHealth: {fileID: 3384182311036752730}
+  targetRenderers: []
+  flashDuration: 0.08
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
   attackClipLength: 1.1666667
   releaseTime: 0.25
   enemyWindup: 0.65
   enemyFollowThrough: 0.3
+--- !u!114 &1779533411088113370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4468039391420646181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd7c14fa7cf8abc49a9ddc3aebf9ddee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyAudioFeedback
+  audioSource: {fileID: 0}
+  hurtClips:
+  - {fileID: 8300000, guid: 55d920a9c5eb4dc40a113141b6b75ed1, type: 3}
+  hurtVolume: 0.22
+  deathClips:
+  - {fileID: 8300000, guid: 14ae6139ad894e54da0d54d4f1c47373, type: 3}
+  deathVolume: 0.28
+  hurtCooldown: 0.2
 --- !u!1 &6190838003262121713
 GameObject:
   m_ObjectHideFlags: 0
@@ -474,19 +510,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -5961836333997841693, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: -3530864053929793114, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 270157423702485028, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 409350670104493089, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 919132149155446097, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: m_Name
@@ -494,19 +530,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2864905401325474408, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 3064714828559208297, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 4421160185440302840, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 5866666021909216657, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: m_Controller
-      value:
+      value: 
       objectReference: {fileID: 9100000, guid: 0a27baa5475385f438642faa4d667ca2, type: 2}
     - target: {fileID: 5866666021909216657, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: m_ApplyRootMotion
@@ -514,11 +550,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7906128453035725863, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     - target: {fileID: 8260351504431586659, guid: 0301ad556871b7d4ba735da323c5238a, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: fe6817e3dbf8d954db657333a7af81d9, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

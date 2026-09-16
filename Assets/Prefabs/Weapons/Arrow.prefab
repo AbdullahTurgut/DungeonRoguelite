@@ -141,6 +141,8 @@ MonoBehaviour:
   collisionLayers:
     serializedVersion: 2
     m_Bits: 4294967295
+  impactClips:
+  - {fileID: 8300000, guid: d8d54c48df1ca8640bc93bcdb3ddeeff, type: 3}
 --- !u!136 &528999945653156515
 CapsuleCollider:
   m_ObjectHideFlags: 0

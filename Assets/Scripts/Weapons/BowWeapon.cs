@@ -32,6 +32,10 @@ namespace DungeonRoguelite.Weapons
         [Tooltip("Transform determining the arrow spawn location and orientation.")]
         [SerializeField] private Transform projectileSpawnPoint;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource audioSource;
+        [SerializeField] private AudioClip[] shootClips;
+
         private float nextAttackTime = 0f;
         private Transform ownerTransform;
         private IDamageable ownerDamageable;
@@ -58,6 +62,8 @@ namespace DungeonRoguelite.Weapons
         private void Awake()
         {
             ResolveOwner();
+            if (audioSource == null) audioSource = GetComponent<AudioSource>();
+            if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         private void ResolveOwner()
@@ -148,6 +154,8 @@ namespace DungeonRoguelite.Weapons
 
         private void ExecuteAttack()
         {
+            DungeonRoguelite.Audio.AudioHelper.PlayClip(audioSource, shootClips, 0.95f, 1.05f, 0.28f);
+
             Vector3 spawnPosition;
             Vector3 direction;
 
