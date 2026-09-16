@@ -20,6 +20,8 @@ namespace DungeonRoguelite.Enemies
         [SerializeField, Range(2, 8)] private int hitParticleCount = 4;
         [SerializeField, Range(3, 12)] private int deathParticleCount = 7;
         [SerializeField] private Material impactMaterial;
+        [SerializeField] private GameObject[] hideOnDeathStart;
+        [SerializeField] private GameObject[] hideOnDeathEnd;
 
         private static readonly int BaseColor = Shader.PropertyToID("_BaseColor");
         private static readonly int BaseMap = Shader.PropertyToID("_BaseMap");
@@ -121,10 +123,23 @@ namespace DungeonRoguelite.Enemies
             if (normalFeedbackAllowed) health.OnDied -= HandleDied;
             Restore();
             if (impactParticles != null) impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            if (dying && deathVisualRoot != null)
+            if (dying)
             {
-                deathVisualRoot.localPosition = originalVisualPosition;
-                deathVisualRoot.localScale = originalVisualScale;
+                if (deathVisualRoot != null)
+                {
+                    deathVisualRoot.localPosition = originalVisualPosition;
+                    deathVisualRoot.localScale = originalVisualScale;
+                }
+                if (hideOnDeathStart != null)
+                {
+                    foreach (var obj in hideOnDeathStart)
+                        if (obj != null) obj.SetActive(true);
+                }
+                if (hideOnDeathEnd != null)
+                {
+                    foreach (var obj in hideOnDeathEnd)
+                        if (obj != null) obj.SetActive(true);
+                }
             }
             dying = false;
         }
@@ -166,6 +181,11 @@ namespace DungeonRoguelite.Enemies
             dying = true;
             deathStartedAt = Time.unscaledTime;
             EmitImpact(true);
+            if (hideOnDeathStart != null)
+            {
+                foreach (var obj in hideOnDeathStart)
+                    if (obj != null) obj.SetActive(false);
+            }
             // Existing health listeners still stop attacks, award XP and remove the wave member now.
             // CorpseCleanup keeps its existing ownership and destruction delay.
         }
@@ -177,6 +197,11 @@ namespace DungeonRoguelite.Enemies
             float collapse = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(.15f, 1f, t));
             deathVisualRoot.localScale = originalVisualScale * (1f - collapse);
             deathVisualRoot.localPosition = originalVisualPosition + Vector3.down * (.16f * collapse);
+            if (t >= 1f && hideOnDeathEnd != null)
+            {
+                foreach (var obj in hideOnDeathEnd)
+                    if (obj != null) obj.SetActive(false);
+            }
         }
 
         private Vector3 ImpactPosition()
