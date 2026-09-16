@@ -236,8 +236,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyVisualFeedback
   targetRenderers:
   - {fileID: 7579721286055976986}
-  flashDuration: 0.08
+  flashDuration: 0.06
   flashColor: {r: 1, g: 1, b: 1, a: 1}
+  normalEnemyFeedback: 1
+  deathVisualRoot: {fileID: 8049831367519284317}
+  deathDuration: 0.2
+  impactScale: 0.8
+  hitParticleCount: 3
+  deathParticleCount: 5
+  impactMaterial: {fileID: 2100000, guid: ac4cb8304f35462bbbfb8ce09d2dd4c5, type: 2}
 --- !u!114 &1622440967409715319
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -26,12 +26,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 539068091985018844}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.5, z: 0.45}
   m_LocalScale: {x: 0.3, y: 0.3, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 8291937992897123487}
+  m_Father: {fileID: 6207532971805822822}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &5832494386424124963
 MeshFilter:
@@ -391,6 +391,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5453133581799638882}
+  - {fileID: 6308168692948066134}
   m_Father: {fileID: 8291937992897123487}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7477203052991566759
@@ -521,7 +522,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2676002195605004629}
-  - {fileID: 6308168692948066134}
   - {fileID: 6207532971805822822}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -560,7 +560,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c0c505d99bfc6d44c8c3c5eb962a485a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyHealth
   maxHealth: 35
   currentHealth: 0
@@ -575,12 +575,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fdecf1a32c3a2084ab7d06d752873467, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyMovement
   moveSpeed: 2.8
   stoppingDistance: 7
   gravity: 20
   turnSpeed: 720
+  obstacleAvoidance:
+    obstacleLayers:
+      serializedVersion: 2
+      m_Bits: 4294967291
+    probeDistance: 1.3
+    sideHoldTime: 0.8
+    clearDelay: 0.2
+    steeringDegreesPerSecond: 240
   target: {fileID: 0}
 --- !u!114 &992357873279305465
 MonoBehaviour:
@@ -592,7 +600,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 361a29216c69ad145801ebb2321abf38, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Experience.ExperienceReward
   xpAmount: 15
   pickupPrefab: {fileID: 899525307405159231, guid: 2a97eae418329514c9e7a29f90fbef49, type: 3}
@@ -606,7 +614,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 41a7b3ab9f8e4c73ab9d8056cbd71102, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyVisualFeedback
   targetRenderers:
   - {fileID: 1599191405940148195}
@@ -615,6 +623,13 @@ MonoBehaviour:
   - {fileID: 3312100150716997207}
   flashDuration: 0.08
   flashColor: {r: 1, g: 1, b: 1, a: 1}
+  normalEnemyFeedback: 0
+  deathVisualRoot: {fileID: 6207532971805822822}
+  deathDuration: 0.26
+  impactScale: 1
+  hitParticleCount: 4
+  deathParticleCount: 7
+  impactMaterial: {fileID: 0}
 --- !u!114 &1970031214855192238
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -625,7 +640,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 41a7b3ab9f8e4c73ab9d8056cbd71103, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.CorpseCleanup
   cleanupDelay: 1.5
 --- !u!114 &4992478222616938967
@@ -638,7 +653,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0590d9eb862ff6b4fb4106cc0ccc648e, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Enemies.EnemyRangedAttack
   damage: 8
   attackRange: 9
@@ -659,15 +674,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a4199e6f76e21134586907c1d4cec7ca, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DungeonRoguelite.Presentation.MeleeHumanoidPresentation
   animator: {fileID: 2111415050636238104}
   movement: {fileID: 5702113456295429395}
   weapon: {fileID: 0}
+  bowWeapon: {fileID: 0}
+  rifleWeapon: {fileID: 0}
   enemyAttack: {fileID: 0}
   rangedAttack: {fileID: 4992478222616938967}
   playerHealth: {fileID: 0}
   enemyHealth: {fileID: 6020571425932049682}
+  targetRenderers: []
+  flashDuration: 0.08
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
   attackClipLength: 1.1666667
   releaseTime: 0.25
   enemyWindup: 0.45
@@ -734,7 +754,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -2049929814205202405, guid: c243102c330443c4e972664464cd39f8, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
-      value:
+      value: 
       objectReference: {fileID: 2100000, guid: bcb4cd5f81059fa43babf80c88ae47b2, type: 2}
     - target: {fileID: 919132149155446097, guid: c243102c330443c4e972664464cd39f8, type: 3}
       propertyPath: m_Name
@@ -750,7 +770,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: c243102c330443c4e972664464cd39f8, type: 3}
       propertyPath: m_Controller
-      value:
+      value: 
       objectReference: {fileID: 9100000, guid: 9afc52d64ea966544adaa46165b959cb, type: 2}
     - target: {fileID: 5866666021909216657, guid: c243102c330443c4e972664464cd39f8, type: 3}
       propertyPath: m_ApplyRootMotion

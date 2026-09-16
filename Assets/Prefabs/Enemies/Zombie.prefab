@@ -270,6 +270,13 @@ MonoBehaviour:
   - {fileID: 7990406946084741778}
   flashDuration: 0.08
   flashColor: {r: 1, g: 1, b: 1, a: 1}
+  normalEnemyFeedback: 1
+  deathVisualRoot: {fileID: 9222728317059892517}
+  deathDuration: 0.26
+  impactScale: 1
+  hitParticleCount: 4
+  deathParticleCount: 7
+  impactMaterial: {fileID: 2100000, guid: ac4cb8304f35462bbbfb8ce09d2dd4c5, type: 2}
 --- !u!114 &110100000000000002
 MonoBehaviour:
   m_ObjectHideFlags: 0

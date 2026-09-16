@@ -2,6 +2,21 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
+## Phase 26B - normal enemy hit/death feedback (2026-09-16; COMPLETE)
+
+This checkpoint supersedes the earlier pending Phase 26A notes: player VFX e12907e and Armory previews 1b2d4f7 are approved and pushed. Phase 26B is now fully verified and pushed.
+
+- Extended EnemyVisualFeedback, reusing EnemyHealth.OnHealthChanged and OnDied. Existing MeleeHumanoidPresentation death animation, CorpseCleanup (1.5s), attack cancellation, XP drop and wave removal hooks are unchanged. There is no enemy pooling in the current flow and no new health/death authority.
+- Normal-prefab opt-in plus parent/child IBossPresentation exclusion protects Ash Warden, Hollow Castellan and future marked bosses. BossTankBase and both boss prefabs/files are untouched; they do not inherit the normal Tank settings.
+- Existing instance-local MaterialPropertyBlock flash now briefly replaces the palette BaseMap with a white texture for opted-in normal enemies, making white tint visible on textured models. Original blocks/materials/textures restore after 0.06-0.09s and on disable; repeated hits preserve the original baseline. Existing attack cues are unchanged.
+- One lazily created, reusable ParticleSystem per enemy, capped at 12 particles, reuses the Phase 26A shared material without modifying it. Hit bursts use 3-5 particles; death bursts use 5-9. Particles shrink/fade over 0.10-0.18s. No realtime lights, per-hit material clones, per-frame allocations or new VFX assets. Lethal hits emit one death burst rather than stacked hit/death bursts.
+- Impact position is approximate visible body bounds center + 0.1m up, because health events do not provide a contact point. No physics query or player attack changes were introduced.
+- Visual-only child collapses/drops in unscaled time: Zombie 0.26s, Runner 0.20s, Tank 0.32s, Ranged 0.23s. Existing animation can continue beneath the visual root; the actor/colliders are never scaled or moved. Child scale reaches zero until existing corpse cleanup destroys the root. XP/wave logic proceeds immediately on the original death event; no destruction timing or gameplay delay changed.
+- Validation: single Unity compilation PASS (no C# errors/warnings in this pass). Quick GUID references PASS for four normal prefabs, reused material and Dungeon_02. All four prefab diffs modify only the existing EnemyVisualFeedback block; every gameplay/animation/transform block is unchanged. Protected seven local files retain their starting SHA256 hashes; stash hash unchanged. No verifier scene, harness, gameplay automation or broad regression suite.
+- Unity is open in edit mode on Assets/Scenes/Dungeons/Dungeon_02.unity, confirmed by editor log and LastSceneManagerSetup. Wave 1 contains Tank/Zombie/Runner; Wave 2 adds Ranged. Scene file is unchanged. Evidence: Logs/Phase26B/editor.log, reference-sanity.txt, protected-before.json and stash-before.txt (ignored).
+- Known limits: gameplay, eight hit/death visual paths and performance have not been manually verified. Editor startup logged a CancellationTokenSource disposal message outside script compilation; no C# compilation error was reported. No unrelated tooling change attempted.
+- NEXT: user manual QA in D2 for all four enemy hit/death paths, repeat hits, once-only XP, continued waves, no post-death attacks, readability and stable performance; boss regression remains user QA. Stop here. No audio, camera/hit-stop, boss polish, UI, save/progression or Phase 26A changes.
+
 ## Phase 26A.1 - Armory weapon preview icons (2026-09-15; READY for manual QA)
 
 - Added a compact dark, subtly bordered item slot to the existing weapon detail popup. ArmoryHubUI now has a serialized Image, fallback label, and optional UI-only preview entries keyed by CharacterDefinition plus exact WeaponDefinition (null denotes that hero's Base).
