@@ -2,6 +2,14 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
+## Phase 26E.0 - D6 / D9 / D10 arena presentation (2026-09-20; COMPLETE)
+
+- D6 arena reworked
+- D9 arena reworked
+- D10 arena reworked
+- manual QA GREEN
+- Temporary editor-only authoring tools successfully removed.
+
 ## Phase 26D.2 - D5 / Ash Warden presentation (2026-09-20; COMPLETE)
 
 - Manual QA ALL GREEN.
