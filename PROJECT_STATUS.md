@@ -2,6 +2,14 @@
 
 > This file is the handoff checkpoint between ChatGPT, Antigravity, Codex, and human development sessions.
 
+## Phase 26D.2 - D5 / Ash Warden presentation (2026-09-20; COMPLETE)
+
+- Manual QA ALL GREEN.
+- Integrated D5 forge ambience and Ash Warden presentation (melee, Slam charge/impact, Bolt charge/fire/impact, Boss hurt/death).
+- Astra VFX preserved and telegraphed geometry unchanged.
+- Temporary audio pool and helper scripts successfully removed.
+- Confirmed bolt collision impact audio correctly implemented without false triggers on expiration/cancellation.
+
 ## Phase 26B - normal enemy hit/death feedback (2026-09-16; COMPLETE)
 
 This checkpoint supersedes the earlier pending Phase 26A notes: player VFX e12907e and Armory previews 1b2d4f7 are approved and pushed. Phase 26B is now fully verified and pushed.

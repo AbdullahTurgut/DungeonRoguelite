@@ -486,3 +486,17 @@ MonoBehaviour:
   - {fileID: 5992965002881869928}
   flashDuration: 0.08
   flashColor: {r: 1, g: 1, b: 1, a: 1}
+  audioSource: {fileID: 0}
+  meleeSwingClip: {fileID: 8300000, guid: 4c90b94999cd43f39137c052e13f1bff, type: 3}
+  slamChargeClip: {fileID: 8300000, guid: 5414c32ae94946d3a0ab38be27dfb8d9, type: 3}
+  slamImpactClip: {fileID: 8300000, guid: bdc96c4b5b434321ab673149abc80cd6, type: 3}
+  boltChargeClip: {fileID: 8300000, guid: 7b36d0feb5bf41e1a1c245a62a74199e, type: 3}
+  boltFireClip: {fileID: 8300000, guid: 70a56917edb844e98ac1498efe7c2d0d, type: 3}
+  boltImpactClip: {fileID: 8300000, guid: 53000541f8cb497694592c099518fbde, type: 3}
+  hurtClip: {fileID: 8300000, guid: 349d5571ec3448e285797d124e5fc156, type: 3}
+  deathClip: {fileID: 8300000, guid: 0704e575032c46e4bf8ce9ea6a14b996, type: 3}
+  attackVolume: 1
+  hurtVolume: 0.24
+  deathVolume: 0.46
+  hurtCooldown: 0.4
+  chargeAnchor: {fileID: 4461498354784334145}

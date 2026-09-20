@@ -9307,6 +9307,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3343832468265737817, guid: 4e0de5573bbb4f24bafa363d68feb146, type: 3}
+      propertyPath: m_Volume
+      value: 0.40
+      objectReference: {fileID: 0}
+    - target: {fileID: 3343832468265737817, guid: 4e0de5573bbb4f24bafa363d68feb146, type: 3}
+      propertyPath: m_Resource
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 3343832468265737817, guid: 4e0de5573bbb4f24bafa363d68feb146, type: 3}
+      propertyPath: m_audioClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 8bba70be7c3046f09fbf9acda900ecf4, type: 3}
     - target: {fileID: 5441903898429451528, guid: 4e0de5573bbb4f24bafa363d68feb146, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -9349,7 +9361,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6922638430337644845, guid: 4e0de5573bbb4f24bafa363d68feb146, type: 3}
       propertyPath: m_Name
-      value: DungeonAmbience
+      value: DungeonAmbience_AshenTemple
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

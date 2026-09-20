@@ -56,6 +56,9 @@ namespace DungeonRoguelite.Enemies
         public float BoltDamage => boltDamage;
         public event Action<bool> OnPhaseChanged;
         public event Action<string> OnTelegraphStarted;
+        // Presentation notifications carry authoritative geometry; listeners never resolve attacks.
+        public event Action<string, Vector3, Vector3, float, float> OnAttackPresented;
+        public event Action<EnemyProjectile> OnBoltFired;
 
         private void Awake()
         {
@@ -106,6 +109,7 @@ namespace DungeonRoguelite.Enemies
             State = BossWardenState.Execute;
             ShowTelegraph(origin, direction, meleeRange, strikeArc, new Color(1f,.3f,.05f));
             nextStrike = Time.time + strikeCooldown;
+            OnAttackPresented?.Invoke("Strike", origin, direction, meleeRange, strikeArc);
             float endsAt = Time.time + strikeActiveDuration;
             bool hit = false;
             while (Time.time < endsAt)
@@ -132,6 +136,7 @@ namespace DungeonRoguelite.Enemies
             OnTelegraphStarted?.Invoke("Slam");
             yield return new WaitForSeconds(1.1f); State = BossWardenState.Execute; HideTelegraph();
             DealIfInRange(origin, SlamRadius, slamDamage); nextSlam = Time.time + (phaseTwo ? 3.5f : slamCooldown);
+            OnAttackPresented?.Invoke("Slam", origin, transform.forward, SlamRadius, 360f);
             State = BossWardenState.Recovery; yield return new WaitForSeconds(1f); acting = false; State = BossWardenState.Engage;
         }
 
@@ -167,6 +172,7 @@ namespace DungeonRoguelite.Enemies
             if (projectilePrefab == null || health.IsDead) return;
             var shot = Instantiate(projectilePrefab, origin, Quaternion.LookRotation(direction.normalized, Vector3.up));
             shot.Initialize(transform, direction, 14f, boltDamage, 3f);
+            OnBoltFired?.Invoke(shot);
         }
         private void ShowTelegraph(Vector3 origin, Vector3 direction, float range, float arc, Color color)
         {

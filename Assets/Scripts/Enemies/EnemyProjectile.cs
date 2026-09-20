@@ -22,6 +22,8 @@ namespace DungeonRoguelite.Enemies
         public Vector3 TravelDirection => direction;
         public float SweepRadius => sweepRadius;
         public event Action<EnemyProjectile> OnResolved;
+        /// <summary>Optional presentation notification for accepted collisions only, after gameplay resolution.</summary>
+        public event Action<Vector3> OnImpact;
 
         public void Initialize(Transform ownerRoot, Vector3 travelDirection, float projectileSpeed, float projectileDamage, float lifetime)
         {
@@ -58,9 +60,14 @@ namespace DungeonRoguelite.Enemies
                 // Distance zero is a valid initial-overlap impact. Resolve before callbacks
                 // and deferred destruction, preventing multi-collider or reentrant damage.
                 var player = collider.GetComponentInParent<PlayerHealth>();
+                var impact = OnImpact;
+                // SphereCast overlap hits have no reliable contact point; use the current
+                // projectile position instead. Do not add another physics query.
+                Vector3 impactPosition = hit.distance > 0f ? hit.point : transform.position;
                 Cancel();
                 if (player != null && !player.IsDead && shooter != null && !shooter.IsDead)
                     player.TakeDamage(damage);
+                impact?.Invoke(impactPosition);
                 return;
             }
             transform.position += direction * distance;
@@ -70,6 +77,7 @@ namespace DungeonRoguelite.Enemies
         {
             if (resolved) return;
             resolved = true;
+            OnImpact = null;
             OnResolved?.Invoke(this);
             OnResolved = null;
             Destroy(gameObject);
@@ -77,6 +85,7 @@ namespace DungeonRoguelite.Enemies
 
         private void OnDestroy()
         {
+            OnImpact = null;
             if (!resolved) { resolved = true; OnResolved?.Invoke(this); }
             OnResolved = null;
         }
